@@ -1,0 +1,91 @@
+
+.macro if_mi
+        .scope
+        bpl __end_if__
+.endmacro
+
+.macro if_pl
+        .scope
+        bmi __end_if__
+.endmacro
+
+.macro if_vs
+        .scope
+        bvc __end_if__
+.endmacro
+
+.macro if_vc
+        .scope
+        bvs __end_if__
+.endmacro
+
+.macro if_cs
+        .scope
+        bcc __end_if__
+.endmacro
+
+.macro if_cc
+        .scope
+        bcs __end_if__
+.endmacro
+
+.macro if_eq
+        .scope
+        bne __end_if__
+.endmacro
+
+.macro if_ne
+        .scope
+        beq __end_if__
+.endmacro
+
+.macro end_if
+        __end_if__:
+        .endscope
+.endmacro
+
+
+.macro loop
+       __loop__:
+       .scope
+.endmacro
+
+.macro while_pl
+       bpl __loop__
+       .endscope
+.endmacro
+
+.macro while_mi
+       bmi __loop__
+       .endscope
+.endmacro
+
+.macro while_vc
+       bvc __loop__
+       .endscope
+.endmacro
+
+.macro while_vs
+       bvs __loop__
+       .endscope
+.endmacro
+
+.macro while_cc
+       bcc __loop__
+       .endscope
+.endmacro
+
+.macro while_cs
+       bcs __loop__
+       .endscope
+.endmacro
+
+.macro while_ne
+       bne __loop__
+       .endscope
+.endmacro
+
+.macro while_eq
+       beq __loop__
+       .endscope
+.endmacro
