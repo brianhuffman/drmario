@@ -46,8 +46,8 @@
 
 
 .macro loop
-       __loop__:
        .scope
+       __loop__:
 .endmacro
 
 .macro while_pl
