@@ -4908,43 +4908,31 @@ LA264:  .byte   $04                             ; A264 04
 LA267:  brk                                     ; A267 00
         .byte   $A7                             ; A268 A7
         .byte   $B7                             ; A269 B7
-LA26A:  and     ($88,x)                         ; A26A 21 88    (Argument to LB6C2)
-        .byte   $02                             ; A26C 02
-        .byte   $FF                             ; A26D FF
-        .byte   $FF                             ; A26E FF
-        and     ($96,x)                         ; A26F 21 96
-        .byte   $04                             ; A271 04
-        .byte   $FF                             ; A272 FF
-        .byte   $FF                             ; A273 FF
-        .byte   $FF                             ; A274 FF
-        .byte   $FF                             ; A275 FF
-        and     ($B6,x)                         ; A276 21 B6
-        .byte   $04                             ; A278 04
-        .byte   $FF                             ; A279 FF
-        .byte   $FF                             ; A27A FF
-        .byte   $FF                             ; A27B FF
-        .byte   $FF                             ; A27C FF
-        and     ($D6,x)                         ; A27D 21 D6
-        .byte   $04                             ; A27F 04
-        .byte   $FF                             ; A280 FF
-        .byte   $FF                             ; A281 FF
-        .byte   $FF                             ; A282 FF
-        .byte   $FF                             ; A283 FF
-        .byte   $22                             ; A284 22
-        plp                                     ; A285 28
-        .byte   $02                             ; A286 02
-        .byte   $F3                             ; A287 F3
-        .byte   $F4                             ; A288 F4
-        .byte   $22                             ; A289 22
-        pha                                     ; A28A 48
-        .byte   $02                             ; A28B 02
-        sbc     $F6,x                           ; A28C F5 F6
-        .byte   $22                             ; A28E 22
-        pla                                     ; A28F 68
-        .byte   $02                             ; A290 02
-        .byte   $FF                             ; A291 FF
-        .byte   $FF                             ; A292 FF
-        .byte   $FF                             ; A293 FF
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
+LA26A:  .byte $21,$88                           ; PPU address $2188
+        .byte $02                               ; 2 bytes non-repeated
+        .byte $FF,$FF
+        .byte $21,$96                           ; PPU address $2196
+        .byte $04                               ; 4 bytes non-repeated
+        .byte $FF,$FF,$FF,$FF
+        .byte $21,$B6                           ; PPU address $21B6
+        .byte $04                               ; 4 bytes non-repeated
+        .byte $FF,$FF,$FF,$FF
+        .byte $21,$D6                           ; PPU address $21D6
+        .byte $04                               ; 4 bytes non-repeated
+        .byte $FF,$FF,$FF,$FF
+        .byte $22,$28                           ; PPU address $2228
+        .byte $02                               ; 2 bytes non-repeated
+        .byte $F3,$F4
+        .byte $22,$48                           ; PPU address $2248
+        .byte $02                               ; 2 bytes non-repeated
+        .byte $F5,$F6
+        .byte $22,$68                           ; PPU address $2268
+        .byte $02                               ; 2 bytes non-repeated
+        .byte $FF,$FF
+        .byte $FF                               ; terminator byte
+; ----------------------------------------------------------------------------
 LA294:  .byte   $57                             ; A294 57
         .byte   $5B                             ; A295 5B
         .byte   $5F                             ; A296 5F
@@ -4981,6 +4969,8 @@ LA2B2:  brk                                     ; A2B2 00
         brk                                     ; A2B5 00
         .byte   $87                             ; A2B6 87
         .byte   $96                             ; A2B7 96
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
 LA2B8:  .byte   $23                             ; A2B8 23   (Argument to LB6C2)
         cpy     #$20                            ; A2B9 C0 20
         brk                                     ; A2BB 00
@@ -5044,6 +5034,8 @@ LA2E8:  eor     $55,x                           ; A2E8 55 55
         brk                                     ; A2FC 00
         brk                                     ; A2FD 00
         .byte   $FF                             ; A2FE FF
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
 LA2FF:  .byte   $23                             ; A2FF 23   (Argument to LB6C2)
         cpy     #$20                            ; A300 C0 20
         brk                                     ; A302 00
@@ -5107,6 +5099,8 @@ LA326:  brk                                     ; A326 00
         brk                                     ; A343 00
         brk                                     ; A344 00
         .byte   $FF                             ; A345 FF
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
 LA346:  .byte   $23                             ; A346 23    (Argument to LB6C2)
         cpy     #$20                            ; A347 C0 20
         brk                                     ; A349 00
@@ -5600,6 +5594,8 @@ LA584:  ora     $0F,x                           ; A584 15 0F
         plp                                     ; A58B 28
         and     ($0F,x)                         ; A58C 21 0F
         .byte   $FF                             ; A58E FF
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
 LA58F:  .byte   $3F                             ; A58F 3F     (Argument to LB6C2)
         brk                                     ; A590 00
         jsr     L0A0F                           ; A591 20 0F 0A
@@ -5624,6 +5620,8 @@ LA5A4:  bmi     LA5BE                           ; A5A4 30 18
         sec                                     ; A5AF 38
         and     ($0F,x)                         ; A5B0 21 0F
         .byte   $FF                             ; A5B2 FF
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
 LA5B3:  .byte   $3F                             ; A5B3 3F       (Argument to LB6C2)
         brk                                     ; A5B4 00
         jsr     L300F                           ; A5B5 20 0F 30
@@ -5649,6 +5647,8 @@ LA5CF:  bmi     LA5FA                           ; A5CF 30 29
         .byte   $29                             ; A5D3 29
 LA5D4:  .byte   $27                             ; A5D4 27
         and     ($FF,x)                         ; A5D5 21 FF
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
 LA5D7:  .byte   $3F                             ; A5D7 3F         (Argument to LB6C2)
         brk                                     ; A5D8 00
 LA5D9:  jsr     L310F                           ; A5D9 20 0F 31
@@ -5676,6 +5676,8 @@ LA5F0:  ora     $0F,x                           ; A5F0 15 0F
         plp                                     ; A5F7 28
         and     ($0F,x)                         ; A5F8 21 0F
 LA5FA:  .byte   $FF                             ; A5FA FF
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
 LA5FB:  .byte   $3F                             ; A5FB 3F       (Argument to LB6C2)
         brk                                     ; A5FC 00
         jsr     L1A22                           ; A5FD 20 22 1A
@@ -5704,6 +5706,8 @@ LA614:  bpl     LA625                           ; A614 10 0F
         and     $29,x                           ; A61B 35 29
         .byte   $0F                             ; A61D 0F
         .byte   $FF                             ; A61E FF
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
 LA61F:  .byte   $3F                             ; A61F 3F       (Argument to LB6C2)
         brk                                     ; A620 00
         jsr     L0F02                           ; A621 20 02 0F
@@ -5734,6 +5738,8 @@ LA625:  .byte   $0F                             ; A625 0F
         bpl     LA641                           ; A63F 10 00
 LA641:  .byte   $0F                             ; A641 0F
         .byte   $FF                             ; A642 FF
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
 LA643:  .byte   $3F                             ; A643 3F      (Argument to LB6C2)
         brk                                     ; A644 00
         jsr     L0F0F                           ; A645 20 0F 0F
@@ -5767,21 +5773,17 @@ LA65C:  .byte   $0F                             ; A65C 0F
         .byte   $0F                             ; A664 0F
         .byte   $0F                             ; A665 0F
         .byte   $FF                             ; A666 FF
-LA667:  .byte   $3F                             ; A667 3F       (Argument to LB6C2)
-        bpl     LA67A                           ; A668 10 10
-        .byte   $02                             ; A66A 02
-        plp                                     ; A66B 28
-        ora     $21,x                           ; A66C 15 21
-        .byte   $02                             ; A66E 02
-        .byte   $02                             ; A66F 02
-        bpl     LA681                           ; A670 10 0F
-        .byte   $02                             ; A672 02
-        plp                                     ; A673 28
-        ora     $0F,x                           ; A674 15 0F
-        .byte   $02                             ; A676 02
-        bpl     LA679                           ; A677 10 00
-LA679:  .byte   $0F                             ; A679 0F
-LA67A:  .byte   $FF                             ; A67A FF
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
+LA667:  .byte $3F,$10                           ; PPU address $3F10
+        .byte $10                               ; 16 non-repeated bytes
+        .byte $02,$28,$15,$21
+        .byte $02,$02,$10,$0F
+        .byte $02,$28,$15,$0F
+        .byte $02,$10,$00,$0F
+LA67A:  .byte $FF                               ; terminator byte
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
 LA67B:  .byte   $3F                             ; A67B 3F       (Argument to LB6C2)
         brk                                     ; A67C 00
         jsr     L1923                           ; A67D 20 23 19
@@ -5812,6 +5814,8 @@ LA694:  brk                                     ; A694 00
         .byte   $0F                             ; A69C 0F
         .byte   $0F                             ; A69D 0F
         .byte   $FF                             ; A69E FF
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
 LA69F:  .byte   $3F                             ; A69F 3F      (Argument to LB6C2)
         brk                                     ; A6A0 00
         jsr     L0A13                           ; A6A1 20 13 0A
@@ -5841,6 +5845,8 @@ LA6B8:  and     ($02,x)                         ; A6B8 21 02
         .byte   $0F                             ; A6C0 0F
         .byte   $0F                             ; A6C1 0F
         .byte   $FF                             ; A6C2 FF
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
 LA6C3:  .byte   $3F                             ; A6C3 3F        (Argument to LB6C2)
         brk                                     ; A6C4 00
         jsr     L1923                           ; A6C5 20 23 19
@@ -8625,51 +8631,67 @@ LB6B4:  lda     #$00                            ; B6B4 A9 00
         rts                                     ; B6C1 60
 
 ; ----------------------------------------------------------------------------
-LB6C2:  jsr     LB74B                           ; B6C2 20 4B B7
+
+; Non-standard subroutine, it takes an inline pointer argument.
+; Subroutine LB74B copies the pointer argument to $00/$01, and adjusts
+; the return address.
+
+LB6C2:
+.scope
+        jsr     LB74B                           ; B6C2 20 4B B7
         jmp     LB71C                           ; B6C5 4C 1C B7
 
 ; ----------------------------------------------------------------------------
-LB6C8:  pha                                     ; B6C8 48
-        sta     $2006                           ; B6C9 8D 06 20
-        iny                                     ; B6CC C8
-        lda     (L0000),y                       ; B6CD B1 00
-        sta     $2006                           ; B6CF 8D 06 20
-        iny                                     ; B6D2 C8
-        lda     (L0000),y                       ; B6D3 B1 00
-        asl     a                               ; B6D5 0A
-        pha                                     ; B6D6 48
-        lda     $FF                             ; B6D7 A5 FF
-        ora     #$04                            ; B6D9 09 04
-        bcs     LB6DF                           ; B6DB B0 02
-        and     #$FB                            ; B6DD 29 FB
-LB6DF:  sta     L2000                           ; B6DF 8D 00 20
-        sta     $FF                             ; B6E2 85 FF
-        pla                                     ; B6E4 68
-        asl     a                               ; B6E5 0A
-        php                                     ; B6E6 08
-        bcc     LB6EC                           ; B6E7 90 03
-        ora     #$02                            ; B6E9 09 02
-        iny                                     ; B6EB C8
-LB6EC:  plp                                     ; B6EC 28
-        clc                                     ; B6ED 18
-        bne     LB6F1                           ; B6EE D0 01
-        sec                                     ; B6F0 38
-LB6F1:  ror     a                               ; B6F1 6A
-        lsr     a                               ; B6F2 4A
-        tax                                     ; B6F3 AA
-LB6F4:  bcs     LB6F7                           ; B6F4 B0 01
-        iny                                     ; B6F6 C8
-LB6F7:  lda     (L0000),y                       ; B6F7 B1 00
-        sta     $2007                           ; B6F9 8D 07 20
-        dex                                     ; B6FC CA
-        bne     LB6F4                           ; B6FD D0 F5
-        pla                                     ; B6FF 68
-        cmp     #$3F                            ; B700 C9 3F
-        bne     LB710                           ; B702 D0 0C
-        sta     $2006                           ; B704 8D 06 20
-        stx     $2006                           ; B707 8E 06 20
-        stx     $2006                           ; B70A 8E 06 20
-        stx     $2006                           ; B70D 8E 06 20
+LB6C8:
+; case A = anything 00-7F except 60 or 4C
+; Y = 0
+        pha                                     ; B6C8 48
+            sta     $2006                       ; B6C9 8D 06 20    ;p[0] -> $2006 (PPU addr hi)
+            iny                                 ; B6CC C8          ;Y=1
+            lda     (L0000),y                   ; B6CD B1 00       ;A=p[1]
+            sta     $2006                       ; B6CF 8D 06 20    ;p[1] -> $2006 (PPU addr lo)
+            iny                                 ; B6D2 C8          ;Y=2
+            lda     (L0000),y                   ; B6D3 B1 00       ;A = p[2] = abcdefgh
+            asl     a                           ; B6D5 0A          ;A = p[2]*2 = bcdefgh0
+            pha                                 ; B6D6 48          ;push p[2]*2
+                lda $FF                         ; B6D7 A5 FF
+                ora #$04                        ; B6D9 09 04       ;copy high bit of p[2] (i.e. 'a') to bit 2 of $ff
+                if_cc                           ; B6DB B0 02
+                    and #$FB                    ; B6DD 29 FB
+                end_if
+                sta L2000                       ; B6DF 8D 00 20
+                sta $FF                         ; B6E2 85 FF
+            pla                                 ; B6E4 68          ;A = p[2]*2 = bcdefgh0
+            asl     a                           ; B6E5 0A          ;A = p[2]*4 = cdefgh00 (C = b)
+            php                                 ; B6E6 08
+                if_cs                           ; B6E7 90 03       ;if 'b'
+                    ora #$02                    ; B6E9 09 02       ;A = cdefghb0
+                    iny                         ; B6EB C8          ;Y = 2+b
+                end_if
+            plp                                 ; B6EC 28
+            clc                                 ; B6ED 18
+            if_eq                               ; B6EE D0 01       ;C = (if cdefgh = 0 then 0 else 1)
+                sec                             ; B6F0 38
+            end_if
+            ror     a                           ; B6F1 6A          ;A = 0cdefghb OR 1000000b, C=0
+            lsr     a                           ; B6F2 4A          ;A = 00cdefgh OR 01000000, C=b
+            tax                                 ; B6F3 AA          ;X = 00cdefgh OR 01000000, C=b
+            loop                                                   ;bits 5:0 of p[2] determine the count.
+                if_cc                           ; B6F4 B0 01       ;bit 6 of p[2] determines whether it is a repeated value
+                    iny                         ; B6F6 C8
+                end_if
+                lda (L0000),y                   ; B6F7 B1 00
+                sta $2007                       ; B6F9 8D 07 20    ;Copy value to PPU data
+                dex                             ; B6FC CA
+            while_ne                            ; B6FD D0 F5
+        pla                                     ; B6FF 68          ;a=p[0]
+        cmp #$3F                                ; B700 C9 3F       ;if PPU addr hi = $3f
+        if_eq                                   ; B702 D0 0C
+            sta $2006                           ; B704 8D 06 20    ;PPU addr = $3f00
+            stx $2006                           ; B707 8E 06 20
+            stx $2006                           ; B70A 8E 06 20    ;PPU addr = $0000
+            stx $2006                           ; B70D 8E 06 20
+        end_if
 LB710:  sec                                     ; B710 38
         tya                                     ; B711 98
         adc     L0000                           ; B712 65 00
@@ -8677,23 +8699,29 @@ LB710:  sec                                     ; B710 38
         lda     #$00                            ; B716 A9 00
         adc     L0001                           ; B718 65 01
         sta     L0001                           ; B71A 85 01
+; entry point
 LB71C:  ldx     $2002                           ; B71C AE 02 20
         ldy     #$00                            ; B71F A0 00
         lda     (L0000),y                       ; B721 B1 00
-        bpl     LB726                           ; B723 10 01
-        rts                                     ; B725 60
-
-; ----------------------------------------------------------------------------
-LB726:  cmp     #$60                            ; B726 C9 60
+        if_mi                                   ; B723 10 01
+            rts                                 ; B725 60
+        end_if
+        cmp     #$60                            ; B726 C9 60
         bne     LB734                           ; B728 D0 0A
+; case 60 (RTS):
+; pull $00/$01 from the stack, increment $00/$01 by 3, and repeat.
         pla                                     ; B72A 68
         sta     L0001                           ; B72B 85 01
         pla                                     ; B72D 68
         sta     L0000                           ; B72E 85 00
         ldy     #$02                            ; B730 A0 02
-        bne     LB710                           ; B732 D0 DC
+        bne     LB710                           ; B732 D0 DC ; Always Branch
+; ----------------------------------------------------------------------------
+
 LB734:  cmp     #$4C                            ; B734 C9 4C
         bne     LB6C8                           ; B736 D0 90
+; case 4C (JMP):
+; push $00/$01 to the stack
         lda     L0000                           ; B738 A5 00
         pha                                     ; B73A 48
         lda     L0001                           ; B73B A5 01
@@ -8705,16 +8733,17 @@ LB734:  cmp     #$4C                            ; B734 C9 4C
         lda     (L0000),y                       ; B743 B1 00
         sta     L0001                           ; B745 85 01
         stx     L0000                           ; B747 86 00
-        bcs     LB71C                           ; B749 B0 D1
+        bcs     LB71C                           ; B749 B0 D1  ; Always Branch
+; ----------------------------------------------------------------------------
+
 LB74B:  tsx                                     ; B74B BA
         lda     $0103,x                         ; B74C BD 03 01
         sta     $05                             ; B74F 85 05
         lda     $0104,x                         ; B751 BD 04 01
-        .byte   $85                             ; B754 85
-LB755:  asl     $A0                             ; B755 06 A0
-        ora     ($B1,x)                         ; B757 01 B1
-        ora     $85                             ; B759 05 85
-        brk                                     ; B75B 00
+        sta     $06                             ; B754 85 06
+        ldy     #$01                            ; B756 A0 01
+        lda     ($05),y                         ; B758 B1 05
+        sta     $00                             ; B75A 85 00
         iny                                     ; B75C C8
         lda     ($05),y                         ; B75D B1 05
         sta     L0001                           ; B75F 85 01
@@ -8726,6 +8755,7 @@ LB755:  asl     $A0                             ; B755 06 A0
         adc     $06                             ; B76B 65 06
         sta     $0104,x                         ; B76D 9D 04 01
         rts                                     ; B770 60
+.endscope
 
 ; ----------------------------------------------------------------------------
 LB771:  lda     L0000,x                         ; B771 B5 00
@@ -8979,149 +9009,51 @@ LB908:  sta     LFFF0                           ; B908 8D F0 FF
         rts                                     ; B91B 60
 
 ; ----------------------------------------------------------------------------
-LB91C:  jsr     L2000                           ; B91C 20 00 20      (Argument to LB6C2)
-        sbc     LFDFE,x                         ; B91F FD FE FD
-        inc     LFEFD,x                         ; B922 FE FD FE
-        sbc     LFDFE,x                         ; B925 FD FE FD
-        inc     LFEFD,x                         ; B928 FE FD FE
-        sbc     LFDFE,x                         ; B92B FD FE FD
-        inc     LFEFD,x                         ; B92E FE FD FE
-        sbc     LFDFE,x                         ; B931 FD FE FD
-LB934:  inc     LFEFD,x                         ; B934 FE FD FE
-        sbc     LFDFE,x                         ; B937 FD FE FD
-        inc     LFEFD,x                         ; B93A FE FD FE
-        sbc     $20FE,x                         ; B93D FD FE 20
-        jsr     LFE20                           ; B940 20 20 FE
-        sbc     LFDFE,x                         ; B943 FD FE FD
-        inc     LFEFD,x                         ; B946 FE FD FE
-        sbc     LFDFE,x                         ; B949 FD FE FD
-        inc     LFEFD,x                         ; B94C FE FD FE
-        sbc     LFDFE,x                         ; B94F FD FE FD
-        inc     LFEFD,x                         ; B952 FE FD FE
-        sbc     LFDFE,x                         ; B955 FD FE FD
-        inc     LFEFD,x                         ; B958 FE FD FE
-        sbc     LFDFE,x                         ; B95B FD FE FD
-        inc     LFEFD,x                         ; B95E FE FD FE
-        sbc     $4020,x                         ; B961 FD 20 40
-        jsr     LFEFD                           ; B964 20 FD FE
-        sbc     LFDFE,x                         ; B967 FD FE FD
-        inc     LFEFD,x                         ; B96A FE FD FE
-        sbc     LFDFE,x                         ; B96D FD FE FD
-        inc     LFEFD,x                         ; B970 FE FD FE
-        sbc     LFDFE,x                         ; B973 FD FE FD
-        inc     LFEFD,x                         ; B976 FE FD FE
-        sbc     LFDFE,x                         ; B979 FD FE FD
-        inc     LFEFD,x                         ; B97C FE FD FE
-        sbc     LFDFE,x                         ; B97F FD FE FD
-        inc     LFEFD,x                         ; B982 FE FD FE
-        jsr     L2060                           ; B985 20 60 20
-        inc     LFEFD,x                         ; B988 FE FD FE
-        sbc     LFDFE,x                         ; B98B FD FE FD
-        inc     LFEFD,x                         ; B98E FE FD FE
-        sbc     LFDFE,x                         ; B991 FD FE FD
-        inc     LFEFD,x                         ; B994 FE FD FE
-        sbc     LFDFE,x                         ; B997 FD FE FD
-        inc     LFEFD,x                         ; B99A FE FD FE
-        sbc     LFDFE,x                         ; B99D FD FE FD
-        inc     LFEFD,x                         ; B9A0 FE FD FE
-        sbc     LFDFE,x                         ; B9A3 FD FE FD
-        inc     $20FD,x                         ; B9A6 FE FD 20
-        .byte   $80                             ; B9A9 80
-        jsr     LFEFD                           ; B9AA 20 FD FE
-        sbc     LFDFE,x                         ; B9AD FD FE FD
-        inc     LFEFD,x                         ; B9B0 FE FD FE
-        sbc     LFDFE,x                         ; B9B3 FD FE FD
-        inc     LFEFD,x                         ; B9B6 FE FD FE
-        sbc     LFDFE,x                         ; B9B9 FD FE FD
-        inc     LFEFD,x                         ; B9BC FE FD FE
-        sbc     LFDFE,x                         ; B9BF FD FE FD
-        .byte   $FE                             ; B9C2 FE
-LB9C3:  sbc     LFDFE,x                         ; B9C3 FD FE FD
-        inc     LFEFD,x                         ; B9C6 FE FD FE
-        sbc     $20FE,x                         ; B9C9 FD FE 20
-        ldy     #$20                            ; B9CC A0 20
-        inc     LFEFD,x                         ; B9CE FE FD FE
-        sbc     $2120,x                         ; B9D1 FD 20 21
-        rti                                     ; B9D4 40
-
-; ----------------------------------------------------------------------------
-        rti                                     ; B9D5 40
-
-; ----------------------------------------------------------------------------
-        rti                                     ; B9D6 40
-
-; ----------------------------------------------------------------------------
-        rti                                     ; B9D7 40
-
-; ----------------------------------------------------------------------------
-        rti                                     ; B9D8 40
-
-; ----------------------------------------------------------------------------
-        rti                                     ; B9D9 40
-
-; ----------------------------------------------------------------------------
-        rti                                     ; B9DA 40
-
-; ----------------------------------------------------------------------------
-LB9DB:  rti                                     ; B9DB 40
-
-; ----------------------------------------------------------------------------
-        rti                                     ; B9DC 40
-
-; ----------------------------------------------------------------------------
-        rti                                     ; B9DD 40
-
-; ----------------------------------------------------------------------------
-        .byte   $43                             ; B9DE 43
-        rti                                     ; B9DF 40
-
-; ----------------------------------------------------------------------------
-        rti                                     ; B9E0 40
-
-; ----------------------------------------------------------------------------
-        rti                                     ; B9E1 40
-
-; ----------------------------------------------------------------------------
-        rti                                     ; B9E2 40
-
-; ----------------------------------------------------------------------------
-        rti                                     ; B9E3 40
-
-; ----------------------------------------------------------------------------
-        rti                                     ; B9E4 40
-
-; ----------------------------------------------------------------------------
-        rti                                     ; B9E5 40
-
-; ----------------------------------------------------------------------------
-        rti                                     ; B9E6 40
-
-; ----------------------------------------------------------------------------
-        rti                                     ; B9E7 40
-
-; ----------------------------------------------------------------------------
-        bmi     LBA1B                           ; B9E8 30 31
-        inc     LFEFD,x                         ; B9EA FE FD FE
-        sbc     LC020,x                         ; B9ED FD 20 C0
-        jsr     LFEFD                           ; B9F0 20 FD FE
-        sbc     LF722,x                         ; B9F3 FD 22 F7
-        sed                                     ; B9F6 F8
-        eor     $46                             ; B9F7 45 46
-        lsr     $46                             ; B9F9 46 46
-        .byte   $46                             ; B9FB 46
-LB9FC:  .byte   $46                             ; B9FC 46
-LB9FD:  lsr     $46                             ; B9FD 46 46
-        lsr     $46                             ; B9FF 46 46
-        .byte   $47                             ; BA01 47
-        lsr     $46                             ; BA02 46 46
-        lsr     $46                             ; BA04 46 46
-        lsr     $46                             ; BA06 46 46
-        lsr     $46                             ; BA08 46 46
-        pha                                     ; BA0A 48
-        ldx     $B6,y                           ; BA0B B6 B6
-        .byte   $33                             ; BA0D 33
-        inc     LFEFD,x                         ; BA0E FE FD FE
-        jsr     L20E0                           ; BA11 20 E0 20
+; Argument to LB6C2
+LB91C:  .byte $20,$00                           ; PPU address $2000
+        .byte $20                               ; 32 bytes non-repeated
+        .byte $FD,$FE,$FD,$FE,$FD,$FE,$FD,$FE
+        .byte $FD,$FE,$FD,$FE,$FD,$FE,$FD,$FE
+        .byte $FD,$FE,$FD,$FE,$FD,$FE,$FD,$FE
+        .byte $FD,$FE,$FD,$FE,$FD,$FE,$FD,$FE
+        .byte $20,$20                           ; PPU address $2020
+        .byte $20                               ; 32 bytes non-repeated
+        .byte $FE,$FD,$FE,$FD,$FE,$FD,$FE,$FD
+        .byte $FE,$FD,$FE,$FD,$FE,$FD,$FE,$FD
+        .byte $FE,$FD,$FE,$FD,$FE,$FD,$FE,$FD
+        .byte $FE,$FD,$FE,$FD,$FE,$FD,$FE,$FD
+        .byte $20,$40                           ; PPU address $2040
+        .byte $20                               ; 32 bytes non-repeated
+        .byte $FD,$FE,$FD,$FE,$FD,$FE,$FD,$FE
+        .byte $FD,$FE,$FD,$FE,$FD,$FE,$FD,$FE
+        .byte $FD,$FE,$FD,$FE,$FD,$FE,$FD,$FE
+        .byte $FD,$FE,$FD,$FE,$FD,$FE,$FD,$FE
+        .byte $20,$60                           ; PPU address $2060
+        .byte $20                               ; 32 bytes non-repeated
+        .byte $FE,$FD,$FE,$FD,$FE,$FD,$FE,$FD
+        .byte $FE,$FD,$FE,$FD,$FE,$FD,$FE,$FD
+        .byte $FE,$FD,$FE,$FD,$FE,$FD,$FE,$FD
+        .byte $FE,$FD,$FE,$FD,$FE,$FD,$FE,$FD
+        .byte $20,$80                           ; PPU address $2080
+        .byte $20                               ; 32 bytes non-repeated
+        .byte $FD,$FE,$FD,$FE,$FD,$FE,$FD,$FE
+        .byte $FD,$FE,$FD,$FE,$FD,$FE,$FD,$FE
+        .byte $FD,$FE,$FD,$FE,$FD,$FE,$FD,$FE
+        .byte $FD,$FE,$FD,$FE,$FD,$FE,$FD,$FE
+        .byte $20,$A0                           ; PPU address $20A0
+        .byte $20                               ; 32 bytes non-repeated
+        .byte $FE,$FD,$FE,$FD,$20,$21,$40,$40
+        .byte $40,$40,$40,$40,$40,$40,$40,$40
+        .byte $43,$40,$40,$40,$40,$40,$40,$40
+        .byte $40,$40,$30,$31,$FE,$FD,$FE,$FD
+        .byte $20,$C0                           ; PPU address $20C0
+        .byte $20                               ; 32 bytes non-repeated
+        .byte $FD,$FE,$FD,$22,$F7,$F8,$45,$46
+        .byte $46,$46,$46,$46,$46,$46,$46,$46
+        .byte $47,$46,$46,$46,$46,$46,$46,$46
+        .byte $46,$48,$B6,$B6,$33,$FE,$FD,$FE
+        .byte $20,$E0                           ; PPU address $20E0
+        .byte $20                               ; 32 bytes non-repeated
 LBA14:  inc     $24FD,x                         ; BA14 FE FD 24
         and     $F9                             ; BA17 25 F9
         eor     (L0052),y                       ; BA19 51 52
@@ -9133,7 +9065,8 @@ LBA1E:  lsr     $57,x                           ; BA1E 56 57
         eor     $5B5A,y                         ; BA21 59 5A 5B
 LBA24:  .byte   $5C                             ; BA24 5C
         eor     $5F5E,x                         ; BA25 5D 5E 5F
-        bcs     LB9DB                           ; BA28 B0 B1
+        .byte   $B0
+        .byte   $B1
         .byte   $B2                             ; BA2A B2
         .byte   $B3                             ; BA2B B3
         ldy     $B5,x                           ; BA2C B4 B5
@@ -9257,8 +9190,9 @@ LBAD1:  tax                                     ; BAD1 AA
         .byte   $FC                             ; BADE FC
         .byte   $3A                             ; BADF 3A
         .byte   $3B                             ; BAE0 3B
-        sbc     $21FE,x                         ; BAE1 FD FE 21
-        ldy     #$20                            ; BAE4 A0 20
+        .byte $FD,$FE
+        .byte $21,$A0                           ; PPU address $21A0
+        .byte $20                               ; 32 bytes non-repeated
         inc     LFEFD,x                         ; BAE6 FE FD FE
         bit     LFC4C                           ; BAE9 2C 4C FC
         .byte   $FC                             ; BAEC FC
@@ -9486,7 +9420,7 @@ LBBBB:  sbc     LFDFE,x                         ; BBBB FD FE FD
         sbc     LFDFE,x                         ; BC83 FD FE FD
         inc     $2023,x                         ; BC86 FE 23 20
         jsr     LFDFE                           ; BC89 20 FE FD
-        inc     LB9FD,x                         ; BC8C FE FD B9
+        inc     $B9FD,x                         ; BC8C FE FD B9
         tsx                                     ; BC8F BA
         .byte   $FF                             ; BC90 FF
         .byte   $FF                             ; BC91 FF
@@ -9630,7 +9564,9 @@ LBD40:  asl     a                               ; BD40 0A
         brk                                     ; BD7A 00
         brk                                     ; BD7B 00
         .byte   $FF                             ; BD7C FF
-LBD7D:  jsr     L2000                           ; BD7D 20 00 20   (Argument to LB6C2)
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
+LBD7D:  jsr     L2000                           ; BD7D 20 00 20
         sbc     LFDFC,x                         ; BD80 FD FC FD
         .byte   $FC                             ; BD83 FC
         sbc     LFDFC,x                         ; BD84 FD FC FD
@@ -9802,12 +9738,10 @@ LBE4E:  sbc     LC020,x                         ; BE4E FD 20 C0
         .byte   $FF                             ; BE90 FF
         .byte   $4B                             ; BE91 4B
         sbc     LFDFC,x                         ; BE92 FD FC FD
-        and     (L0000,x)                       ; BE95 21 00
+        .byte $21,$00                           ; PPU address $2100
         jsr     LFCFD                           ; BE97 20 FD FC
         sbc     LFF49,x                         ; BE9A FD 49 FF
         jmp     L121F                           ; BE9D 4C 1F 12
-
-; ----------------------------------------------------------------------------
         .byte   $1B                             ; BEA0 1B
         asl     LFF1C,x                         ; BEA1 1E 1C FF
         ora     $0E,x                           ; BEA4 15 0E
@@ -9825,8 +9759,10 @@ LBE4E:  sbc     LC020,x                         ; BE4E FD 20 C0
         .byte   $FF                             ; BEB3 FF
         .byte   $4B                             ; BEB4 4B
         .byte   $FC                             ; BEB5 FC
-        sbc     $21FC,x                         ; BEB6 FD FC 21
-        jsr     LFC20                           ; BEB9 20 20 FC
+        .byte $FD,$FC
+        .byte $21,$20                           ; PPU address $2120
+        .byte $20                               ; 32 bytes non-repeated
+        .byte $FC
         .byte   $FD                             ; BEBC FD
 LBEBD:  .byte   $FC                             ; BEBD FC
         eor     #$FF                            ; BEBE 49 FF
@@ -9847,7 +9783,7 @@ LBEBD:  .byte   $FC                             ; BEBD FC
         .byte   $FF                             ; BED6 FF
         .byte   $4B                             ; BED7 4B
         sbc     LFDFC,x                         ; BED8 FD FC FD
-        and     ($40,x)                         ; BEDB 21 40
+        .byte $21,$40                           ; PPU address $2140
         jsr     LFCFD                           ; BEDD 20 FD FC
         sbc     LFF49,x                         ; BEE0 FD 49 FF
         .byte   $FF                             ; BEE3 FF
@@ -9871,10 +9807,8 @@ LBEF1:  .byte   $FF                             ; BEF1 FF
         .byte $2e, $ff, $ff
         .byte   $4B                             ; BEFA 4B
         .byte   $FC                             ; BEFB FC
-        sbc     $21FC,x                         ; BEFC FD FC 21
-        rts                                     ; BEFF 60
-
-; ----------------------------------------------------------------------------
+        .byte $FD,$FC
+        .byte $21,$60                           ; PPU address $2160
         jsr     LFDFC                           ; BF00 20 FC FD
         .byte   $FC                             ; BF03 FC
         eor     #$FF                            ; BF04 49 FF
@@ -9898,7 +9832,7 @@ LBEF1:  .byte   $FF                             ; BEF1 FF
         .byte   $FF                             ; BF1C FF
         .byte   $4B                             ; BF1D 4B
         sbc     LFDFC,x                         ; BF1E FD FC FD
-        and     (L0080,x)                       ; BF21 21 80
+        .byte $21,$80                           ; PPU address $2180
         jsr     LFCFD                           ; BF23 20 FD FC
         sbc     LFF49,x                         ; BF26 FD 49 FF
         .byte   $FF                             ; BF29 FF
@@ -9907,23 +9841,13 @@ LBEF1:  .byte   $FF                             ; BEF1 FF
         .byte   $02                             ; BF2C 02
         ora     $43FF,y                         ; BF2D 19 FF 43
         rti                                     ; BF30 40
-
-; ----------------------------------------------------------------------------
         .byte   $42                             ; BF31 42
         rti                                     ; BF32 40
-
-; ----------------------------------------------------------------------------
         rti                                     ; BF33 40
-
-; ----------------------------------------------------------------------------
         eor     ($40,x)                         ; BF34 41 40
         .byte   $42                             ; BF36 42
         rti                                     ; BF37 40
-
-; ----------------------------------------------------------------------------
         rti                                     ; BF38 40
-
-; ----------------------------------------------------------------------------
         .byte   $44                             ; BF39 44
         .byte   $3F                             ; BF3A 3F
         .byte   $2F                             ; BF3B 2F
@@ -9933,8 +9857,8 @@ LBEF1:  .byte   $FF                             ; BEF1 FF
         .byte   $FF                             ; BF3F FF
         .byte   $4B                             ; BF40 4B
 LBF41:  .byte   $FC                             ; BF41 FC
-        sbc     $21FC,x                         ; BF42 FD FC 21
-        .byte   $A0                             ; BF45 A0
+        .byte $FD,$FC
+        .byte $21,$A0                           ; PPU address $21A0
 LBF46:  jsr     LFDFC                           ; BF46 20 FC FD
         .byte   $FC                             ; BF49 FC
         eor     #$FF                            ; BF4A 49 FF
@@ -9959,7 +9883,7 @@ LBF46:  jsr     LFDFC                           ; BF46 20 FC FD
         .byte $2e, $ff, $ff
         .byte   $4B                             ; BF63 4B
         sbc     LFDFC,x                         ; BF64 FD FC FD
-        and     ($C0,x)                         ; BF67 21 C0
+        .byte $21,$C0                           ; PPU address $21C0
         jsr     LFCFD                           ; BF69 20 FD FC
         sbc     LFF49,x                         ; BF6C FD 49 FF
         .byte   $3C                             ; BF6F 3C
@@ -9983,14 +9907,13 @@ LBF46:  jsr     LFDFC                           ; BF46 20 FC FD
         .byte   $FF                             ; BF85 FF
         .byte   $4B                             ; BF86 4B
         .byte   $FC                             ; BF87 FC
-        sbc     $21FC,x                         ; BF88 FD FC 21
-        cpx     #$20                            ; BF8B E0 20
+        .byte $FD,$FC
+        .byte $21,$E0                           ; PPU address $21E0
+        .byte $20                               ; 32 bytes non-repeated
         .byte   $FC                             ; BF8D FC
         sbc     $49FC,x                         ; BF8E FD FC 49
         .byte   $FF                             ; BF91 FF
         jmp     L191C                           ; BF92 4C 1C 19
-
-; ----------------------------------------------------------------------------
         asl     $0D0E                           ; BF95 0E 0E 0D
         lsr     LFFFF                           ; BF98 4E FF FF
         .byte   $FF                             ; BF9B FF
@@ -10009,9 +9932,9 @@ LBF46:  jsr     LFDFC                           ; BF46 20 FC FD
         .byte   $FF                             ; BFA8 FF
         .byte   $4B                             ; BFA9 4B
         sbc     LFDFC,x                         ; BFAA FD FC FD
-        .byte   $22                             ; BFAD 22
-        brk                                     ; BFAE 00
-        jsr     LFCFD                           ; BFAF 20 FD FC
+        .byte $22,$00                           ; PPU address $2200
+        .byte $20                               ; 32 bytes non-repeated
+        .byte $FD,$FC
         sbc     LFF49,x                         ; BFB2 FD 49 FF
         .byte   $5C                             ; BFB5 5C
         eor     $5D5D,x                         ; BFB6 5D 5D 5D
@@ -10034,8 +9957,10 @@ LBF46:  jsr     LFDFC                           ; BF46 20 FC FD
         .byte   $FF                             ; BFCB FF
         .byte   $4B                             ; BFCC 4B
         .byte   $FC                             ; BFCD FC
-        sbc     $22FC,x                         ; BFCE FD FC 22
-        jsr     LFC20                           ; BFD1 20 20 FC
+        .byte $FD,$FC
+        .byte $22,$20                           ; PPU address $2220
+        .byte $20                               ; 32 bytes non-repeated
+        .byte $FC
         sbc     $49FC,x                         ; BFD4 FD FC 49
         .byte   $FF                             ; BFD7 FF
         .byte   $FF                             ; BFD8 FF
@@ -10063,10 +9988,7 @@ LBF46:  jsr     LFDFC                           ; BF46 20 FC FD
         .byte   $FF                             ; BFEE FF
         .byte   $4B                             ; BFEF 4B
         sbc     LFDFC,x                         ; BFF0 FD FC FD
-        .byte   $22                             ; BFF3 22
-        rti                                     ; BFF4 40
-
-; ----------------------------------------------------------------------------
+        .byte $22,$40                           ; PPU address $2240
         jsr     LFCFD                           ; BFF5 20 FD FC
         sbc     LFF49,x                         ; BFF8 FD 49 FF
         .byte   $FF                             ; BFFB FF
@@ -10086,10 +10008,8 @@ LBFFF:  ror     $FF,x                           ; BFFF 76 FF
         .byte   $FF                             ; C011 FF
         .byte   $4B                             ; C012 4B
         .byte   $FC                             ; C013 FC
-        sbc     $22FC,x                         ; C014 FD FC 22
-        rts                                     ; C017 60
-
-; ----------------------------------------------------------------------------
+        .byte $FD,$FC
+        .byte $22,$60                           ; PPU address $2260
         jsr     LFDFC                           ; C018 20 FC FD
         .byte   $FC                             ; C01B FC
         eor     #$FF                            ; C01C 49 FF
@@ -10118,8 +10038,7 @@ LC021:  .byte   $77                             ; C021 77
         .byte   $FF                             ; C034 FF
         .byte   $4B                             ; C035 4B
         sbc     LFDFC,x                         ; C036 FD FC FD
-        .byte   $22                             ; C039 22
-        .byte   $80                             ; C03A 80
+        .byte $22,$80                           ; PPU address $2280
         jsr     LFCFD                           ; C03B 20 FD FC
         sbc     LFF49,x                         ; C03E FD 49 FF
         .byte   $3C                             ; C041 3C
@@ -10139,14 +10058,13 @@ LC021:  .byte   $77                             ; C021 77
         .byte   $FF                             ; C057 FF
         .byte   $4B                             ; C058 4B
         .byte   $FC                             ; C059 FC
-        sbc     $22FC,x                         ; C05A FD FC 22
-        ldy     #$20                            ; C05D A0 20
+        .byte $FD,$FC
+        .byte $22,$A0                           ; PPU address $22A0
+        .byte $20                               ; 32 bytes non-repeated
         .byte   $FC                             ; C05F FC
         sbc     $49FC,x                         ; C060 FD FC 49
         .byte   $FF                             ; C063 FF
         jmp     L1E16                           ; C064 4C 16 1E
-
-; ----------------------------------------------------------------------------
         .byte   $1C                             ; C067 1C
         .byte   $12                             ; C068 12
         .byte   $0C                             ; C069 0C
@@ -10165,8 +10083,8 @@ LC021:  .byte   $77                             ; C021 77
         .byte   $FF                             ; C07A FF
         .byte   $4B                             ; C07B 4B
         sbc     LFDFC,x                         ; C07C FD FC FD
-        .byte   $22                             ; C07F 22
-        cpy     #$20                            ; C080 C0 20
+        .byte $22,$C0                           ; PPU address $22C0
+        .byte $20                               ; 32 bytes non-repeated
         sbc     LFDFC,x                         ; C082 FD FC FD
         eor     #$FF                            ; C085 49 FF
         .byte   $5C                             ; C087 5C
@@ -10186,8 +10104,9 @@ LC021:  .byte   $77                             ; C021 77
         .byte   $FF                             ; C09D FF
         .byte   $4B                             ; C09E 4B
         .byte   $FC                             ; C09F FC
-LC0A0:  sbc     $22FC,x                         ; C0A0 FD FC 22
-        cpx     #$20                            ; C0A3 E0 20
+LC0A0:  .byte $FD,$FC
+        .byte $22,$E0                           ; PPU address $22E0
+        .byte $20                               ; 32 bytes non-repeated
         .byte   $FC                             ; C0A5 FC
         sbc     $49FC,x                         ; C0A6 FD FC 49
         .byte   $FF                             ; C0A9 FF
@@ -10216,8 +10135,7 @@ LC0A0:  sbc     $22FC,x                         ; C0A0 FD FC 22
         .byte   $FF                             ; C0C0 FF
         .byte   $4B                             ; C0C1 4B
         sbc     LFDFC,x                         ; C0C2 FD FC FD
-        .byte   $23                             ; C0C5 23
-        brk                                     ; C0C6 00
+        .byte $23,$00                           ; PPU address $2300
         jsr     LFCFD                           ; C0C7 20 FD FC
         sbc     LFF49,x                         ; C0CA FD 49 FF
         .byte   $FF                             ; C0CD FF
@@ -10241,8 +10159,10 @@ LC0A0:  sbc     $22FC,x                         ; C0A0 FD FC 22
         .byte   $FF                             ; C0E3 FF
         .byte   $4B                             ; C0E4 4B
         .byte   $FC                             ; C0E5 FC
-        sbc     $23FC,x                         ; C0E6 FD FC 23
-        jsr     LFC20                           ; C0E9 20 20 FC
+        .byte $FD,$FC
+        .byte $23,$20                           ; PPU address $2320
+        .byte $20                               ; 32 bytes non-repeated
+        .byte $FC
         sbc     $49FC,x                         ; C0EC FD FC 49
         .byte   $FF                             ; C0EF FF
         .byte   $FF                             ; C0F0 FF
@@ -10270,10 +10190,7 @@ LC0A0:  sbc     $22FC,x                         ; C0A0 FD FC 22
         .byte   $FF                             ; C106 FF
         .byte   $4B                             ; C107 4B
         sbc     LFDFC,x                         ; C108 FD FC FD
-        .byte   $23                             ; C10B 23
-        rti                                     ; C10C 40
-
-; ----------------------------------------------------------------------------
+        .byte $23,$40                           ; PPU address $2340
         jsr     LFCFD                           ; C10D 20 FD FC
         sbc     $5A59,x                         ; C110 FD 59 5A
         .byte   $5A                             ; C113 5A
@@ -10301,10 +10218,8 @@ LC0A0:  sbc     $22FC,x                         ; C0A0 FD FC 22
         .byte   $5A                             ; C129 5A
         .byte   $5B                             ; C12A 5B
         .byte   $FC                             ; C12B FC
-        sbc     $23FC,x                         ; C12C FD FC 23
-        rts                                     ; C12F 60
-
-; ----------------------------------------------------------------------------
+        .byte $FD,$FC
+        .byte $23,$60                           ; PPU address $2360
         jsr     LFDFC                           ; C130 20 FC FD
         .byte   $FC                             ; C133 FC
         sbc     LFDFC,x                         ; C134 FD FC FD
@@ -10321,7 +10236,8 @@ LC0A0:  sbc     $22FC,x                         ; C0A0 FD FC 22
         .byte   $FC                             ; C14B FC
         sbc     LFDFC,x                         ; C14C FD FC FD
         .byte   $FC                             ; C14F FC
-        sbc     L8023,x                         ; C150 FD 23 80
+        .byte $FD
+        .byte $23,$80                           ; PPU address $2380
         jsr     LFCFD                           ; C153 20 FD FC
         sbc     LFDFC,x                         ; C156 FD FC FD
         .byte   $FC                             ; C159 FC
@@ -10337,26 +10253,17 @@ LC0A0:  sbc     $22FC,x                         ; C0A0 FD FC 22
         .byte   $FC                             ; C16D FC
         sbc     LFDFC,x                         ; C16E FD FC FD
         .byte   $FC                             ; C171 FC
-        sbc     $23FC,x                         ; C172 FD FC 23
-        ldy     #$20                            ; C175 A0 20
-        .byte   $FC                             ; C177 FC
-        sbc     LFDFC,x                         ; C178 FD FC FD
-        .byte   $FC                             ; C17B FC
-        sbc     LFDFC,x                         ; C17C FD FC FD
-        .byte   $FC                             ; C17F FC
-        sbc     LFDFC,x                         ; C180 FD FC FD
-        .byte   $FC                             ; C183 FC
-        sbc     LFDFC,x                         ; C184 FD FC FD
-        .byte   $FC                             ; C187 FC
-        sbc     LFDFC,x                         ; C188 FD FC FD
-        .byte   $FC                             ; C18B FC
-        sbc     LFDFC,x                         ; C18C FD FC FD
-        .byte   $FC                             ; C18F FC
-        sbc     LFDFC,x                         ; C190 FD FC FD
-        .byte   $FC                             ; C193 FC
-        sbc     LFDFC,x                         ; C194 FD FC FD
-        .byte   $FF                             ; C197 FF
-LC198:  jsr     L2000                           ; C198 20 00 20   (Argument to LB6C2)
+        .byte $FD,$FC
+        .byte $23,$A0                           ; PPU address $23A0
+        .byte $20                               ; 32 bytes non-repeated
+        .byte $FC,$FD,$FC,$FD,$FC,$FD,$FC,$FD
+        .byte $FC,$FD,$FC,$FD,$FC,$FD,$FC,$FD
+        .byte $FC,$FD,$FC,$FD,$FC,$FD,$FC,$FD
+        .byte $FC,$FD,$FC,$FD,$FC,$FD,$FC,$FD
+        .byte $FF                               ; terminator byte
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
+LC198:  jsr     L2000                           ; C198 20 00 20
         .byte   $FC                             ; C19B FC
         .byte   $FF                             ; C19C FF
         .byte   $FC                             ; C19D FC
@@ -10523,7 +10430,7 @@ LC200:  .byte   $FF                             ; C200 FF
         .byte   $44                             ; C259 44
         .byte   $43                             ; C25A 43
         .byte   $44                             ; C25B 44
-        and     LB9FC,y                         ; C25C 39 FC B9
+        and     $B9FC,y                         ; C25C 39 FC B9
         tsx                                     ; C25F BA
         .byte   $BB                             ; C260 BB
         ldy     LBEBD,x                         ; C261 BC BD BE
@@ -11238,6 +11145,8 @@ LC5DE:  eor     $11,x                           ; C5DE 55 11
         brk                                     ; C5F6 00
         brk                                     ; C5F7 00
         .byte   $FF                             ; C5F8 FF
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
 LC5F9:  jsr     L2000                           ; C5F9 20 00 20   (Argument to LB6C2)
         .byte   $FC                             ; C5FC FC
         .byte   $FF                             ; C5FD FF
@@ -12193,6 +12102,8 @@ LC900:  .byte   $FC                             ; C900 FC
         brk                                     ; CA57 00
         brk                                     ; CA58 00
         .byte   $FF                             ; CA59 FF
+; ----------------------------------------------------------------------------
+; Argument to LB6C2
 LCA5A:  jsr     L2000                           ; CA5A 20 00 20   (Argument to LB6C2)
         .byte   $FC                             ; CA5D FC
         .byte   $FC                             ; CA5E FC
@@ -19173,7 +19084,7 @@ LF0FE:  ora     ($60,x)                         ; F0FE 01 60
         .byte   $C3                             ; F11C C3
         clv                                     ; F11D B8
         .byte   $32                             ; F11E 32
-        lda     LB934,y                         ; F11F B9 34 B9
+        lda     $B934,y                         ; F11F B9 34 B9
         .byte   $32                             ; F122 32
         .byte   $02                             ; F123 02
         .byte   $34                             ; F124 34
@@ -19184,7 +19095,7 @@ LF0FE:  ora     ($60,x)                         ; F0FE 01 60
         .byte   $FF                             ; F12D FF
         clv                                     ; F12E B8
         .byte   $32                             ; F12F 32
-        lda     LB934,y                         ; F130 B9 34 B9
+        lda     $B934,y                         ; F130 B9 34 B9
         .byte   $32                             ; F133 32
         .byte   $02                             ; F134 02
         .byte   $34                             ; F135 34
@@ -19714,7 +19625,7 @@ LF3AA:  rti                                     ; F3AA 40
 ; ----------------------------------------------------------------------------
         .byte   $FF                             ; F3AB FF
         rol     $3E3E,x                         ; F3AC 3E 3E 3E
-        rol     LB9C3,x                         ; F3AF 3E C3 B9
+        rol     $B9C3,x                         ; F3AF 3E C3 B9
 LF3B2:  .byte   $34                             ; F3B2 34
         .byte   $34                             ; F3B3 34
         .byte   $34                             ; F3B4 34
@@ -21721,7 +21632,7 @@ LFD5D:  .byte   $FF                             ; FD5D FF
         .byte   $97                             ; FD8D 97
         .byte   $04                             ; FD8E 04
         brk                                     ; FD8F 00
-        ldy     LB755                           ; FD90 AC 55 B7
+        ldy     $B755                           ; FD90 AC 55 B7
         .byte   $93                             ; FD93 93
         .byte   $44                             ; FD94 44
         .byte   $F7                             ; FD95 F7
