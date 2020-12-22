@@ -1844,7 +1844,6 @@ L8CA7:  ldy     $49                             ; 8CA7 A4 49
         bcs     L8CB2                           ; 8CAD B0 03
         jmp     L8D34                           ; 8CAF 4C 34 8D
 
-; ----------------------------------------------------------------------------
 L8CB2:  lda     #$FF                            ; 8CB2 A9 FF
         sta     ($57),y                         ; 8CB4 91 57
         sta     $48                             ; 8CB6 85 48
@@ -1897,7 +1896,6 @@ L8D06:  cmp     $4B                             ; 8D06 C5 4B
         sta     $06F1                           ; 8D12 8D F1 06
         jmp     L8CF6                           ; 8D15 4C F6 8C
 
-; ----------------------------------------------------------------------------
 L8D18:  ldy     $49                             ; 8D18 A4 49
         tya                                     ; 8D1A 98
         sec                                     ; 8D1B 38
@@ -1924,9 +1922,9 @@ L8D34:  dec     $49                             ; 8D34 C6 49
         lda     $47                             ; 8D43 A5 47
         if_ne                                   ; 8D45 F0 05
             dec $87                             ; 8D47 C6 87
-            jmp L8D4E                           ; 8D49 4C 4E 8D
-        end_if ; else
+        else                                    ; 8D49 4C 4E 8D
             inc $87                             ; 8D4C E6 87
+        end_if
 L8D4E:  rts                                     ; 8D4E 60
 
 ; ----------------------------------------------------------------------------
@@ -1939,16 +1937,15 @@ L8D4F:  lda     #$00                            ; 8D4F A9 00
 L8D56:  lda     $A8                             ; 8D56 A5 A8
         if_ne                                   ; 8D58 F0 05
             inc $97                             ; 8D5A E6 97
-            jmp L8D6F                           ; 8D5C 4C 6F 8D
-        end_if ;else
+        else                                    ; 8D5C 4C 6F 8D
             lda #$00                            ; 8D5F A9 00
             sta $A1                             ; 8D61 85 A1
             jsr R871F                           ; 8D63 20 1F 87
             jsr R8D70                           ; 8D66 20 70 8D
             jsr R8DBF                           ; 8D69 20 BF 8D
             jsr R8E2B                           ; 8D6C 20 2B 8E
-        ;end_else
-L8D6F:  rts                                     ; 8D6F 60
+        end_if
+        rts                                     ; 8D6F 60
 
 ; ----------------------------------------------------------------------------
 ; no inputs
@@ -2033,14 +2030,14 @@ L8DE3:  lda     $5C                             ; 8DE3 A5 5C
         beq     L8E09                           ; 8DF2 F0 15
         inc     $85                             ; 8DF4 E6 85
         jsr     R90D3                           ; 8DF6 20 D3 90
-        bne     L8E03                           ; 8DF9 D0 08
-        lda     #$03                            ; 8DFB A9 03
-        sta     $06F1                           ; 8DFD 8D F1 06
-        jmp     L8E09                           ; 8E00 4C 09 8E
-
-L8E03:  dec     $85                             ; 8E03 C6 85
-        lda     #$0F                            ; 8E05 A9 0F
-        sta     $93                             ; 8E07 85 93
+        if_eq                                   ; 8DF9 D0 08
+            lda #$03                            ; 8DFB A9 03
+            sta $06F1                           ; 8DFD 8D F1 06
+        else                                    ; 8E00 4C 09 8E
+            dec $85                             ; 8E03 C6 85
+            lda #$0F                            ; 8E05 A9 0F
+            sta $93                             ; 8E07 85 93
+        end_if
 L8E09:  lda     $5C                             ; 8E09 A5 5C
         and     #$02                            ; 8E0B 29 02
         beq     L8E2A                           ; 8E0D F0 1B
@@ -2052,11 +2049,11 @@ L8E09:  lda     $5C                             ; 8E09 A5 5C
         if_eq                                   ; 8E1A D0 08
             lda #$03                            ; 8E1C A9 03
             sta $06F1                           ; 8E1E 8D F1 06
-            jmp L8E2A                           ; 8E21 4C 2A 8E
+        else                                    ; 8E21 4C 2A 8E
+            inc $85                             ; 8E24 E6 85
+            lda #$0F                            ; 8E26 A9 0F
+            sta $93                             ; 8E28 85 93
         end_if
-        inc     $85                             ; 8E24 E6 85
-        lda     #$0F                            ; 8E26 A9 0F
-        sta     $93                             ; 8E28 85 93
 L8E2A:  rts                                     ; 8E2A 60
 .endscope
 
@@ -2140,13 +2137,12 @@ R8E8D:
             ldx $A7                             ; 8EAA A6 A7
             lda LCF80,x                         ; 8EAC BD 80 CF
             tax                                 ; 8EAF AA
-            jmp L8EB9                           ; 8EB0 4C B9 8E
-        end_if ;else
+        else                                    ; 8EB0 4C B9 8E
             ldx $A7                             ; 8EB3 A6 A7
             lda $0780,x                         ; 8EB5 BD 80 07
             tax                                 ; 8EB8 AA
-        ;end_else
-L8EB9:  lda     LA7FD,x                         ; 8EB9 BD FD A7
+        end_if
+        lda     LA7FD,x                         ; 8EB9 BD FD A7
         sta     $9A                             ; 8EBC 85 9A
         lda     LA806,x                         ; 8EBE BD 06 A8
         sta     $9B                             ; 8EC1 85 9B
@@ -3215,19 +3211,19 @@ L9556:  lda     L0080                           ; 9556 A5 80
         lda     $0389                           ; 955F AD 89 03
         if_eq                                   ; 9562 D0 06
             inc $039E                           ; 9564 EE 9E 03
-            jmp L9580                           ; 9567 4C 80 95
+        else                                    ; 9567 4C 80 95
+            lda $0309                           ; 956A AD 09 03
+            if_ne                               ; 956D F0 0A
+                jsr R9682                       ; 956F 20 82 96
+                lda #$00                        ; 9572 A9 00
+                sta $61                         ; 9574 85 61
+            else                                ; 9576 4C 80 95
+                jsr R96C0                       ; 9579 20 C0 96
+                lda #$02                        ; 957C A9 02
+                sta $61                         ; 957E 85 61
+            end_if
         end_if
-        lda     $0309                           ; 956A AD 09 03
-        if_ne                                   ; 956D F0 0A
-            jsr R9682                           ; 956F 20 82 96
-            lda #$00                            ; 9572 A9 00
-            sta $61                             ; 9574 85 61
-            jmp L9580                           ; 9576 4C 80 95
-        end_if
-        jsr     R96C0                           ; 9579 20 C0 96
-        lda     #$02                            ; 957C A9 02
-        sta     $61                             ; 957E 85 61
-L9580:  lda     L0080                           ; 9580 A5 80
+        lda     L0080                           ; 9580 A5 80
         sta     $0380                           ; 9582 8D 80 03
 L9585:  lda     #$07                            ; 9585 A9 07
         sta     $46                             ; 9587 85 46
@@ -3954,41 +3950,39 @@ R9AC5:
         if_eq                                   ; 9AD7 D0 07
             lda #$00                            ; 9AD9 A9 00
             sta $93                             ; 9ADB 85 93
-            jmp L9B1C                           ; 9ADD 4C 1C 9B
-        end_if
-;TODO: if/else
-
-        inc     $93                             ; 9AE0 E6 93
-        lda     $93                             ; 9AE2 A5 93
-        cmp     #$08                            ; 9AE4 C9 08
-        if_cs                                   ; 9AE6 90 34
-            lda #$01                            ; 9AE8 A9 01
-            sta $93                             ; 9AEA 85 93
-            lda $5C                             ; 9AEC A5 5C
-            and #$01                            ; 9AEE 29 01
-            if_ne                               ; 9AF0 F0 13
-                lda $96                         ; 9AF2 A5 96
-                cmp #$14                        ; 9AF4 C9 14
-                if_ne                           ; 9AF6 F0 0D
-                    lda #$03                    ; 9AF8 A9 03
-                    sta $06F1                   ; 9AFA 8D F1 06
-                    lda $68                     ; 9AFD A5 68
-                    ora #$04                    ; 9AFF 09 04
-                    sta $68                     ; 9B01 85 68
-                    inc $96                     ; 9B03 E6 96
+        else                                    ; 9ADD 4C 1C 9B
+            inc $93                             ; 9AE0 E6 93
+            lda $93                             ; 9AE2 A5 93
+            cmp #$08                            ; 9AE4 C9 08
+            if_cs                               ; 9AE6 90 34
+                lda #$01                        ; 9AE8 A9 01
+                sta $93                         ; 9AEA 85 93
+                lda $5C                         ; 9AEC A5 5C
+                and #$01                        ; 9AEE 29 01
+                if_ne                           ; 9AF0 F0 13
+                    lda $96                     ; 9AF2 A5 96
+                    cmp #$14                    ; 9AF4 C9 14
+                    if_ne                       ; 9AF6 F0 0D
+                        lda #$03                ; 9AF8 A9 03
+                        sta $06F1               ; 9AFA 8D F1 06
+                        lda $68                 ; 9AFD A5 68
+                        ora #$04                ; 9AFF 09 04
+                        sta $68                 ; 9B01 85 68
+                        inc $96                 ; 9B03 E6 96
+                    end_if
                 end_if
-            end_if
-            lda $5C                             ; 9B05 A5 5C
-            and #$02                            ; 9B07 29 02
-            if_ne                               ; 9B09 F0 11
-                lda $96                         ; 9B0B A5 96
-                if_ne                           ; 9B0D F0 0D
-                    lda #$03                    ; 9B0F A9 03
-                    sta $06F1                   ; 9B11 8D F1 06
-                    lda $68                     ; 9B14 A5 68
-                    ora #$04                    ; 9B16 09 04
-                    sta $68                     ; 9B18 85 68
-                    dec $96                     ; 9B1A C6 96
+                lda $5C                         ; 9B05 A5 5C
+                and #$02                        ; 9B07 29 02
+                if_ne                           ; 9B09 F0 11
+                    lda $96                     ; 9B0B A5 96
+                    if_ne                       ; 9B0D F0 0D
+                        lda #$03                ; 9B0F A9 03
+                        sta $06F1               ; 9B11 8D F1 06
+                        lda $68                 ; 9B14 A5 68
+                        ora #$04                ; 9B16 09 04
+                        sta $68                 ; 9B18 85 68
+                        dec $96                 ; 9B1A C6 96
+                    end_if
                 end_if
             end_if
         end_if
@@ -4173,9 +4167,7 @@ R9C01:
                 lda $032A,x                     ; 9C24 BD 2A 03
                 ora #$80                        ; 9C27 09 80
                 sta ($57),y                     ; 9C29 91 57
-                jmp L9C7A                       ; 9C2B 4C 7A 9C
-            end_if
-            ;TODO: else
+            else                                ; 9C2B 4C 7A 9C
                 cmp     #$03                    ; 9C2E C9 03
                 if_eq                           ; 9C30 D0 21
                     lda $43                     ; 9C32 A5 43
@@ -4194,44 +4186,42 @@ R9C01:
                     lda $032B,x                 ; 9C49 BD 2B 03
                     ora #$80                    ; 9C4C 09 80
                     sta ($57),y                 ; 9C4E 91 57
-                    jmp L9C7A                   ; 9C50 4C 7A 9C
+                else                            ; 9C50 4C 7A 9C
+                    lda $43                     ; 9C53 A5 43
+                    and #$01                    ; 9C55 29 01
+                    tay                         ; 9C57 A8
+                    lda $0329,x                 ; 9C58 BD 29 03
+                    ora #$80                    ; 9C5B 09 80
+                    sta ($57),y                 ; 9C5D 91 57
+                    iny                         ; 9C5F C8
+                    iny                         ; 9C60 C8
+                    lda $032A,x                 ; 9C61 BD 2A 03
+                    ora #$80                    ; 9C64 09 80
+                    sta ($57),y                 ; 9C66 91 57
+                    iny                         ; 9C68 C8
+                    iny                         ; 9C69 C8
+                    lda $032B,x                 ; 9C6A BD 2B 03
+                    ora #$80                    ; 9C6D 09 80
+                    sta ($57),y                 ; 9C6F 91 57
+                    iny                         ; 9C71 C8
+                    iny                         ; 9C72 C8
+                    lda $032C,x                 ; 9C73 BD 2C 03
+                    ora #$80                    ; 9C76 09 80
+                    sta ($57),y                 ; 9C78 91 57
                 end_if
-                lda $43                         ; 9C53 A5 43
-                and #$01                        ; 9C55 29 01
-                tay                             ; 9C57 A8
-                lda $0329,x                     ; 9C58 BD 29 03
-                ora #$80                        ; 9C5B 09 80
-                sta ($57),y                     ; 9C5D 91 57
-                iny                             ; 9C5F C8
-                iny                             ; 9C60 C8
-                lda $032A,x                     ; 9C61 BD 2A 03
-                ora #$80                        ; 9C64 09 80
-                sta ($57),y                     ; 9C66 91 57
-                iny                             ; 9C68 C8
-                iny                             ; 9C69 C8
-                lda $032B,x                     ; 9C6A BD 2B 03
-                ora #$80                        ; 9C6D 09 80
-                sta ($57),y                     ; 9C6F 91 57
-                iny                             ; 9C71 C8
-                iny                             ; 9C72 C8
-                lda $032C,x                     ; 9C73 BD 2C 03
-                ora #$80                        ; 9C76 09 80
-                sta ($57),y                     ; 9C78 91 57
-            ;TODO: end else
-L9C7A:      ldx $58                             ; 9C7A A6 58
+            end_if
+            ldx $58                             ; 9C7A A6 58
             lda LA545,x                         ; 9C7C BD 45 A5
             tax                                 ; 9C7F AA
             lda #$00                            ; 9C80 A9 00
             sta $0318,x                         ; 9C82 9D 18 03
             lda #$01                            ; 9C85 A9 01
             sta $97                             ; 9C87 85 97
-            jmp L9C90                           ; 9C89 4C 90 9C
-        end_if
-        ;TODO: else
+        else                                    ; 9C89 4C 90 9C
             lda #$05                            ; 9C8C A9 05
             sta $97                             ; 9C8E 85 97
-        ;TODO: end else
-L9C90:  rts                                     ; 9C90 60
+        end_if
+        rts                                     ; 9C90 60
 .endscope
 
 ; ----------------------------------------------------------------------------
@@ -8309,22 +8299,20 @@ LB2A2:  lda     #$0F                            ; B2A2 A9 0F
             jsr R9E4C                           ; B30F 20 4C 9E
             lda #$03                            ; B312 A9 03
             sta $46                             ; B314 85 46
-            jmp LB336                           ; B316 4C 36 B3
+        else                                    ; B316 4C 36 B3
+            lda #$FF                            ; B319 A9 FF
+            ldx #$04                            ; B31B A2 04
+            ldy #$05                            ; B31D A0 05
+            jsr RB894                           ; B31F 20 94 B8
+            lda #$0F                            ; B322 A9 0F
+            sta $0300                           ; B324 8D 00 03
+            sta $0380                           ; B327 8D 80 03
+            lda #$10                            ; B32A A9 10
+            jsr R9701                           ; B32C 20 01 97
+            lda #$03                            ; B32F A9 03
+            sta $46                             ; B331 85 46
+            jmp LB336                           ; B333 4C 36 B3
         end_if
-        ;TODO: else
-        lda     #$FF                            ; B319 A9 FF
-        ldx     #$04                            ; B31B A2 04
-        ldy     #$05                            ; B31D A0 05
-        jsr     RB894                           ; B31F 20 94 B8
-        lda     #$0F                            ; B322 A9 0F
-        sta     $0300                           ; B324 8D 00 03
-        sta     $0380                           ; B327 8D 80 03
-        lda     #$10                            ; B32A A9 10
-        jsr     R9701                           ; B32C 20 01 97
-        lda     #$03                            ; B32F A9 03
-        sta     $46                             ; B331 85 46
-        jmp     LB336                           ; B333 4C 36 B3
-
 LB336:  rts                                     ; B336 60
 .endscope
 

@@ -1,45 +1,53 @@
 
 .macro if_mi
         .scope
-        bpl __end_if__
+        bpl __else__
 .endmacro
 
 .macro if_pl
         .scope
-        bmi __end_if__
+        bmi __else__
 .endmacro
 
 .macro if_vs
         .scope
-        bvc __end_if__
+        bvc __else__
 .endmacro
 
 .macro if_vc
         .scope
-        bvs __end_if__
+        bvs __else__
 .endmacro
 
 .macro if_cs
         .scope
-        bcc __end_if__
+        bcc __else__
 .endmacro
 
 .macro if_cc
         .scope
-        bcs __end_if__
+        bcs __else__
 .endmacro
 
 .macro if_eq
         .scope
-        bne __end_if__
+        bne __else__
 .endmacro
 
 .macro if_ne
         .scope
-        beq __end_if__
+        beq __else__
+.endmacro
+
+.macro else
+        jmp __end_if__
+        __else__:
 .endmacro
 
 .macro end_if
+        .ifndef __else__
+        __else__:
+        .endif
         __end_if__:
         .endscope
 .endmacro
