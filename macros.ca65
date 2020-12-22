@@ -1,3 +1,5 @@
+; ----------------------------------------------------------------------------
+; If-then-else
 
 .macro if_mi
         .scope
@@ -52,48 +54,80 @@
         .endscope
 .endmacro
 
+; ----------------------------------------------------------------------------
+; While loops
 
 .macro loop
-       .scope
-       __loop__:
+        .scope
+        continue:
 .endmacro
 
 .macro while_pl
-       bpl __loop__
-       .endscope
+        bpl continue
+        break:
+        .endscope
 .endmacro
 
 .macro while_mi
-       bmi __loop__
-       .endscope
+        bmi continue
+        break:
+        .endscope
 .endmacro
 
 .macro while_vc
-       bvc __loop__
-       .endscope
+        bvc continue
+        break:
+        .endscope
 .endmacro
 
 .macro while_vs
-       bvs __loop__
-       .endscope
+        bvs continue
+        break:
+        .endscope
 .endmacro
 
 .macro while_cc
-       bcc __loop__
-       .endscope
+        bcc continue
+        break:
+        .endscope
 .endmacro
 
 .macro while_cs
-       bcs __loop__
-       .endscope
+        bcs continue
+        break:
+        .endscope
 .endmacro
 
 .macro while_ne
-       bne __loop__
-       .endscope
+        bne continue
+        break:
+        .endscope
 .endmacro
 
 .macro while_eq
-       beq __loop__
-       .endscope
+        beq continue
+        break:
+        .endscope
+.endmacro
+
+.macro forever
+        jmp continue
+        break:
+        .endscope
+.endmacro
+
+; ----------------------------------------------------------------------------
+; Begin-end blocks
+
+.macro begin
+        .scope
+        continue:
+.endmacro
+
+.macro end
+        .ifndef continue
+        .error "end without begin"
+        .endif
+        break:
+        .endscope
 .endmacro
