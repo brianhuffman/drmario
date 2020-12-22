@@ -276,7 +276,12 @@ L80DC:  ldx     #$89                            ; 80DC A2 89
         forever                                 ; 8154 4C 48 81
 
 ; ----------------------------------------------------------------------------
-R8157:  lda     $46                             ; 8157 A5 46
+; Top-level state machine.
+; Current state is in $46.
+; State ranges from 0 to 8.
+R8157:
+.scope
+        lda     $46                             ; 8157 A5 46
         jsr     RB8AC                           ; 8159 20 AC B8
         .word   L981C
         .word   L9953
@@ -288,6 +293,9 @@ R8157:  lda     $46                             ; 8157 A5 46
         .word   L958A
         .word   L9C91
 
+; ----------------------------------------------------------------------------
+; jump table vector 2
+
 L816E:  jsr     RB67C                           ; 816E 20 7C B6
         jsr     RB6A2                           ; 8171 20 A2 B6
         lda     #$02                            ; 8174 A9 02
@@ -296,44 +304,43 @@ L816E:  jsr     RB67C                           ; 816E 20 7C B6
         jsr     RB8F4                           ; 817B 20 F4 B8
         lda     $0727                           ; 817E AD 27 07
         cmp     #$01                            ; 8181 C9 01
-        bne     L818B                           ; 8183 D0 06
-        jsr     R82D1                           ; 8185 20 D1 82
-        jmp     L81D8                           ; 8188 4C D8 81
-
-; ----------------------------------------------------------------------------
-L818B:  jsr     RB6C2                           ; 818B 20 C2 B6
-        .word   LC5F9
-        lda     #$20                            ; 8190 A9 20
-        sta     $2006                           ; 8192 8D 06 20
-        lda     #$EC                            ; 8195 A9 EC
-        sta     $2006                           ; 8197 8D 06 20
-        lda     $030B                           ; 819A AD 0B 03
-        asl     a                               ; 819D 0A
-        asl     a                               ; 819E 0A
-        tax                                     ; 819F AA
-        lda     LA23D,x                         ; 81A0 BD 3D A2
-        sta     $2007                           ; 81A3 8D 07 20
-        lda     LA23E,x                         ; 81A6 BD 3E A2
-L81A9:  sta     $2007                           ; 81A9 8D 07 20
-        lda     LA23F,x                         ; 81AC BD 3F A2
-        sta     $2007                           ; 81AF 8D 07 20
-        lda     #$20                            ; 81B2 A9 20
-        sta     $2006                           ; 81B4 8D 06 20
-        lda     #$F1                            ; 81B7 A9 F1
-        sta     $2006                           ; 81B9 8D 06 20
-        lda     $038B                           ; 81BC AD 8B 03
-        asl     a                               ; 81BF 0A
-        asl     a                               ; 81C0 0A
-        tax                                     ; 81C1 AA
-        lda     LA23D,x                         ; 81C2 BD 3D A2
-        sta     $2007                           ; 81C5 8D 07 20
-        lda     LA23E,x                         ; 81C8 BD 3E A2
-        sta     $2007                           ; 81CB 8D 07 20
-        lda     LA23F,x                         ; 81CE BD 3F A2
-        sta     $2007                           ; 81D1 8D 07 20
-        lda     #$83                            ; 81D4 A9 83
-        sta     $66                             ; 81D6 85 66
-L81D8:  lda     #$FF                            ; 81D8 A9 FF
+        if_eq                                   ; 8183 D0 06
+            jsr R82D1                           ; 8185 20 D1 82
+        else                                    ; 8188 4C D8 81
+            jsr RB6C2                           ; 818B 20 C2 B6
+            .word LC5F9
+            lda #$20                            ; 8190 A9 20
+            sta $2006                           ; 8192 8D 06 20
+            lda #$EC                            ; 8195 A9 EC
+            sta $2006                           ; 8197 8D 06 20
+            lda $030B                           ; 819A AD 0B 03
+            asl a                               ; 819D 0A
+            asl a                               ; 819E 0A
+            tax                                 ; 819F AA
+            lda LA23D,x                         ; 81A0 BD 3D A2
+            sta $2007                           ; 81A3 8D 07 20
+            lda LA23E,x                         ; 81A6 BD 3E A2
+            sta $2007                           ; 81A9 8D 07 20
+            lda LA23F,x                         ; 81AC BD 3F A2
+            sta $2007                           ; 81AF 8D 07 20
+            lda #$20                            ; 81B2 A9 20
+            sta $2006                           ; 81B4 8D 06 20
+            lda #$F1                            ; 81B7 A9 F1
+            sta $2006                           ; 81B9 8D 06 20
+            lda $038B                           ; 81BC AD 8B 03
+            asl a                               ; 81BF 0A
+            asl a                               ; 81C0 0A
+            tax                                 ; 81C1 AA
+            lda LA23D,x                         ; 81C2 BD 3D A2
+            sta $2007                           ; 81C5 8D 07 20
+            lda LA23E,x                         ; 81C8 BD 3E A2
+            sta $2007                           ; 81CB 8D 07 20
+            lda LA23F,x                         ; 81CE BD 3F A2
+            sta $2007                           ; 81D1 8D 07 20
+            lda #$83                            ; 81D4 A9 83
+            sta $66                             ; 81D6 85 66
+        end_if
+        lda     #$FF                            ; 81D8 A9 FF
         sta     $5D                             ; 81DA 85 5D
         jsr     RB695                           ; 81DC 20 95 B6
         jsr     RB689                           ; 81DF 20 89 B6
@@ -348,13 +355,12 @@ L81D8:  lda     #$FF                            ; 81D8 A9 FF
         sta     $072D                           ; 81F7 8D 2D 07
         sta     $072E                           ; 81FA 8D 2E 07
         sta     $031E                           ; 81FD 8D 1E 03
-        .byte   $8D                             ; 8200 8D
-        .byte   $9E                             ; 8201 9E
-L8202:  .byte   $03                             ; 8202 03
+        sta     $039E
         inc     $46                             ; 8203 E6 46
         rts                                     ; 8205 60
 
 ; ----------------------------------------------------------------------------
+; jump table vector 3
 L8206:  lda     #$00                            ; 8206 A9 00
         sta     $92                             ; 8208 85 92
         sta     $57                             ; 820A 85 57
@@ -368,7 +374,7 @@ L8206:  lda     #$00                            ; 8206 A9 00
         sta     $80                             ; 821A 85 80
         sta     $90                             ; 821C 85 90
         sta     $91                             ; 821E 85 91
-L8220:  sta     $7D                             ; 8220 85 7D
+        sta     $7D                             ; 8220 85 7D
         sta     $A7                             ; 8222 85 A7
         sta     $0728                           ; 8224 8D 28 07
         sta     $75                             ; 8227 85 75
@@ -404,12 +410,13 @@ L8220:  sta     $7D                             ; 8220 85 7D
         jsr     R8FCA                           ; 826A 20 CA 8F
         lda     $0316                           ; 826D AD 16 03
         cmp     #$15                            ; 8270 C9 15
-        bmi     L827C                           ; 8272 30 08
-        sec                                     ; 8274 38
-        sbc     #$14                            ; 8275 E9 14
-        sta     $0728                           ; 8277 8D 28 07
-        lda     #$14                            ; 827A A9 14
-L827C:  clc                                     ; 827C 18
+        if_pl                                   ; 8272 30 08
+            sec                                 ; 8274 38
+            sbc #$14                            ; 8275 E9 14
+            sta $0728                           ; 8277 8D 28 07
+            lda #$14                            ; 827A A9 14
+        end_if
+        clc                                     ; 827C 18
         adc     #$01                            ; 827D 69 01
         asl     a                               ; 827F 0A
         asl     a                               ; 8280 0A
@@ -427,6 +434,7 @@ L827C:  clc                                     ; 827C 18
         sta     $06F5                           ; 8299 8D F5 06
         jsr     RB654                           ; 829C 20 54 B6
         rts                                     ; 829F 60
+.endscope
 
 ; ----------------------------------------------------------------------------
 R82A0:
@@ -435,28 +443,28 @@ R82A0:
         sta     $47                             ; 82A2 85 47
         lda     #$00                            ; 82A4 A9 00
         sta     $48                             ; 82A6 85 48
-L82A8:  ldx     #$17                            ; 82A8 A2 17
-        ldy     #$02                            ; 82AA A0 02
-        jsr     RB771                           ; 82AC 20 71 B7
-        ldx     $47                             ; 82AF A6 47
-        dex                                     ; 82B1 CA
-        lda     $17                             ; 82B2 A5 17
-        and     #$0F                            ; 82B4 29 0F
-        clc                                     ; 82B6 18
-        adc     $48                             ; 82B7 65 48
-L82B9:  sta     $48                             ; 82B9 85 48
-        cmp     #$09                            ; 82BB C9 09
-        bcc     L82C5                           ; 82BD 90 06
-        sec                                     ; 82BF 38
-        sbc     #$09                            ; 82C0 E9 09
-        jmp     L82B9                           ; 82C2 4C B9 82
-
-; ----------------------------------------------------------------------------
-L82C5:  sta     $0780,x                         ; 82C5 9D 80 07
-        dec     $47                             ; 82C8 C6 47
-        bne     L82A8                           ; 82CA D0 DC
-        lda     #$08                            ; 82CC A9 08
-        sta     $46                             ; 82CE 85 46
+        loop
+            ldx #$17                            ; 82A8 A2 17
+            ldy #$02                            ; 82AA A0 02
+            jsr RB771                           ; 82AC 20 71 B7
+            ldx $47                             ; 82AF A6 47
+            dex                                 ; 82B1 CA
+            lda $17                             ; 82B2 A5 17
+            and #$0F                            ; 82B4 29 0F
+            clc                                 ; 82B6 18
+            adc $48                             ; 82B7 65 48
+            loop
+                sta $48                         ; 82B9 85 48
+                cmp #$09                        ; 82BB C9 09
+                bcc break                       ; 82BD 90 06
+                sec                             ; 82BF 38
+                sbc #$09                        ; 82C0 E9 09
+            forever                             ; 82C2 4C B9 82
+            sta $0780,x                         ; 82C5 9D 80 07
+            dec $47                             ; 82C8 C6 47
+        while_ne                                ; 82CA D0 DC
+        lda #$08                                ; 82CC A9 08
+        sta $46                                 ; 82CE 85 46
         rts                                     ; 82D0 60
 .endscope
 
@@ -2217,6 +2225,7 @@ L8F47:  lda     #$00                            ; 8F47 A9 00
 R8F52:
 .scope
         ldx     $86                             ; 8F52 A6 86
+        ; A = #$78 - 8*x
         lda     LA474,x                         ; 8F54 BD 74 A4
         clc                                     ; 8F57 18
         adc     $85                             ; 8F58 65 85
@@ -2237,30 +2246,31 @@ R8F52:
         tax                                     ; 8F6E AA
         lda     #$00                            ; 8F6F A9 00
         sta     $49                             ; 8F71 85 49
-L8F73:  lda     LA4DC,x                         ; 8F73 BD DC A4
-        cmp     #$63                            ; 8F76 C9 63
-        beq     L8F9E                           ; 8F78 F0 24
-        clc                                     ; 8F7A 18
-        adc     $47                             ; 8F7B 65 47
-        sta     $57                             ; 8F7D 85 57
-        cmp     #$80                            ; 8F7F C9 80
-        if_cc                                   ; 8F81 B0 12
-            lda LA50C,x                         ; 8F83 BD 0C A5
-            clc                                 ; 8F86 18
-            sta $4A                             ; 8F87 85 4A
-            ldy $49                             ; 8F89 A4 49
-            lda $81,y                           ; 8F8B B9 81 00
-            clc                                 ; 8F8E 18
-            adc $4A                             ; 8F8F 65 4A
-            ldy #$00                            ; 8F91 A0 00
-            sta ($57),y                         ; 8F93 91 57
-        end_if
-        inx                                     ; 8F95 E8
-        inc     $49                             ; 8F96 E6 49
-        lda     $49                             ; 8F98 A5 49
-        cmp     #$04                            ; 8F9A C9 04
-        bne     L8F73                           ; 8F9C D0 D5
-L8F9E:  lda     $86                             ; 8F9E A5 86
+        loop
+            lda LA4DC,x                         ; 8F73 BD DC A4
+            cmp #$63                            ; 8F76 C9 63
+            beq break                           ; 8F78 F0 24
+            clc                                 ; 8F7A 18
+            adc $47                             ; 8F7B 65 47
+            sta $57                             ; 8F7D 85 57
+            cmp #$80                            ; 8F7F C9 80
+            if_cc                               ; 8F81 B0 12
+                lda LA50C,x                     ; 8F83 BD 0C A5
+                clc                             ; 8F86 18
+                sta $4A                         ; 8F87 85 4A
+                ldy $49                         ; 8F89 A4 49
+                lda $81,y                       ; 8F8B B9 81 00
+                clc                             ; 8F8E 18
+                adc $4A                         ; 8F8F 65 4A
+                ldy #$00                        ; 8F91 A0 00
+                sta ($57),y                     ; 8F93 91 57
+            end_if
+            inx                                 ; 8F95 E8
+            inc $49                             ; 8F96 E6 49
+            lda $49                             ; 8F98 A5 49
+            cmp #$04                            ; 8F9A C9 04
+        while_ne                                ; 8F9C D0 D5
+        lda     $86                             ; 8F9E A5 86
         eor     #$0F                            ; 8FA0 49 0F
         sta     $80                             ; 8FA2 85 80
         rts                                     ; 8FA4 60
@@ -2303,7 +2313,7 @@ R8FCA:
 .endscope
 
 ; ----------------------------------------------------------------------------
-; jump table vector
+; jump table vector 6
 L8FEF:  lda     #$04                            ; 8FEF A9 04
         sta     $46                             ; 8FF1 85 46
         rts                                     ; 8FF3 60
@@ -3174,6 +3184,7 @@ L9517:  lda     $59                             ; 9517 A5 59
 .endscope ;L9469
 
 ; ----------------------------------------------------------------------------
+; jump table vector 5
 L9532:
 .scope
         lda     #$00                            ; 9532 A9 00
@@ -3219,6 +3230,7 @@ L9585:  lda     #$07                            ; 9585 A9 07
 .endscope
 
 ; ----------------------------------------------------------------------------
+; jump table vector 7
 L958A:
 .scope
         lda     #$40                            ; 958A A9 40
@@ -3593,7 +3605,7 @@ L97F7:  lda     $F5                             ; 97F7 A5 F5
 .endscope
 
 ; ----------------------------------------------------------------------------
-; jump table vector
+; jump table vector 0
 L981C:
 .scope
         lda     $0741                           ; 981C AD 41 07
@@ -3740,7 +3752,7 @@ L9912:  lda     #$FE                            ; 9912 A9 FE
 .endscope ;L981C
 
 ; ----------------------------------------------------------------------------
-; jump table vector
+; jump table vector 1
 L9953:
 .scope
         lda     $0741                           ; 9953 AD 41 07
@@ -4030,7 +4042,7 @@ R9B42:
 .endscope
 
 ; ----------------------------------------------------------------------------
-; jump table vector
+; jump table vector 4
 L9B73:
 .scope
         jsr     R9075                           ; 9B73 20 75 90
@@ -4210,7 +4222,7 @@ R9C01:
 .endscope
 
 ; ----------------------------------------------------------------------------
-; jump table vector
+; jump table vector 8
 L9C91:
 .scope
         lda     $0741                           ; 9C91 AD 41 07
@@ -5497,21 +5509,11 @@ LA45B:  brk                                     ; A45B 00
         ora     ($FF,x)                         ; A46E 01 FF
         bvc     LA4B2                           ; A470 50 40
         bvs     LA4D4                           ; A472 70 60
-LA474:  sei                                     ; A474 78
-        bvs     LA4DF                           ; A475 70 68
-        rts                                     ; A477 60
-
 ; ----------------------------------------------------------------------------
-        cli                                     ; A478 58
-        bvc     LA4C3                           ; A479 50 48
-        rti                                     ; A47B 40
-
+; lookup table, 16 bytes
+LA474:  .byte $78,$70,$68,$60,$58,$50,$48,$40   ; A474 78 70 68 60 58 50 48 40
+        .byte $38,$30,$28,$20,$18,$10,$08,$00   ; A47C 38 30 28 20 18 10 08 00
 ; ----------------------------------------------------------------------------
-        sec                                     ; A47C 38
-        bmi     LA4A7                           ; A47D 30 28
-        jsr     $1018                           ; A47F 20 18 10
-        php                                     ; A482 08
-        brk                                     ; A483 00
 LA484:  iny                                     ; A484 C8
         cpy     #$B8                            ; A485 C0 B8
         bcs     LA431                           ; A487 B0 A8
@@ -5597,6 +5599,8 @@ LA4D6:  ora     ($02,x)                         ; A4D6 01 02
         beq     LA4D2                           ; A4D8 F0 F8
 LA4DA:  brk                                     ; A4DA 00
         php                                     ; A4DB 08
+; ----------------------------------------------------------------------------
+; lookup table
 LA4DC:  brk                                     ; A4DC 00
         ora     ($63,x)                         ; A4DD 01 63
 LA4DF:  .byte   $63                             ; A4DF 63
@@ -14168,7 +14172,7 @@ LD351:  .byte   $7F                             ; D351 7F
         .byte   $FF                             ; D362 FF
         php                                     ; D363 08
         stx     $7F,y                           ; D364 96 7F
-        lsr     L8220,x                         ; D366 5E 20 82
+        lsr     $8220,x                         ; D366 5E 20 82
         .byte   $7F                             ; D369 7F
         .byte   $53                             ; D36A 53
         sed                                     ; D36B F8
@@ -21164,7 +21168,7 @@ LFA84:  .byte   $72                             ; FA84 72
 
 ; ----------------------------------------------------------------------------
         ldx     $B1,y                           ; FABE B6 B1
-        lda     L8202,y                         ; FAC0 B9 02 82
+        lda     $8202,y                         ; FAC0 B9 02 82
         brk                                     ; FAC3 00
         .byte   $9F                             ; FAC4 9F
         php                                     ; FAC5 08
