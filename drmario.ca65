@@ -1951,6 +1951,12 @@ L8D56:  lda     $A8                             ; 8D56 A5 A8
 L8D6F:  rts                                     ; 8D6F 60
 
 ; ----------------------------------------------------------------------------
+; no inputs
+; -------D--/AXY-CZ--VN
+; LOOP: (0,3) RTS: (0,0,3,3)
+; READS $43 $5c $85 $86 $8a $8b $92 $a5 $a6 ($57),Y $a38d,X $a455,X $a458,X $a45b,X $a474,X $a4c4,X $a795,X
+; WRITES $47 $48 $49 $4a $57 $80 $86 $92 $97 $a0 $06f1 ($57),Y
+; JSR $8f52 $90d3
 R8D70:
 .scope
         lda     $43                             ; 8D70 A5 43
@@ -2043,12 +2049,12 @@ L8E09:  lda     $5C                             ; 8E09 A5 5C
         beq     L8E2A                           ; 8E13 F0 15
         dec     $85                             ; 8E15 C6 85
         jsr     R90D3                           ; 8E17 20 D3 90
-        bne     L8E24                           ; 8E1A D0 08
-        lda     #$03                            ; 8E1C A9 03
-        sta     $06F1                           ; 8E1E 8D F1 06
-        jmp     L8E2A                           ; 8E21 4C 2A 8E
-
-L8E24:  inc     $85                             ; 8E24 E6 85
+        if_eq                                   ; 8E1A D0 08
+            lda #$03                            ; 8E1C A9 03
+            sta $06F1                           ; 8E1E 8D F1 06
+            jmp L8E2A                           ; 8E21 4C 2A 8E
+        end_if
+        inc     $85                             ; 8E24 E6 85
         lda     #$0F                            ; 8E26 A9 0F
         sta     $93                             ; 8E28 85 93
 L8E2A:  rts                                     ; 8E2A 60
@@ -2394,8 +2400,14 @@ R901C:
 .endscope
 
 ; ----------------------------------------------------------------------------
+; Copy $0300-$032F to $80-$AF
+; $F5 -> $5B (controller 1 edge)
+; $F7 -> $5C (controller 1 state)
+; 0 -> $57
+; 4 -> $58
 R9075:
 .scope
+        ; copy $0300-$032F to $80-$AF
         ldx     #$00                            ; 9075 A2 00
         loop
             lda $0300,x                         ; 9077 BD 00 03
@@ -2415,6 +2427,11 @@ R9075:
 .endscope
 
 ; ----------------------------------------------------------------------------
+; Copy $0380-$038F to $80-$AF
+; $F6 -> $5B (controller 2 edge)
+; $F8 -> $5C (controller 2 state)
+; 0 -> $57
+; 5 -> $58
 R9092:
 .scope
         ldx     #$00                            ; 9092 A2 00
@@ -2436,6 +2453,7 @@ R9092:
 .endscope
 
 ; ----------------------------------------------------------------------------
+; Copy $80-$AF to $0300-$032F
 R90AF:
 .scope
         ldx     #$00                            ; 90AF A2 00
@@ -2449,6 +2467,7 @@ R90AF:
 .endscope
 
 ; ----------------------------------------------------------------------------
+; Copy $80-$AF to $0380-$03AF
 R90BC:
 .scope
         ldx     #$00                            ; 90BC A2 00
@@ -4259,7 +4278,9 @@ L9CD2:  lda     #$04                            ; 9CD2 A9 04
         sta     $46                             ; 9CE7 85 46
         rts                                     ; 9CE9 60
 
-L9CEA:  ldx     #$7F                            ; 9CEA A2 7F
+L9CEA:
+        ; copy $CF00-$CF7F to $0400-$047F
+        ldx     #$7F                            ; 9CEA A2 7F
         loop
             lda LCF00,x                         ; 9CEC BD 00 CF
             sta $0400,x                         ; 9CEF 9D 00 04
@@ -9027,33 +9048,42 @@ RB788:
 .endscope
 
 ; ----------------------------------------------------------------------------
+; Read controller inputs.
+; $F5 = controller 1 button state.
+; $F6 = controller 2 button state.
+; $00 = expansion port controller 1 button state.
+; $01 = expansion port controller 2 button state.
 RB793:
 .scope
-        ldx     $FB                             ; B793 A6 FB
+        ldx $FB                                 ; B793 A6 FB
         inx                                     ; B795 E8
-        stx     $4016                           ; B796 8E 16 40
+        stx $4016                               ; B796 8E 16 40
         dex                                     ; B799 CA
-        stx     $4016                           ; B79A 8E 16 40
-        ldx     #$08                            ; B79D A2 08
-LB79F:  lda     $4016                           ; B79F AD 16 40
-        lsr     a                               ; B7A2 4A
-        rol     $F5                             ; B7A3 26 F5
-        lsr     a                               ; B7A5 4A
-        rol     L0000                           ; B7A6 26 00
-        lda     $4017                           ; B7A8 AD 17 40
-        lsr     a                               ; B7AB 4A
-        rol     $F6                             ; B7AC 26 F6
-        lsr     a                               ; B7AE 4A
-        rol     L0001                           ; B7AF 26 01
-        dex                                     ; B7B1 CA
-        bne     LB79F                           ; B7B2 D0 EB
+        stx $4016                               ; B79A 8E 16 40
+        ldx #$08                                ; B79D A2 08
+        loop
+            lda $4016                           ; B79F AD 16 40
+            lsr a                               ; B7A2 4A
+            rol $F5                             ; B7A3 26 F5
+            lsr a                               ; B7A5 4A
+            rol $00                             ; B7A6 26 00
+            lda $4017                           ; B7A8 AD 17 40
+            lsr a                               ; B7AB 4A
+            rol $F6                             ; B7AC 26 F6
+            lsr a                               ; B7AE 4A
+            rol $01                             ; B7AF 26 01
+            dex                                 ; B7B1 CA
+        while_ne                                ; B7B2 D0 EB
         rts                                     ; B7B4 60
 .endscope
 
 ; ----------------------------------------------------------------------------
+; Combine controller states from normal and expansion port controllers.
+; Normal controller states in $F5/$F6
+; Expansion controller states in $00/$01
 RB7B5:
 .scope
-        lda     L0000                           ; B7B5 A5 00
+        lda     $00                             ; B7B5 A5 00
         ora     $F5                             ; B7B7 05 F5
         sta     $F5                             ; B7B9 85 F5
         lda     $01                             ; B7BB A5 01
@@ -9066,13 +9096,15 @@ RB7B5:
 ; first 2 instructions unreachable
         jsr     RB793                           ; B7C2 20 93 B7
         beq     LB7E7                           ; B7C5 F0 20
-RB7C7:  jsr     RB793                           ; B7C7 20 93 B7
+; Read controller inputs twice and bitwise-AND them together to avoid glitches.
+; XOR old and new and AND with new to get edge detection in $F5/$F6.
+RB7C7:  jsr     RB793                           ; B7C7 20 93 B7  ; read controller state into $F5,$F6
         jsr     RB7B5                           ; B7CA 20 B5 B7
         lda     $F5                             ; B7CD A5 F5
         sta     $48                             ; B7CF 85 48
         lda     $F6                             ; B7D1 A5 F6
         sta     $49                             ; B7D3 85 49
-        jsr     RB793                           ; B7D5 20 93 B7
+        jsr     RB793                           ; B7D5 20 93 B7  ; read controller state again
         jsr     RB7B5                           ; B7D8 20 B5 B7
         lda     $F5                             ; B7DB A5 F5
         and     $48                             ; B7DD 25 48
@@ -9081,14 +9113,15 @@ RB7C7:  jsr     RB793                           ; B7C7 20 93 B7
         and     $49                             ; B7E3 25 49
         sta     $F6                             ; B7E5 85 F6
 LB7E7:  ldx     #$01                            ; B7E7 A2 01
-LB7E9:  lda     $F5,x                           ; B7E9 B5 F5
-        tay                                     ; B7EB A8
-        eor     $F7,x                           ; B7EC 55 F7
-        and     $F5,x                           ; B7EE 35 F5
-        sta     $F5,x                           ; B7F0 95 F5
-        sty     $F7,x                           ; B7F2 94 F7
-        dex                                     ; B7F4 CA
-        bpl     LB7E9                           ; B7F5 10 F2
+        loop
+            lda $F5,x                           ; B7E9 B5 F5
+            tay                                 ; B7EB A8
+            eor $F7,x                           ; B7EC 55 F7
+            and $F5,x                           ; B7EE 35 F5
+            sta $F5,x                           ; B7F0 95 F5
+            sty $F7,x                           ; B7F2 94 F7
+            dex                                     ; B7F4 CA
+        while_pl                                ; B7F5 10 F2
         rts                                     ; B7F7 60
 
 ; ----------------------------------------------------------------------------
@@ -13411,9 +13444,13 @@ LCEEF:  brk                                     ; CEEF 00
         .byte   $FF                             ; CEFC FF
         beq     LCEEF                           ; CEFD F0 F0
         .byte   $F0                             ; CEFF F0
-LCF00:  .byte   $FF                             ; CF00 FF
+; ----------------------------------------------------------------------------
+; At L9CEA, these 128 bytes are copied to $0400.
+LCF00:
+.scope
+        .byte   $FF                             ; CF00 FF
         .byte   $FF                             ; CF01 FF
-LCF02:  .byte   $FF                             ; CF02 FF
+        .byte   $FF                             ; CF02 FF
         .byte   $FF                             ; CF03 FF
         .byte   $FF                             ; CF04 FF
         .byte   $FF                             ; CF05 FF
@@ -13435,7 +13472,7 @@ LCF02:  .byte   $FF                             ; CF02 FF
         .byte   $FF                             ; CF15 FF
         .byte   $FF                             ; CF16 FF
         .byte   $FF                             ; CF17 FF
-LCF18:  .byte   $FF                             ; CF18 FF
+        .byte   $FF                             ; CF18 FF
         .byte   $FF                             ; CF19 FF
         .byte   $FF                             ; CF1A FF
         .byte   $FF                             ; CF1B FF
@@ -13472,7 +13509,7 @@ LCF18:  .byte   $FF                             ; CF18 FF
         .byte   $FF                             ; CF3C FF
         .byte   $FF                             ; CF3D FF
         .byte   $FF                             ; CF3E FF
-LCF3F:  .byte   $FF                             ; CF3F FF
+        .byte   $FF                             ; CF3F FF
         .byte   $D0                             ; CF40 D0
 LCF41:  .byte   $FF                             ; CF41 FF
         .byte   $D2                             ; CF42 D2
@@ -13511,7 +13548,7 @@ LCF4C:  .byte   $FF                             ; CF4C FF
         .byte   $FF                             ; CF6A FF
         .byte   $FF                             ; CF6B FF
         .byte   $FF                             ; CF6C FF
-        bne     LCF3F                           ; CF6D D0 D0
+        .byte $D0,$D0                           ; CF6D D0 D0
         cmp     ($FF),y                         ; CF6F D1 FF
         .byte   $D2                             ; CF71 D2
         .byte   $D2                             ; CF72 D2
@@ -13524,6 +13561,9 @@ LCF4C:  .byte   $FF                             ; CF4C FF
 LCF7C:  .byte   $FF                             ; CF7C FF
         cmp     ($D1),y                         ; CF7D D1 D1
         .byte   $FF                             ; CF7F FF
+.endscope
+
+; ----------------------------------------------------------------------------
 LCF80:  brk                                     ; CF80 00
         brk                                     ; CF81 00
         .byte   $07                             ; CF82 07
@@ -14023,20 +14063,24 @@ LD1F1:  ora     L0001,x                         ; D1F1 15 01
         brk                                     ; D1FC 00
         bit     L0001                           ; D1FD 24 01
         .byte $09                               ; D1FF 09
-LD200:  .word VD5DC, VD698, VD619, VD5BA
-        .word VD67A, VD570, VD693, VD294
-        .word VD5EE, VD69F, VD66A, VD5D1
-        .word VD681, VD577, VD294, VD294
-        .word VD8D1, VD93B, VD88D, VD959
-        .word VD8E7, VDA24, VD877, VD86D
-        .word VD923, VD9B8, VD99A, VD8BA
-        .word VD950, VD8A3, VD970, VD8FD
-        .word VDA08, VD8A3, VD83D, VD92E
-        .word VD9BF, VD9A1, VDAB0, VDA71
-        .word VDACB, VDACF, VDA8E, VDA78
-        .word VDA8E, VDA8E, VD727, VD6DB
-        .word VD7A3, VD734, VD6EA, VD7AF
-        .word RD4E5, VDA50, VDA48
+; ----------------------------------------------------------------------------
+LD200:  .word VD5DC, VD698, VD619, VD5BA        ; D200
+        .word VD67A, VD570, VD693, VD294        ; D208
+LD210:  .word VD5EE, VD69F, VD66A, VD5D1        ; D210
+        .word VD681, VD577, VD294, VD294        ; D218
+LD220:  .word VD8D1, VD93B, VD88D, VD959        ; D220
+        .word VD8E7, VDA24, VD877, VD86D        ; D228
+        .word VD923, VD9B8, VD99A               ; D230
+LD236:  .word VD8BA                             ; D236
+        .word VD950, VD8A3, VD970, VD8FD        ; D238
+        .word VDA08, VD8A3, VD83D, VD92E        ; D240
+        .word VD9BF, VD9A1                      ; D248
+LD24C:  .word VDAB0, VDA71, VDACB, VDACF        ; D24C
+LD254:  .word VDA8E, VDA78, VDA8E, VDA8E        ; D254
+LD25C:  .word VD727, VD6DB, VD7A3               ; D25C
+LD262:  .word VD734, VD6EA, VD7AF               ; D262
+LD268:  .word RD4E5, VDA50, VDA48               ; D268
+
 ; ----------------------------------------------------------------------------
 RD26E:  lda     #$00                            ; D26E A9 00
         beq     LD27C                           ; D270 F0 0A
@@ -14332,13 +14376,22 @@ RD3F5:  ldx     #$00                            ; D3F5 A2 00
         lda     #$00                            ; D3F7 A9 00
         ldy     #$10                            ; D3F9 A0 10
 
-LD3FB:  sta     $E0                             ; D3FB 85 E0
+LD3FB:
+; input A,X,Y
+; let J = $06F0,X and K = $06F8,X
+; if J > 0 then jump to (J-1)th vector at LD200+A
+; if J = 0 and K > 0 then jump to (K-1)th vector at LD200+Y
+; if J = 0 and K = 0 then rts
+        sta     $E0                             ; D3FB 85 E0
         stx     $ED                             ; D3FD 86 ED
         lda     $06F0,x                         ; D3FF BD F0 06
         beq     LD435                           ; D402 F0 31
-LD404:  sta     $EF                             ; D404 85 EF
+
+LD404:
+; input A: jump to vector at LD200 + $E0 + (A-1)<<1
+        sta     $EF                             ; D404 85 EF
         sta     L00E2                           ; D406 85 E2
-        ldy     #$D2                            ; D408 A0 D2
+        ldy     #>LD200                         ; D408 A0 D2
         sty     $E1                             ; D40A 84 E1
         and     #$07                            ; D40C 29 07
         tay                                     ; D40E A8
@@ -14352,6 +14405,7 @@ LD404:  sta     $EF                             ; D404 85 EF
         tya                                     ; D41D 98
         ora     L00E2                           ; D41E 05 E2
         tay                                     ; D420 A8
+        ; now Y = (A-1)<<1
         lda     ($E0),y                         ; D421 B1 E0
         sta     L00E2                           ; D423 85 E2
         iny                                     ; D425 C8
@@ -14362,7 +14416,9 @@ LD404:  sta     $EF                             ; D404 85 EF
 LD42D:  .byte $0E, $00, $02, $04                ; D42D 0E 00 02 04
         .byte $06, $08, $0A, $0C                ; D431 06 08 0A 0C
 
-LD435:  lda     $06F8,x                         ; D435 BD F8 06
+LD435:
+; input X,Y: if $06F8,X is zero then rts, else $E0=Y and LD404
+        lda     $06F8,x                         ; D435 BD F8 06
         beq     LD43E                           ; D438 F0 04
         sty     $E0                             ; D43A 84 E0
         bne     LD404                           ; D43C D0 C6
@@ -16392,7 +16448,7 @@ LE182:  .byte   $03                             ; E182 03
         .byte   $03                             ; E188 03
         .byte   $27                             ; E189 27
         .byte   $02                             ; E18A 02
-        sbc     LCF02,y                         ; E18B F9 02 CF
+        sbc     $CF02,y                         ; E18B F9 02 CF
 LE18E:  .byte   $02                             ; E18E 02
         ldx     $02                             ; E18F A6 02
         .byte   $80                             ; E191 80
