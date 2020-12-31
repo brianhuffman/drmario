@@ -7273,7 +7273,12 @@ LCF80:
         .byte $00,$06,$06,$04,$08,$07,$02,$01,$06,$06,$03,$05,$08,$02,$06,$03 ; CFE0
         .byte $04,$04,$03,$01,$05,$04,$00,$01,$00,$06,$00,$05,$04,$00,$01,$01 ; CFF0
 
+; ----------------------------------------------------------------------------
+; Addresses D000 to FEFF
+
+.scope AUDIO
 .include "audio.ca65"
+.endscope
 
 ; ----------------------------------------------------------------------------
 ; RESET vector
@@ -7326,12 +7331,12 @@ LFF00:  cld                                     ; FF00 D8
 ; ----------------------------------------------------------------------------
 ; Entry points to audio code
 
-RFFD0:  jmp     LD470                           ; FFD0 4C 70 D4
+RFFD0:  jmp     AUDIO::LD470                    ; FFD0 4C 70 D4
 
-RFFD3:  jmp     RD4E5                           ; FFD3 4C E5 D4
+RFFD3:  jmp     AUDIO::RD4E5                    ; FFD3 4C E5 D4
 
 ; called from one place
-RFFD6:  jmp     LD2BF                           ; FFD6 4C BF D2
+RFFD6:  jmp     AUDIO::LD2BF                    ; FFD6 4C BF D2
 ; ----------------------------------------------------------------------------
         .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF       ; FFD9 FF FF FF FF FF FF FF
         .byte $20,$20,$20,$20,$20,$20,$20,$20   ; FFE0 20 20 20 20 20 20 20 20
