@@ -207,14 +207,14 @@ R8157:
 ; ----------------------------------------------------------------------------
 ; jump table vector 2
 
-L816E:  jsr     RB67C                           ; 816E 20 7C B6
-        jsr     RB6A2                           ; 8171 20 A2 B6
-        lda     #$02                            ; 8174 A9 02
-        jsr     RB8E0                           ; 8176 20 E0 B8
-        lda     #$03                            ; 8179 A9 03
-        jsr     RB8F4                           ; 817B 20 F4 B8
-        lda     $0727                           ; 817E AD 27 07
-        cmp     #$01                            ; 8181 C9 01
+L816E:  jsr RB67C                               ; 816E 20 7C B6
+        jsr RB6A2                               ; 8171 20 A2 B6
+        lda #$02                                ; 8174 A9 02
+        jsr RB8E0 ; Set mapper CHR bank 0.      ; 8176 20 E0 B8
+        lda #$03                                ; 8179 A9 03
+        jsr RB8F4 ; Set mapper CHR bank 1.      ; 817B 20 F4 B8
+        lda $0727                               ; 817E AD 27 07
+        cmp #$01                                ; 8181 C9 01
         if_eq                                   ; 8183 D0 06
             jsr R82D1                           ; 8185 20 D1 82
         else                                    ; 8188 4C D8 81
@@ -971,15 +971,17 @@ R86F1:  if_eq                                   ; 86F1 D0 0C
         rts                                     ; 8711 60
 
 ; ----------------------------------------------------------------------------
-R8712:  ldx     $42                             ; 8712 A6 42
-        if_ne                                   ; 8714 F0 08
-            lda #$FF                            ; 8716 A9 FF
-            loop
-                sta $0200,x                     ; 8718 9D 00 02
-                inx                             ; 871B E8
-            while_ne                            ; 871C D0 FA
-        end_if
-        rts                                     ; 871E 60
+; Pad remainder of sprite attribute table with FF.
+R8712:
+    ldx $42                                     ; 8712 A6 42
+    if_ne                                       ; 8714 F0 08
+        lda #$FF                                ; 8716 A9 FF
+        loop
+            sta $0200,x                         ; 8718 9D 00 02
+            inx                                 ; 871B E8
+        while_ne                                ; 871C D0 FA
+    end_if
+    rts                                         ; 871E 60
 
 ; ----------------------------------------------------------------------------
 R871F:  lda     $0727                           ; 871F AD 27 07
@@ -1041,7 +1043,6 @@ R871F:  lda     $0727                           ; 871F AD 27 07
 ; Add $44 to 4th byte (X coordinate).
 ; Add $47 to 2nd byte (Tile index number).
 R8772:
-.scope
     lda LA4A0,x                                 ; 8772 BD A0 A4
     cmp #$FF                                    ; 8775 C9 FF
     if_ne                                       ; 8777 F0 28
@@ -1069,7 +1070,6 @@ R8772:
         sty $42                                 ; 879F 84 42
     end_if
     rts                                         ; 87A1 60
-.endscope
 
 ; ----------------------------------------------------------------------------
 R87A2:
@@ -1275,7 +1275,6 @@ R88CB:
 ; - X position of left side of sprite
 
 R88F6:
-.scope
     clc                                         ; 88F6 18
     lda $53                                     ; 88F7 A5 53
     rol a                                       ; 88F9 2A
@@ -1316,41 +1315,43 @@ R88F6:
         sta $42                                 ; 8935 85 42
     forever                                     ; 8937 4C 0A 89
     rts                                         ; 893A 60
-.endscope
 
 ; ----------------------------------------------------------------------------
+; Add two sprites to sprite attribute table.
+; Both have same X and Y coordinates ($44 and $45).
+; The tile indexes come from high and low nybbles of $53.
+; Both have same flags ($60).
 R893B:
-.scope
-        ldx     $42                             ; 893B A6 42
-        lda     $45                             ; 893D A5 45
-        sta     $0200,x                         ; 893F 9D 00 02
-        lda     $53                             ; 8942 A5 53
-        lsr     a                               ; 8944 4A
-        lsr     a                               ; 8945 4A
-        lsr     a                               ; 8946 4A
-        lsr     a                               ; 8947 4A
-        sta     $0201,x                         ; 8948 9D 01 02
-        lda     $60                             ; 894B A5 60
-        sta     L0202,x                         ; 894D 9D 02 02
-        lda     $44                             ; 8950 A5 44
-        sta     $0203,x                         ; 8952 9D 03 02
-        lda     $45                             ; 8955 A5 45
-        sta     $0204,x                         ; 8957 9D 04 02
-        lda     $53                             ; 895A A5 53
-        and     #$0F                            ; 895C 29 0F
-        sta     $0205,x                         ; 895E 9D 05 02
-        lda     $60                             ; 8961 A5 60
-        sta     $0206,x                         ; 8963 9D 06 02
-        lda     $44                             ; 8966 A5 44
-        clc                                     ; 8968 18
-        adc     #$08                            ; 8969 69 08
-        sta     $0207,x                         ; 896B 9D 07 02
-        lda     $42                             ; 896E A5 42
-        clc                                     ; 8970 18
-        adc     #$08                            ; 8971 69 08
-        sta     $42                             ; 8973 85 42
-        rts                                     ; 8975 60
-.endscope
+    ldx $42                                     ; 893B A6 42
+    lda $45                                     ; 893D A5 45
+    sta $0200,x                                 ; 893F 9D 00 02
+    lda $53                                     ; 8942 A5 53
+    lsr a                                       ; 8944 4A
+    lsr a                                       ; 8945 4A
+    lsr a                                       ; 8946 4A
+    lsr a                                       ; 8947 4A
+    sta $0201,x                                 ; 8948 9D 01 02
+    lda $60                                     ; 894B A5 60
+    sta L0202,x                                 ; 894D 9D 02 02
+    lda $44                                     ; 8950 A5 44
+    sta $0203,x                                 ; 8952 9D 03 02
+    lda $45                                     ; 8955 A5 45
+    sta $0204,x                                 ; 8957 9D 04 02
+    lda $53                                     ; 895A A5 53
+    and #$0F                                    ; 895C 29 0F
+    sta $0205,x                                 ; 895E 9D 05 02
+    lda $60                                     ; 8961 A5 60
+    sta $0206,x                                 ; 8963 9D 06 02
+    lda $44                                     ; 8966 A5 44
+    clc                                         ; 8968 18
+    adc #$08                                    ; 8969 69 08
+    sta $0207,x                                 ; 896B 9D 07 02
+    lda $42                                     ; 896E A5 42
+    clc                                         ; 8970 18
+    adc #$08                                    ; 8971 69 08
+    sta $42                                     ; 8973 85 42
+    rts                                         ; 8975 60
+
 ; ----------------------------------------------------------------------------
 ; unreachable?
         lda     $0727                           ; 8976 AD 27 07
@@ -1399,13 +1400,14 @@ R89B6:
 .endscope
 
 ; ----------------------------------------------------------------------------
-R89C9:  lda     $43                             ; 89C9 A5 43
-        and     #$08                            ; 89CB 29 08
-        lsr     a                               ; 89CD 4A
-        lsr     a                               ; 89CE 4A
-        lsr     a                               ; 89CF 4A
-        jsr     RB8F4                           ; 89D0 20 F4 B8
-        rts                                     ; 89D3 60
+R89C9:
+    lda $43                                     ; 89C9 A5 43
+    and #$08                                    ; 89CB 29 08
+    lsr a                                       ; 89CD 4A
+    lsr a                                       ; 89CE 4A
+    lsr a                                       ; 89CF 4A
+    jsr RB8F4 ; Set mapper CHR bank 1.          ; 89D0 20 F4 B8
+    rts                                         ; 89D3 60
 
 ; ----------------------------------------------------------------------------
 R89D4:
@@ -2501,14 +2503,13 @@ R90BC:
 .endscope
 
 ; ----------------------------------------------------------------------------
+; Fill pages 4 and 5 with #$FF.
 R90C9:
-.scope
-        lda     #$FF                            ; 90C9 A9 FF
-        ldx     #$04                            ; 90CB A2 04
-        ldy     #$05                            ; 90CD A0 05
-        jsr     RB894                           ; 90CF 20 94 B8
-        rts                                     ; 90D2 60
-.endscope
+    lda #$FF                                    ; 90C9 A9 FF
+    ldx #$04                                    ; 90CB A2 04
+    ldy #$05                                    ; 90CD A0 05
+    jsr RB894                                   ; 90CF 20 94 B8
+    rts                                         ; 90D2 60
 
 ; ----------------------------------------------------------------------------
 R90D3:
@@ -3304,30 +3305,30 @@ L958A:
                 sta $06F5                       ; 95C6 8D F5 06
             end_if
         end_if
-        lda     #$80                            ; 95C9 A9 80
-        jsr     R9701                           ; 95CB 20 01 97
-        lda     #$FF                            ; 95CE A9 FF
-        ldx     #$04                            ; 95D0 A2 04
-        ldy     #$05                            ; 95D2 A0 05
-        jsr     RB894                           ; 95D4 20 94 B8
-        lda     #$04                            ; 95D7 A9 04
-        sta     $58                             ; 95D9 85 58
-        jsr     R96D4                           ; 95DB 20 D4 96
-        lda     #$0F                            ; 95DE A9 0F
-        sta     $0300                           ; 95E0 8D 00 03
-        lda     #$05                            ; 95E3 A9 05
-        sta     $58                             ; 95E5 85 58
-        jsr     R96D4                           ; 95E7 20 D4 96
-        lda     #$0F                            ; 95EA A9 0F
-        sta     $0380                           ; 95EC 8D 80 03
-        lda     #$0F                            ; 95EF A9 0F
-        sta     $80                             ; 95F1 85 80
-        lda     #$00                            ; 95F3 A9 00
-        sta     $61                             ; 95F5 85 61
-        lda     #$01                            ; 95F7 A9 01
-        sta     $55                             ; 95F9 85 55
-        lda     $031E                           ; 95FB AD 1E 03
-        cmp     $0725                           ; 95FE CD 25 07
+        lda #$80                                ; 95C9 A9 80
+        jsr R9701                               ; 95CB 20 01 97
+        lda #$FF                                ; 95CE A9 FF
+        ldx #$04                                ; 95D0 A2 04
+        ldy #$05                                ; 95D2 A0 05
+        jsr RB894 ; fill pages 4-5 with FF      ; 95D4 20 94 B8
+        lda #$04                                ; 95D7 A9 04
+        sta $58                                 ; 95D9 85 58
+        jsr R96D4                               ; 95DB 20 D4 96
+        lda #$0F                                ; 95DE A9 0F
+        sta $0300                               ; 95E0 8D 00 03
+        lda #$05                                ; 95E3 A9 05
+        sta $58                                 ; 95E5 85 58
+        jsr R96D4                               ; 95E7 20 D4 96
+        lda #$0F                                ; 95EA A9 0F
+        sta $0380                               ; 95EC 8D 80 03
+        lda #$0F                                ; 95EF A9 0F
+        sta $80                                 ; 95F1 85 80
+        lda #$00                                ; 95F3 A9 00
+        sta $61                                 ; 95F5 85 61
+        lda #$01                                ; 95F7 A9 01
+        sta $55                                 ; 95F9 85 55
+        lda $031E                               ; 95FB AD 1E 03
+        cmp $0725                               ; 95FE CD 25 07
         if_ne                                   ; 9601 F0 04
             lda #$02                            ; 9603 A9 02
             sta $55                             ; 9605 85 55
@@ -3349,10 +3350,10 @@ L958A:
             lda $F5                             ; 9623 A5 F5
             and #$10                            ; 9625 29 10
         while_eq                                ; 9627 F0 DE
-        lda     #$FE                            ; 9629 A9 FE
-        ldx     #$04                            ; 962B A2 04
-        ldy     #$05                            ; 962D A0 05
-        jsr     RB894                           ; 962F 20 94 B8
+        lda #$FE                                ; 9629 A9 FE
+        ldx #$04                                ; 962B A2 04
+        ldy #$05                                ; 962D A0 05
+        jsr RB894 ; fill pages 4-5 with FF      ; 962F 20 94 B8
         ; enter top-level state 1.
         lda     #$01                            ; 9632 A9 01
         sta     $46                             ; 9634 85 46
@@ -3603,37 +3604,37 @@ L9799:
         sta     L068D                           ; 979D 8D 8D 06
         jmp     L97F6                           ; 97A0 4C F6 97
 
-L97A3:  lda     $54                             ; 97A3 A5 54
-        beq     L97F6                           ; 97A5 F0 4F
-        lda     $F5                             ; 97A7 A5 F5
-        and     #$10                            ; 97A9 29 10
-        beq     L97F6                           ; 97AB F0 49
-        lda     #$05                            ; 97AD A9 05
-        sta     L068D                           ; 97AF 8D 8D 06
-        lda     #$00                            ; 97B2 A9 00
-        sta     $5D                             ; 97B4 85 5D
-        jsr     RB654                           ; 97B6 20 54 B6
-        lda     #$16                            ; 97B9 A9 16
-        sta     L2001                           ; 97BB 8D 01 20
-        lda     #$FF                            ; 97BE A9 FF
-        ldx     #$02                            ; 97C0 A2 02
-        ldy     #$02                            ; 97C2 A0 02
-        jsr     RB894                           ; 97C4 20 94 B8
-L97C7:  lda     #$70                            ; 97C7 A9 70
-        sta     $44                             ; 97C9 85 44
-        lda     #$77                            ; 97CB A9 77
-        sta     $45                             ; 97CD 85 45
-        lda     #$00                            ; 97CF A9 00
-        sta     $53                             ; 97D1 85 53
-        jsr     R88F6                           ; 97D3 20 F6 88
-        lda     $F5                             ; 97D6 A5 F5
-        cmp     #$10                            ; 97D8 C9 10
-        beq     L97E8                           ; 97DA F0 0C
-        lda     $F7                             ; 97DC A5 F7
-        cmp     #$F0                            ; 97DE C9 F0
-        beq     L9799                           ; 97E0 F0 B7
-        jsr     RB654                           ; 97E2 20 54 B6
-        jmp     L97C7                           ; 97E5 4C C7 97
+L97A3:  lda $54                                 ; 97A3 A5 54
+        beq L97F6                               ; 97A5 F0 4F
+        lda $F5                                 ; 97A7 A5 F5
+        and #$10                                ; 97A9 29 10
+        beq L97F6                               ; 97AB F0 49
+        lda #$05                                ; 97AD A9 05
+        sta L068D                               ; 97AF 8D 8D 06
+        lda #$00                                ; 97B2 A9 00
+        sta $5D                                 ; 97B4 85 5D
+        jsr RB654                               ; 97B6 20 54 B6
+        lda #$16                                ; 97B9 A9 16
+        sta L2001                               ; 97BB 8D 01 20
+        lda #$FF                                ; 97BE A9 FF
+        ldx #$02                                ; 97C0 A2 02
+        ldy #$02                                ; 97C2 A0 02
+        jsr RB894 ; fill page 2 with FF         ; 97C4 20 94 B8
+L97C7:  lda #$70                                ; 97C7 A9 70
+        sta $44                                 ; 97C9 85 44
+        lda #$77                                ; 97CB A9 77
+        sta $45                                 ; 97CD 85 45
+        lda #$00                                ; 97CF A9 00
+        sta $53                                 ; 97D1 85 53
+        jsr R88F6                               ; 97D3 20 F6 88
+        lda $F5                                 ; 97D6 A5 F5
+        cmp #$10                                ; 97D8 C9 10
+        beq L97E8                               ; 97DA F0 0C
+        lda $F7                                 ; 97DC A5 F7
+        cmp #$F0                                ; 97DE C9 F0
+        beq L9799                               ; 97E0 F0 B7
+        jsr RB654                               ; 97E2 20 54 B6
+        jmp L97C7                               ; 97E5 4C C7 97
 
 L97E8:  lda     #$FF                            ; 97E8 A9 FF
         sta     $5D                             ; 97EA 85 5D
@@ -3682,47 +3683,47 @@ L981C:
             lda $073F                           ; 983B AD 3F 07
             sta $0731                           ; 983E 8D 31 07
         end_if
-        lda     #$06                            ; 9841 A9 06
-        sta     $06F5                           ; 9843 8D F5 06
-        lda     #$02                            ; 9846 A9 02
-        jsr     RB8E0                           ; 9848 20 E0 B8
-        lda     #$00                            ; 984B A9 00
-        sta     $5D                             ; 984D 85 5D
-        sta     $52                             ; 984F 85 52
-        sta     $0741                           ; 9851 8D 41 07
-        sta     $51                             ; 9854 85 51
-        lda     #$FF                            ; 9856 A9 FF
-        sta     $80                             ; 9858 85 80
-        sta     $0300                           ; 985A 8D 00 03
-        sta     $0380                           ; 985D 8D 80 03
-        lda     #$00                            ; 9860 A9 00
-        sta     $36                             ; 9862 85 36
-        lda     #$D0                            ; 9864 A9 D0
-        sta     $37                             ; 9866 85 37
-        jsr     RB67C                           ; 9868 20 7C B6
-        jsr     RB6A2                           ; 986B 20 A2 B6
-        jsr     RB6C2                           ; 986E 20 C2 B6
+        lda #$06                                ; 9841 A9 06
+        sta $06F5                               ; 9843 8D F5 06
+        lda #$02                                ; 9846 A9 02
+        jsr RB8E0 ; Set mapper CHR bank 0.      ; 9848 20 E0 B8
+        lda #$00                                ; 984B A9 00
+        sta $5D                                 ; 984D 85 5D
+        sta $52                                 ; 984F 85 52
+        sta $0741                               ; 9851 8D 41 07
+        sta $51                                 ; 9854 85 51
+        lda #$FF                                ; 9856 A9 FF
+        sta $80                                 ; 9858 85 80
+        sta $0300                               ; 985A 8D 00 03
+        sta $0380                               ; 985D 8D 80 03
+        lda #$00                                ; 9860 A9 00
+        sta $36                                 ; 9862 85 36
+        lda #$D0                                ; 9864 A9 D0
+        sta $37                                 ; 9866 85 37
+        jsr RB67C                               ; 9868 20 7C B6
+        jsr RB6A2                               ; 986B 20 A2 B6
+        jsr RB6C2                               ; 986E 20 C2 B6
         .word   LB91C                           ; 9871 1C B9
-        lda     #$81                            ; 9873 A9 81
-        sta     $66                             ; 9875 85 66
-        jsr     R91D0                           ; 9877 20 D0 91
-        jsr     RB695                           ; 987A 20 95 B6
-        jsr     RB689                           ; 987D 20 89 B6
-        lda     #$00                            ; 9880 A9 00
-        sta     $54                             ; 9882 85 54
-        lda     #$FF                            ; 9884 A9 FF
-        sta     $80                             ; 9886 85 80
-L9888:  lda     $43                             ; 9888 A5 43
-        and     #$10                            ; 988A 29 10
-        lsr     a                               ; 988C 4A
-        lsr     a                               ; 988D 4A
-        lsr     a                               ; 988E 4A
-        lsr     a                               ; 988F 4A
+        lda #$81                                ; 9873 A9 81
+        sta $66                                 ; 9875 85 66
+        jsr R91D0                               ; 9877 20 D0 91
+        jsr RB695                               ; 987A 20 95 B6
+        jsr RB689                               ; 987D 20 89 B6
+        lda #$00                                ; 9880 A9 00
+        sta $54                                 ; 9882 85 54
+        lda #$FF                                ; 9884 A9 FF
+        sta $80                                 ; 9886 85 80
+L9888:  lda $43                                 ; 9888 A5 43
+        and #$10                                ; 988A 29 10
+        lsr a                                   ; 988C 4A
+        lsr a                                   ; 988D 4A
+        lsr a                                   ; 988E 4A
+        lsr a                                   ; 988F 4A
         clc                                     ; 9890 18
-        adc     #$03                            ; 9891 69 03
-        jsr     RB8F4                           ; 9893 20 F4 B8
-        lda     $F5                             ; 9896 A5 F5
-        cmp     #$08                            ; 9898 C9 08
+        adc #$03                                ; 9891 69 03
+        jsr RB8F4 ; Set mapper CHR bank 1.      ; 9893 20 F4 B8
+        lda $F5                                 ; 9896 A5 F5
+        cmp #$08                                ; 9898 C9 08
         if_eq                                   ; 989A D0 15
             lda $0727                           ; 989C AD 27 07
             cmp #$01                            ; 989F C9 01
@@ -3820,24 +3821,24 @@ L9953:
         if_ne                                   ; 9956 F0 03
             jmp L9AC2                           ; 9958 4C C2 9A
         end_if
-        jsr     RFFD3                           ; 995B 20 D3 FF
-        lda     #$05                            ; 995E A9 05
-        jsr     RB8E0                           ; 9960 20 E0 B8
-        lda     #$05                            ; 9963 A9 05
-        jsr     RB8F4                           ; 9965 20 F4 B8
-        lda     #$00                            ; 9968 A9 00
-        sta     $5D                             ; 996A 85 5D
-        sta     $52                             ; 996C 85 52
-        sta     $65                             ; 996E 85 65
-        sta     $0728                           ; 9970 8D 28 07
-        lda     #$03                            ; 9973 A9 03
-        sta     $0725                           ; 9975 8D 25 07
-        lda     #$FF                            ; 9978 A9 FF
-        sta     $80                             ; 997A 85 80
-        sta     $0300                           ; 997C 8D 00 03
-        sta     $0380                           ; 997F 8D 80 03
-        lda     $0316                           ; 9982 AD 16 03
-        cmp     #$15                            ; 9985 C9 15
+        jsr RFFD3                               ; 995B 20 D3 FF
+        lda #$05                                ; 995E A9 05
+        jsr RB8E0 ; Set mapper CHR bank 0.      ; 9960 20 E0 B8
+        lda #$05                                ; 9963 A9 05
+        jsr RB8F4 ; Set mapper CHR bank 1.      ; 9965 20 F4 B8
+        lda #$00                                ; 9968 A9 00
+        sta $5D                                 ; 996A 85 5D
+        sta $52                                 ; 996C 85 52
+        sta $65                                 ; 996E 85 65
+        sta $0728                               ; 9970 8D 28 07
+        lda #$03                                ; 9973 A9 03
+        sta $0725                               ; 9975 8D 25 07
+        lda #$FF                                ; 9978 A9 FF
+        sta $80                                 ; 997A 85 80
+        sta $0300                               ; 997C 8D 00 03
+        sta $0380                               ; 997F 8D 80 03
+        lda $0316                               ; 9982 AD 16 03
+        cmp #$15                                ; 9985 C9 15
         if_pl                                   ; 9987 30 05
             lda #$14                            ; 9989 A9 14
             sta $0316                           ; 998B 8D 16 03
@@ -4559,9 +4560,9 @@ R9E4C:
     beq L9EDA                                   ; 9E65 F0 73
 L9E67:
     lda #$07                                    ; 9E67 A9 07
-    jsr RB8E0                                   ; 9E69 20 E0 B8
+    jsr RB8E0 ; Set mapper CHR bank 0.          ; 9E69 20 E0 B8
     lda #$06                                    ; 9E6C A9 06
-    jsr RB8F4                                   ; 9E6E 20 F4 B8
+    jsr RB8F4 ; Set mapper CHR bank 1.          ; 9E6E 20 F4 B8
     jsr RB67C                                   ; 9E71 20 7C B6
     jsr RB6A2                                   ; 9E74 20 A2 B6
     ldx $8B                                     ; 9E77 A6 8B
@@ -4613,13 +4614,13 @@ L9EDA:
     lda #$FF                                    ; 9EDE A9 FF
     ldx #$04                                    ; 9EE0 A2 04
     ldy #$05                                    ; 9EE2 A0 05
-    jsr RB894                                   ; 9EE4 20 94 B8
+    jsr RB894 ; fill pages 4-5 with FF          ; 9EE4 20 94 B8
     lda #$01                                    ; 9EE7 A9 01
     sta $5D                                     ; 9EE9 85 5D
     lda #$02                                    ; 9EEB A9 02
-    jsr RB8E0                                   ; 9EED 20 E0 B8
+    jsr RB8E0 ; Set mapper CHR bank 0.          ; 9EED 20 E0 B8
     lda #$03                                    ; 9EF0 A9 03
-    jsr RB8F4                                   ; 9EF2 20 F4 B8
+    jsr RB8F4 ; Set mapper CHR bank 1.          ; 9EF2 20 F4 B8
     jsr RB67C                                   ; 9EF5 20 7C B6
     jsr RB6A2                                   ; 9EF8 20 A2 B6
     jsr R82D1                                   ; 9EFB 20 D1 82
@@ -5523,198 +5524,200 @@ LB246:  .byte $20,$1F,$00,$08,$20,$2F,$00,$10,$80
 ; ----------------------------------------------------------------------------
 RB24F:
 .scope
-        lda     $0324                           ; B24F AD 24 03
-        beq     LB25C                           ; B252 F0 08
-        lda     $03A4                           ; B254 AD A4 03
-        beq     LB25C                           ; B257 F0 03
-        jmp     LB336                           ; B259 4C 36 B3
+    lda $0324                                   ; B24F AD 24 03
+    beq LB25C                                   ; B252 F0 08
+    lda $03A4                                   ; B254 AD A4 03
+    beq LB25C                                   ; B257 F0 03
+    jmp LB336                                   ; B259 4C 36 B3
 
-LB25C:  lda     #$0F                            ; B25C A9 0F
-        sta     $0300                           ; B25E 8D 00 03
-        sta     $0380                           ; B261 8D 80 03
-        lda     #$40                            ; B264 A9 40
-        jsr     R9701                           ; B266 20 01 97
-        lda     $0324                           ; B269 AD 24 03
-        bne     LB290                           ; B26C D0 22
-        lda     $0727                           ; B26E AD 27 07
-        cmp     #$01                            ; B271 C9 01
-        beq     LB280                           ; B273 F0 0B
-        lda     $03A4                           ; B275 AD A4 03
-        bne     LB280                           ; B278 D0 06
-        jsr     R9682                           ; B27A 20 82 96
-        jmp     LB2A2                           ; B27D 4C A2 B2
+LB25C:
+    lda #$0F                                    ; B25C A9 0F
+    sta $0300                                   ; B25E 8D 00 03
+    sta $0380                                   ; B261 8D 80 03
+    lda #$40                                    ; B264 A9 40
+    jsr R9701                                   ; B266 20 01 97
+    lda $0324                                   ; B269 AD 24 03
+    bne LB290                                   ; B26C D0 22
+    lda $0727                                   ; B26E AD 27 07
+    cmp #$01                                    ; B271 C9 01
+    beq LB280                                   ; B273 F0 0B
+    lda $03A4                                   ; B275 AD A4 03
+    bne LB280                                   ; B278 D0 06
+    jsr R9682                                   ; B27A 20 82 96
+    jmp LB2A2                                   ; B27D 4C A2 B2
 
-LB280:  jsr     R9075                           ; B280 20 75 90
-        jsr     RB337                           ; B283 20 37 B3
-        jsr     R90AF                           ; B286 20 AF 90
-        lda     #$01                            ; B289 A9 01
-        sta     $55                             ; B28B 85 55
-        jmp     LB2A2                           ; B28D 4C A2 B2
+LB280:
+    jsr R9075                                   ; B280 20 75 90
+    jsr RB337                                   ; B283 20 37 B3
+    jsr R90AF                                   ; B286 20 AF 90
+    lda #$01                                    ; B289 A9 01
+    sta $55                                     ; B28B 85 55
+    jmp LB2A2                                   ; B28D 4C A2 B2
 
-LB290:  lda     $03A4                           ; B290 AD A4 03
-        if_eq                                   ; B293 D0 0D
-            jsr R9092                           ; B295 20 92 90
-            jsr RB337                           ; B298 20 37 B3
-            jsr R90BC                           ; B29B 20 BC 90
-            lda #$02                            ; B29E A9 02
-            sta $55                             ; B2A0 85 55
+LB290:
+    lda $03A4                                   ; B290 AD A4 03
+    if_eq                                       ; B293 D0 0D
+        jsr R9092                               ; B295 20 92 90
+        jsr RB337                               ; B298 20 37 B3
+        jsr R90BC                               ; B29B 20 BC 90
+        lda #$02                                ; B29E A9 02
+        sta $55                                 ; B2A0 85 55
+    end_if
+LB2A2:
+    lda #$0F                                    ; B2A2 A9 0F
+    sta $0300                                   ; B2A4 8D 00 03
+    sta $0380                                   ; B2A7 8D 80 03
+    lda #$10                                    ; B2AA A9 10
+    jsr R9701                                   ; B2AC 20 01 97
+    ldx $0731                                   ; B2AF AE 31 07
+    lda LA261,x                                 ; B2B2 BD 61 A2
+    sta $06F5                                   ; B2B5 8D F5 06
+    lda $0727                                   ; B2B8 AD 27 07
+    cmp #$01                                    ; B2BB C9 01
+    if_eq                                       ; B2BD D0 0A
+        lda $0316                               ; B2BF AD 16 03
+        cmp #$18                                ; B2C2 C9 18
+        if_ne                                   ; B2C4 F0 03
+            inc $0316                           ; B2C6 EE 16 03
         end_if
-LB2A2:  lda     #$0F                            ; B2A2 A9 0F
-        sta     $0300                           ; B2A4 8D 00 03
-        sta     $0380                           ; B2A7 8D 80 03
-        lda     #$10                            ; B2AA A9 10
-        jsr     R9701                           ; B2AC 20 01 97
-        ldx     $0731                           ; B2AF AE 31 07
-        lda     LA261,x                         ; B2B2 BD 61 A2
-        sta     $06F5                           ; B2B5 8D F5 06
-        lda     $0727                           ; B2B8 AD 27 07
-        cmp     #$01                            ; B2BB C9 01
-        if_eq                                   ; B2BD D0 0A
-            lda $0316                           ; B2BF AD 16 03
-            cmp #$18                            ; B2C2 C9 18
-            if_ne                               ; B2C4 F0 03
-                inc $0316                       ; B2C6 EE 16 03
-            end_if
+    end_if
+    lda #$80                                    ; B2C9 A9 80
+    ora $52                                     ; B2CB 05 52
+    sta $52                                     ; B2CD 85 52
+    lda #$0F                                    ; B2CF A9 0F
+    sta $0300                                   ; B2D1 8D 00 03
+    sta $0380                                   ; B2D4 8D 80 03
+    lda #$10                                    ; B2D7 A9 10
+    jsr R9701                                   ; B2D9 20 01 97
+    lda #$0F                                    ; B2DC A9 0F
+    sta $0300                                   ; B2DE 8D 00 03
+    sta $0380                                   ; B2E1 8D 80 03
+    loop
+        lda $43                                 ; B2E4 A5 43
+        and #$08                                ; B2E6 29 08
+        if_ne                                   ; B2E8 F0 13
+            lda #$6D                            ; B2EA A9 6D
+            sta $44                             ; B2EC 85 44
+            ldx $0727                           ; B2EE AE 27 07
+            lda LA105,x                         ; B2F1 BD 05 A1
+            sta $45                             ; B2F4 85 45
+            lda #$10                            ; B2F6 A9 10
+            sta $53                             ; B2F8 85 53
+            jsr R88F6                           ; B2FA 20 F6 88
         end_if
-        lda     #$80                            ; B2C9 A9 80
-        ora     $52                             ; B2CB 05 52
-        sta     $52                             ; B2CD 85 52
-        lda     #$0F                            ; B2CF A9 0F
-        sta     $0300                           ; B2D1 8D 00 03
-        sta     $0380                           ; B2D4 8D 80 03
-        lda     #$10                            ; B2D7 A9 10
-        jsr     R9701                           ; B2D9 20 01 97
-        lda     #$0F                            ; B2DC A9 0F
-        sta     $0300                           ; B2DE 8D 00 03
-        sta     $0380                           ; B2E1 8D 80 03
-        loop
-            lda $43                             ; B2E4 A5 43
-            and #$08                            ; B2E6 29 08
-            if_ne                               ; B2E8 F0 13
-                lda #$6D                        ; B2EA A9 6D
-                sta $44                         ; B2EC 85 44
-                ldx $0727                       ; B2EE AE 27 07
-                lda LA105,x                     ; B2F1 BD 05 A1
-                sta $45                         ; B2F4 85 45
-                lda #$10                        ; B2F6 A9 10
-                sta $53                         ; B2F8 85 53
-                jsr R88F6                       ; B2FA 20 F6 88
-            end_if
-            jsr RB654                           ; B2FD 20 54 B6
-            lda $F5                             ; B300 A5 F5
-            ora $F7                             ; B302 05 F7
-            and #$10                            ; B304 29 10
-        while_eq                                ; B306 F0 DC
-        lda     $0727                           ; B308 AD 27 07
-        cmp     #$02                            ; B30B C9 02
-        if_ne                                   ; B30D F0 0A
-            jsr R9E4C                           ; B30F 20 4C 9E
-            ; enter top-level state 3
-            lda #$03                            ; B312 A9 03
-            sta $46                             ; B314 85 46
-        else                                    ; B316 4C 36 B3
-            lda #$FF                            ; B319 A9 FF
-            ldx #$04                            ; B31B A2 04
-            ldy #$05                            ; B31D A0 05
-            jsr RB894                           ; B31F 20 94 B8
-            lda #$0F                            ; B322 A9 0F
-            sta $0300                           ; B324 8D 00 03
-            sta $0380                           ; B327 8D 80 03
-            lda #$10                            ; B32A A9 10
-            jsr R9701                           ; B32C 20 01 97
-            ; enter top-level state 3
-            lda #$03                            ; B32F A9 03
-            sta $46                             ; B331 85 46
-            jmp LB336                           ; B333 4C 36 B3
-        end_if
-LB336:  rts                                     ; B336 60
+        jsr RB654                               ; B2FD 20 54 B6
+        lda $F5                                 ; B300 A5 F5
+        ora $F7                                 ; B302 05 F7
+        and #$10                                ; B304 29 10
+    while_eq                                    ; B306 F0 DC
+    lda $0727                                   ; B308 AD 27 07
+    cmp #$02                                    ; B30B C9 02
+    if_ne                                       ; B30D F0 0A
+        jsr R9E4C                               ; B30F 20 4C 9E
+        ; enter top-level state 3
+        lda #$03                                ; B312 A9 03
+        sta $46                                 ; B314 85 46
+    else                                        ; B316 4C 36 B3
+        lda #$FF                                ; B319 A9 FF
+        ldx #$04                                ; B31B A2 04
+        ldy #$05                                ; B31D A0 05
+        jsr RB894 ; fill pages 4-5 with FF      ; B31F 20 94 B8
+        lda #$0F                                ; B322 A9 0F
+        sta $0300                               ; B324 8D 00 03
+        sta $0380                               ; B327 8D 80 03
+        lda #$10                                ; B32A A9 10
+        jsr R9701                               ; B32C 20 01 97
+        ; enter top-level state 3
+        lda #$03                                ; B32F A9 03
+        sta $46                                 ; B331 85 46
+        jmp LB336                               ; B333 4C 36 B3
+    end_if
+LB336:
+    rts                                         ; B336 60
 .endscope
 
 ; ----------------------------------------------------------------------------
 RB337:
-.scope
-        lda     $58                             ; B337 A5 58
-        tax                                     ; B339 AA
-        tay                                     ; B33A A8
-        lda     #$FF                            ; B33B A9 FF
-        jsr     RB894                           ; B33D 20 94 B8
-        lda     #$00                            ; B340 A9 00
-        sta     $57                             ; B342 85 57
-        ldy     #$00                            ; B344 A0 00
-;TODO: forever/break
-LB346:  lda     LA871,y                         ; B346 B9 71 A8
-        beq     LB351                           ; B349 F0 06
-        sta     ($57),y                         ; B34B 91 57
+    lda $58                                     ; B337 A5 58
+    tax                                         ; B339 AA
+    tay                                         ; B33A A8
+    lda #$FF                                    ; B33B A9 FF
+    jsr RB894 ; fill page ($58) with FF         ; B33D 20 94 B8
+    lda #$00                                    ; B340 A9 00
+    sta $57                                     ; B342 85 57
+    ldy #$00                                    ; B344 A0 00
+    loop
+        lda LA871,y                             ; B346 B9 71 A8
+        beq break                               ; B349 F0 06
+        sta ($57),y                             ; B34B 91 57
         iny                                     ; B34D C8
-        jmp     LB346                           ; B34E 4C 46 B3
-
-LB351:  rts                                     ; B351 60
-.endscope
+    forever                                     ; B34E 4C 46 B3
+    rts                                         ; B351 60
 
 ; ----------------------------------------------------------------------------
 RB352:
-.scope
-        ldx     #$00                            ; B352 A2 00
-        ldy     #$00                            ; B354 A0 00
-        loop
-            lda LB3BF,x                         ; B356 BD BF B3
-            sta $0580,y                         ; B359 99 80 05
-            iny                                 ; B35C C8
-            lda LB40A,x                         ; B35D BD 0A B4
-            sta $0580,y                         ; B360 99 80 05
-            iny                                 ; B363 C8
-            lda LB3E5,x                         ; B364 BD E5 B3
-            sta $0580,y                         ; B367 99 80 05
-            iny                                 ; B36A C8
-            inx                                 ; B36B E8
-            cpx #$26                            ; B36C E0 26
-        while_ne                                ; B36E D0 E6
-        rts                                     ; B370 60
-.endscope
+    ldx #$00                                    ; B352 A2 00
+    ldy #$00                                    ; B354 A0 00
+    loop
+        lda LB3BF,x                             ; B356 BD BF B3
+        sta $0580,y                             ; B359 99 80 05
+        iny                                     ; B35C C8
+        lda LB40A,x                             ; B35D BD 0A B4
+        sta $0580,y                             ; B360 99 80 05
+        iny                                     ; B363 C8
+        lda LB3E5,x                             ; B364 BD E5 B3
+        sta $0580,y                             ; B367 99 80 05
+        iny                                     ; B36A C8
+        inx                                     ; B36B E8
+        cpx #$26                                ; B36C E0 26
+    while_ne                                    ; B36E D0 E6
+    rts                                         ; B370 60
 
 ; ----------------------------------------------------------------------------
+; copy into sprite attribute table
 RB371:
-.scope
-        lda     $8B                             ; B371 A5 8B
-        cmp     #$02                            ; B373 C9 02
-        bne     LB3BE                           ; B375 D0 47
-        ldx     #$00                            ; B377 A2 00
-        ldy     $42                             ; B379 A4 42
-LB37B:  lda     $0580,x                         ; B37B BD 80 05
-        sta     $47                             ; B37E 85 47
-        lda     $43                             ; B380 A5 43
-        and     #$03                            ; B382 29 03
-        bne     LB388                           ; B384 D0 02
-        inc     $47                             ; B386 E6 47
-LB388:  lda     $47                             ; B388 A5 47
-        sta     $0580,x                         ; B38A 9D 80 05
-        sta     $0200,y                         ; B38D 99 00 02
-        inx                                     ; B390 E8
-        iny                                     ; B391 C8
-        lda     $0580,x                         ; B392 BD 80 05
-        sta     $47                             ; B395 85 47
-        lda     $43                             ; B397 A5 43
-        and     #$01                            ; B399 29 01
-        clc                                     ; B39B 18
-        adc     $47                             ; B39C 65 47
-        and     #$03                            ; B39E 29 03
-        ora     #$40                            ; B3A0 09 40
-        sta     $0580,x                         ; B3A2 9D 80 05
-        sta     $0200,y                         ; B3A5 99 00 02
-        inx                                     ; B3A8 E8
-        iny                                     ; B3A9 C8
-        lda     #$20                            ; B3AA A9 20
-        sta     $0200,y                         ; B3AC 99 00 02
-        iny                                     ; B3AF C8
-        lda     $0580,x                         ; B3B0 BD 80 05
-        sta     $0200,y                         ; B3B3 99 00 02
-        inx                                     ; B3B6 E8
-        iny                                     ; B3B7 C8
-        cpx     #$72                            ; B3B8 E0 72
-        bne     LB37B                           ; B3BA D0 BF
-        sty     $42                             ; B3BC 84 42
-LB3BE:  rts                                     ; B3BE 60
-.endscope
+    lda $8B                                 ; B371 A5 8B
+    cmp #$02                                ; B373 C9 02
+    if_eq                                   ; B375 D0 47
+        ldx #$00                            ; B377 A2 00
+        ldy $42                             ; B379 A4 42
+        loop
+            lda $0580,x                     ; B37B BD 80 05
+            sta $47                         ; B37E 85 47
+            lda $43                         ; B380 A5 43
+            and #$03                        ; B382 29 03
+            if_eq                           ; B384 D0 02
+                inc $47                     ; B386 E6 47
+            end_if
+            lda $47                         ; B388 A5 47
+            sta $0580,x                     ; B38A 9D 80 05
+            sta $0200,y                     ; B38D 99 00 02
+            inx                             ; B390 E8
+            iny                             ; B391 C8
+            lda $0580,x                     ; B392 BD 80 05
+            sta $47                         ; B395 85 47
+            lda $43                         ; B397 A5 43
+            and #$01                        ; B399 29 01
+            clc                             ; B39B 18
+            adc $47                         ; B39C 65 47
+            and #$03                        ; B39E 29 03
+            ora #$40                        ; B3A0 09 40
+            sta $0580,x                     ; B3A2 9D 80 05
+            sta $0200,y                     ; B3A5 99 00 02
+            inx                             ; B3A8 E8
+            iny                             ; B3A9 C8
+            lda #$20                        ; B3AA A9 20
+            sta $0200,y                     ; B3AC 99 00 02
+            iny                             ; B3AF C8
+            lda $0580,x                     ; B3B0 BD 80 05
+            sta $0200,y                     ; B3B3 99 00 02
+            inx                             ; B3B6 E8
+            iny                             ; B3B7 C8
+            cpx #$72                        ; B3B8 E0 72
+        while_ne                            ; B3BA D0 BF
+        sty $42                             ; B3BC 84 42
+    end_if
+    rts                                     ; B3BE 60
 
 ; ----------------------------------------------------------------------------
 ; lookup table
@@ -6554,119 +6557,112 @@ LB891:  ldx     $01                             ; B891 A6 01
 .endscope
 
 ; ----------------------------------------------------------------------------
+; Input A X Y
+; Fill every byte in pages X through Y with A.
+; Called with X=4, Y=5 and X=Y=2.
 RB894:
-.scope
-        pha                                     ; B894 48
+    pha                                         ; B894 48
         txa                                     ; B895 8A
-        sty     $01                             ; B896 84 01
+        sty $01                                 ; B896 84 01
         clc                                     ; B898 18
-        sbc     $01                             ; B899 E5 01
+        sbc $01                                 ; B899 E5 01
         tax                                     ; B89B AA
-        pla                                     ; B89C 68
-        ldy     #$00                            ; B89D A0 00
-        sty     $00                             ; B89F 84 00
-LB8A1:  sta     ($00),y                         ; B8A1 91 00
-        dey                                     ; B8A3 88
-        bne     LB8A1                           ; B8A4 D0 FB
-        dec     $01                             ; B8A6 C6 01
+    pla                                         ; B89C 68
+    ldy #$00                                    ; B89D A0 00
+    sty $00                                     ; B89F 84 00
+    loop
+        loop
+            sta ($00),y                         ; B8A1 91 00
+            dey                                 ; B8A3 88
+        while_ne                                ; B8A4 D0 FB
+        dec $01                                 ; B8A6 C6 01
         inx                                     ; B8A8 E8
-        bne     LB8A1                           ; B8A9 D0 F6
-        rts                                     ; B8AB 60
-.endscope
+    while_ne                                    ; B8A9 D0 F6
+    rts                                         ; B8AB 60
 
 ; ----------------------------------------------------------------------------
 ; input A: index to jump table
 ; jump table vectors appear immediately after JSR instruction
 ; copies vector to $00/$01 and jumps to it
 RB8AC:
-.scope
-        asl     a                               ; B8AC 0A
-        tay                                     ; B8AD A8
-        iny                                     ; B8AE C8
-        pla                                     ; B8AF 68
-        sta     $00                             ; B8B0 85 00
-        pla                                     ; B8B2 68
-        sta     $01                             ; B8B3 85 01
-        lda     ($00),y                         ; B8B5 B1 00
-        tax                                     ; B8B7 AA
-        iny                                     ; B8B8 C8
-        lda     ($00),y                         ; B8B9 B1 00
-        sta     $01                             ; B8BB 85 01
-        stx     $00                             ; B8BD 86 00
-        jmp     ($00)                           ; B8BF 6C 00 00
-.endscope
+    asl a                                       ; B8AC 0A
+    tay                                         ; B8AD A8
+    iny                                         ; B8AE C8
+    pla                                         ; B8AF 68
+    sta $00                                     ; B8B0 85 00
+    pla                                         ; B8B2 68
+    sta $01                                     ; B8B3 85 01
+    lda ($00),y                                 ; B8B5 B1 00
+    tax                                         ; B8B7 AA
+    iny                                         ; B8B8 C8
+    lda ($00),y                                 ; B8B9 B1 00
+    sta $01                                     ; B8BB 85 01
+    stx $00                                     ; B8BD 86 00
+    jmp ($00)                                   ; B8BF 6C 00 00
 
 ; ----------------------------------------------------------------------------
 ; unreachable?
-        sei                                     ; B8C2 78
-        inc     L8000                           ; B8C3 EE 00 80
-        lda     #$1A                            ; B8C6 A9 1A
-        jsr     RB8CC                           ; B8C8 20 CC B8
-        rts                                     ; B8CB 60
+    sei                                         ; B8C2 78
+    inc L8000                                   ; B8C3 EE 00 80
+    lda #$1A                                    ; B8C6 A9 1A
+    jsr RB8CC ; Set mapper control register.    ; B8C8 20 CC B8
+    rts                                         ; B8CB 60
 
 ; ----------------------------------------------------------------------------
 ; Set MMC1 mapper Control register to A.
 RB8CC:
-.scope
-        sta     $9FFF                           ; B8CC 8D FF 9F
-        lsr     a                               ; B8CF 4A
-        sta     $9FFF                           ; B8D0 8D FF 9F
-        lsr     a                               ; B8D3 4A
-        sta     $9FFF                           ; B8D4 8D FF 9F
-        lsr     a                               ; B8D7 4A
-        sta     $9FFF                           ; B8D8 8D FF 9F
-        lsr     a                               ; B8DB 4A
-        sta     $9FFF                           ; B8DC 8D FF 9F
-        rts                                     ; B8DF 60
-.endscope
+    sta $9FFF                                   ; B8CC 8D FF 9F
+    lsr a                                       ; B8CF 4A
+    sta $9FFF                                   ; B8D0 8D FF 9F
+    lsr a                                       ; B8D3 4A
+    sta $9FFF                                   ; B8D4 8D FF 9F
+    lsr a                                       ; B8D7 4A
+    sta $9FFF                                   ; B8D8 8D FF 9F
+    lsr a                                       ; B8DB 4A
+    sta $9FFF                                   ; B8DC 8D FF 9F
+    rts                                         ; B8DF 60
 
 ; ----------------------------------------------------------------------------
 ; Set MMC1 mapper CHR bank 0 to A.
 RB8E0:
-.scope
-        sta     $BFFF                           ; B8E0 8D FF BF
-        lsr     a                               ; B8E3 4A
-        sta     $BFFF                           ; B8E4 8D FF BF
-        lsr     a                               ; B8E7 4A
-        sta     $BFFF                           ; B8E8 8D FF BF
-        lsr     a                               ; B8EB 4A
-        sta     $BFFF                           ; B8EC 8D FF BF
-        lsr     a                               ; B8EF 4A
-        sta     $BFFF                           ; B8F0 8D FF BF
-        rts                                     ; B8F3 60
-.endscope
+    sta $BFFF                                   ; B8E0 8D FF BF
+    lsr a                                       ; B8E3 4A
+    sta $BFFF                                   ; B8E4 8D FF BF
+    lsr a                                       ; B8E7 4A
+    sta $BFFF                                   ; B8E8 8D FF BF
+    lsr a                                       ; B8EB 4A
+    sta $BFFF                                   ; B8EC 8D FF BF
+    lsr a                                       ; B8EF 4A
+    sta $BFFF                                   ; B8F0 8D FF BF
+    rts                                         ; B8F3 60
 
 ; ----------------------------------------------------------------------------
 ; Set MMC1 mapper CHR bank 1 to A.
 RB8F4:
-.scope
-        sta     $DFFF                           ; B8F4 8D FF DF
-        lsr     a                               ; B8F7 4A
-        sta     $DFFF                           ; B8F8 8D FF DF
-        lsr     a                               ; B8FB 4A
-        sta     $DFFF                           ; B8FC 8D FF DF
-        lsr     a                               ; B8FF 4A
-        sta     $DFFF                           ; B900 8D FF DF
-        lsr     a                               ; B903 4A
-        sta     $DFFF                           ; B904 8D FF DF
-        rts                                     ; B907 60
-.endscope
+    sta $DFFF                                   ; B8F4 8D FF DF
+    lsr a                                       ; B8F7 4A
+    sta $DFFF                                   ; B8F8 8D FF DF
+    lsr a                                       ; B8FB 4A
+    sta $DFFF                                   ; B8FC 8D FF DF
+    lsr a                                       ; B8FF 4A
+    sta $DFFF                                   ; B900 8D FF DF
+    lsr a                                       ; B903 4A
+    sta $DFFF                                   ; B904 8D FF DF
+    rts                                         ; B907 60
 
 ; ----------------------------------------------------------------------------
 ; Set MMC1 mapper PRG bank to A.
 RB908:
-.scope
-        sta     $FFF0                           ; B908 8D F0 FF
-        lsr     a                               ; B90B 4A
-        sta     $FFF0                           ; B90C 8D F0 FF
-        lsr     a                               ; B90F 4A
-        sta     $FFF0                           ; B910 8D F0 FF
-        lsr     a                               ; B913 4A
-        sta     $FFF0                           ; B914 8D F0 FF
-        lsr     a                               ; B917 4A
-        sta     $FFF0                           ; B918 8D F0 FF
-        rts                                     ; B91B 60
-.endscope
+    sta $FFF0                                   ; B908 8D F0 FF
+    lsr a                                       ; B90B 4A
+    sta $FFF0                                   ; B90C 8D F0 FF
+    lsr a                                       ; B90F 4A
+    sta $FFF0                                   ; B910 8D F0 FF
+    lsr a                                       ; B913 4A
+    sta $FFF0                                   ; B914 8D F0 FF
+    lsr a                                       ; B917 4A
+    sta $FFF0                                   ; B918 8D F0 FF
+    rts                                         ; B91B 60
 
 ; ----------------------------------------------------------------------------
 ; Argument to RB6C2
@@ -7282,30 +7278,31 @@ LCF80:
 
 ; ----------------------------------------------------------------------------
 ; RESET vector
-LFF00:  cld                                     ; FF00 D8
-        sei                                     ; FF01 78
-        ldx     #$00                            ; FF02 A2 00
-        stx     $2000                           ; FF04 8E 00 20
-        stx     $2001                           ; FF07 8E 01 20
-        ; wait for vblank
-        loop
-            lda $2002                           ; FF0A AD 02 20
-        while_pl                                ; FF0D 10 FB
-        loop
-            lda $2002                           ; FF0F AD 02 20
-        while_pl                                ; FF12 10 FB
-        dex                                     ; FF14 CA
-        txs                                     ; FF15 9A
-        inc     LFF00                           ; FF16 EE 00 FF
-        lda     #$10                            ; FF19 A9 10
-        jsr     RB8CC                           ; FF1B 20 CC B8
-        lda     #$02                            ; FF1E A9 02
-        jsr     RB8E0                           ; FF20 20 E0 B8
-        lda     #$03                            ; FF23 A9 03
-        jsr     RB8F4                           ; FF25 20 F4 B8
-        lda     #$00                            ; FF28 A9 00
-        jsr     RB908                           ; FF2A 20 08 B9
-        jmp     L8000                           ; FF2D 4C 00 80
+LFF00:
+    cld                                         ; FF00 D8
+    sei                                         ; FF01 78
+    ldx #$00                                    ; FF02 A2 00
+    stx $2000                                   ; FF04 8E 00 20
+    stx $2001                                   ; FF07 8E 01 20
+    ; wait for vblank
+    loop
+        lda $2002                               ; FF0A AD 02 20
+    while_pl                                    ; FF0D 10 FB
+    loop
+        lda $2002                               ; FF0F AD 02 20
+    while_pl                                    ; FF12 10 FB
+    dex                                         ; FF14 CA
+    txs                                         ; FF15 9A
+    inc LFF00                                   ; FF16 EE 00 FF
+    lda #$10                                    ; FF19 A9 10
+    jsr RB8CC ; Set mapper control register.    ; FF1B 20 CC B8
+    lda #$02                                    ; FF1E A9 02
+    jsr RB8E0 ; Set mapper CHR bank 0.          ; FF20 20 E0 B8
+    lda #$03                                    ; FF23 A9 03
+    jsr RB8F4 ; Set mapper CHR bank 1.          ; FF25 20 F4 B8
+    lda #$00                                    ; FF28 A9 00
+    jsr RB908 ; Set mapper PRG bank.            ; FF2A 20 08 B9
+    jmp L8000                                   ; FF2D 4C 00 80
 
 ; ----------------------------------------------------------------------------
         .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FF30 00 00 00 00 00 00 00 00
