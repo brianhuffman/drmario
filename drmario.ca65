@@ -14,13 +14,30 @@
 
 ; ----------------------------------------------------------------------------
 
-.define L33_NMI_SIGNAL $33
-.define L42_OAM_OFFSET $42
-.define L44_SPRITE_X   $44
-.define L45_SPRITE_Y   $45
-.define L46_TOP_STATE  $46
-.define L53_SPRITE_NUM $53
-.define L66_PALETTE    $66
+.define L33_NMI_SIGNAL  $33
+.define L38_V1_X        $38
+.define L39_V1_Y        $39
+.define L3A_V2_X        $3A
+.define L3B_V2_Y        $3B
+.define L3C_V3_X        $3C
+.define L3D_V3_Y        $3D
+.define L3E_VIRUS_CYCLE $3E
+.define L42_OAM_OFFSET  $42
+.define L44_SPRITE_X    $44
+.define L45_SPRITE_Y    $45
+.define L46_TOP_STATE   $46
+.define L53_SPRITE_NUM  $53
+.define L66_PALETTE     $66
+.define L72_V1_COUNT    $72
+.define L73_V2_COUNT    $73
+.define L74_V3_COUNT    $74
+.define L75_V1_STATE    $75
+.define L76_V2_STATE    $76
+.define L77_V3_STATE    $77
+.define L78_V1_TIMER    $78
+.define L79_V2_TIMER    $79
+.define L7A_V3_TIMER    $7A
+.define L7B_VIRUS_MARCH $7B
 
 .define L8B_SPEED      $8B
 .define L96_LEVEL      $96
@@ -35,6 +52,7 @@ L0202 := $0202
 L030B_P1_SPEED := $030B
 L0324_P1_VIRUS := $0324
 
+L038B_P2_SPEED := $038B
 L03A4_P2_VIRUS := $03A4
 
 L068D := $068D
@@ -101,128 +119,131 @@ L8035:  rti                                     ; 8035 40
 ; Continuation of RESET vector
 L8036:
 .scope
-        lda $0316                               ; 8036 AD 16 03
-        sta $0732                               ; 8039 8D 32 07
-        lda $0396                               ; 803C AD 96 03
-        sta $0733                               ; 803F 8D 33 07
-        lda L030B_P1_SPEED                      ; 8042 AD 0B 03
-        sta $0734                               ; 8045 8D 34 07
-        lda $038B                               ; 8048 AD 8B 03
-        sta $0735                               ; 804B 8D 35 07
-        ; clear pages $01 to $06
-        ldy #$06                                ; 804E A0 06
-        sty $01                                 ; 8050 84 01
-        ldy #$00                                ; 8052 A0 00
-        sty $00                                 ; 8054 84 00
-        lda #$00                                ; 8056 A9 00
+    lda $0316                                   ; 8036 AD 16 03
+    sta $0732                                   ; 8039 8D 32 07
+    lda $0396                                   ; 803C AD 96 03
+    sta $0733                                   ; 803F 8D 33 07
+    lda L030B_P1_SPEED                          ; 8042 AD 0B 03
+    sta $0734                                   ; 8045 8D 34 07
+    lda L038B_P2_SPEED                          ; 8048 AD 8B 03
+    sta $0735                                   ; 804B 8D 35 07
+    ; clear pages $01 to $06
+    ldy #$06                                    ; 804E A0 06
+    sty $01                                     ; 8050 84 01
+    ldy #$00                                    ; 8052 A0 00
+    sty $00                                     ; 8054 84 00
+    lda #$00                                    ; 8056 A9 00
+    loop
         loop
-            loop
-                sta ($00),y                     ; 8058 91 00
-                dey                             ; 805A 88
-            while_ne                            ; 805B D0 FB
-            dec $01                             ; 805D C6 01
-        while_pl                                ; 805F 10 F7
+            sta ($00),y                         ; 8058 91 00
+            dey                                 ; 805A 88
+        while_ne                                ; 805B D0 FB
+        dec $01                                 ; 805D C6 01
+    while_pl                                    ; 805F 10 F7
 
-        lda $0732                               ; 8061 AD 32 07
-        sta $0316                               ; 8064 8D 16 03
-        lda $0733                               ; 8067 AD 33 07
-        sta $0396                               ; 806A 8D 96 03
-        lda $0734                               ; 806D AD 34 07
-        sta L030B_P1_SPEED                      ; 8070 8D 0B 03
-        lda $0735                               ; 8073 AD 35 07
-        sta $038B                               ; 8076 8D 8B 03
-        ldx #$0A                                ; 8079 A2 0A
-L807B:  lda $070F,x                             ; 807B BD 0F 07
-        sta $47                                 ; 807E 85 47
-        lda L9FEE-1,x                           ; 8080 BD ED 9F
-        cmp $47                                 ; 8083 C5 47
-        bne L808D                               ; 8085 D0 06
-        dex                                     ; 8087 CA
-        bne L807B                               ; 8088 D0 F1
-        jmp L80DC                               ; 808A 4C DC 80
+    lda $0732                                   ; 8061 AD 32 07
+    sta $0316                                   ; 8064 8D 16 03
+    lda $0733                                   ; 8067 AD 33 07
+    sta $0396                                   ; 806A 8D 96 03
+    lda $0734                                   ; 806D AD 34 07
+    sta L030B_P1_SPEED                          ; 8070 8D 0B 03
+    lda $0735                                   ; 8073 AD 35 07
+    sta L038B_P2_SPEED                          ; 8076 8D 8B 03
+    ldx #$0A                                    ; 8079 A2 0A
+L807B:
+    lda $070F,x                                 ; 807B BD 0F 07
+    sta $47                                     ; 807E 85 47
+    lda L9FEE-1,x                               ; 8080 BD ED 9F
+    cmp $47                                     ; 8083 C5 47
+    bne L808D                                   ; 8085 D0 06
+    dex                                         ; 8087 CA
+    bne L807B                                   ; 8088 D0 F1
+    jmp L80DC                                   ; 808A 4C DC 80
 
-L808D:  ldx #$00                                ; 808D A2 00
-        ; set top score to 1000.
-        lda #$00                                ; 808F A9 00
-        sta L0700_TOP_SCORE_0                   ; 8091 8D 00 07
-        sta L0701_TOP_SCORE_1                   ; 8094 8D 01 07
-        sta L0702_TOP_SCORE_2                   ; 8097 8D 02 07
-        sta L0704_TOP_SCORE_4                   ; 809A 8D 04 07
-        sta L0705_TOP_SCORE_5                   ; 809D 8D 05 07
-        lda #$01                                ; 80A0 A9 01
-        sta L0703_TOP_SCORE_3                   ; 80A2 8D 03 07
-        lda #$00                                ; 80A5 A9 00
-        sta $0723                               ; 80A7 8D 23 07
-        sta $0724                               ; 80AA 8D 24 07
-        sta $0728                               ; 80AD 8D 28 07
-        sta $0316                               ; 80B0 8D 16 03
-        sta $0396                               ; 80B3 8D 96 03
-        sta $0731                               ; 80B6 8D 31 07
-        lda #$01                                ; 80B9 A9 01
-        sta $0720                               ; 80BB 8D 20 07
-        sta L0727_NUM_PLAYERS                   ; 80BE 8D 27 07
-        sta L030B_P1_SPEED                      ; 80C1 8D 0B 03
-        sta $038B                               ; 80C4 8D 8B 03
-        lda #$02                                ; 80C7 A9 02
-        sta $0722                               ; 80C9 8D 22 07
-        lda #$03                                ; 80CC A9 03
-        sta $0725                               ; 80CE 8D 25 07
-        ldx #$0A                                ; 80D1 A2 0A
-        loop
-            lda L9FEE-1,x                       ; 80D3 BD ED 9F
-            sta $070F,x                         ; 80D6 9D 0F 07
-            dex                                 ; 80D9 CA
-        while_ne                                ; 80DA D0 F7
-L80DC:  ldx #$89                                ; 80DC A2 89
-        stx $17                                 ; 80DE 86 17
-        dex                                     ; 80E0 CA
-        stx $18                                 ; 80E1 86 18
-        ldy #$00                                ; 80E3 A0 00
-        sty $FD                                 ; 80E5 84 FD
-        sty $2005                               ; 80E7 8C 05 20
-        ldy #$00                                ; 80EA A0 00
-        sty $FC                                 ; 80EC 84 FC
-        sty $2005                               ; 80EE 8C 05 20
-        lda #$90                                ; 80F1 A9 90
-        sta $FF                                 ; 80F3 85 FF
-        sta L2000                               ; 80F5 8D 00 20
-        lda #$06                                ; 80F8 A9 06
-        sta L2001                               ; 80FA 8D 01 20
-        jsr RFFD6                               ; 80FD 20 D6 FF
-        jsr RFFD3                               ; 8100 20 D3 FF
-        lda #$C0                                ; 8103 A9 C0
-        sta $0100                               ; 8105 8D 00 01
-        lda #$80                                ; 8108 A9 80
-        sta L0101                               ; 810A 8D 01 01
-        lda #$35                                ; 810D A9 35
-        sta $0103                               ; 810F 8D 03 01
-        lda #$AC                                ; 8112 A9 AC
-        sta $0104                               ; 8114 8D 04 01
-        jsr RB67C                               ; 8117 20 7C B6
-        jsr RB6A2                               ; 811A 20 A2 B6
-        lda #$20                                ; 811D A9 20
-        jsr RB6AC                               ; 811F 20 AC B6
-        lda #$24                                ; 8122 A9 24
-        jsr RB6AC                               ; 8124 20 AC B6
-        lda #$28                                ; 8127 A9 28
-        jsr RB6AC                               ; 8129 20 AC B6
-        lda #$2C                                ; 812C A9 2C
-        jsr RB6AC                               ; 812E 20 AC B6
-        lda #$00                                ; 8131 A9 00
-        sta $5D                                 ; 8133 85 5D
-        jsr R90C9                               ; 8135 20 C9 90
-        jsr RB695                               ; 8138 20 95 B6
-        jsr RB654                               ; 813B 20 54 B6
-        jsr RB689                               ; 813E 20 89 B6
-        jsr RB654                               ; 8141 20 54 B6
-        lda #$0E                                ; 8144 A9 0E
-        sta $34                                 ; 8146 85 34
-        loop
-            jsr R8157                           ; 8148 20 57 81
-            jsr R978E                           ; 814B 20 8E 97
-            jsr RB654                           ; 814E 20 54 B6
-            jsr R8712 ; pad OAM with FF         ; 8151 20 12 87
-        forever                                 ; 8154 4C 48 81
+L808D:
+    ldx #$00                                    ; 808D A2 00
+    ; set top score to 1000.
+    lda #$00                                    ; 808F A9 00
+    sta L0700_TOP_SCORE_0                       ; 8091 8D 00 07
+    sta L0701_TOP_SCORE_1                       ; 8094 8D 01 07
+    sta L0702_TOP_SCORE_2                       ; 8097 8D 02 07
+    sta L0704_TOP_SCORE_4                       ; 809A 8D 04 07
+    sta L0705_TOP_SCORE_5                       ; 809D 8D 05 07
+    lda #$01                                    ; 80A0 A9 01
+    sta L0703_TOP_SCORE_3                       ; 80A2 8D 03 07
+    lda #$00                                    ; 80A5 A9 00
+    sta $0723                                   ; 80A7 8D 23 07
+    sta $0724                                   ; 80AA 8D 24 07
+    sta $0728                                   ; 80AD 8D 28 07
+    sta $0316                                   ; 80B0 8D 16 03
+    sta $0396                                   ; 80B3 8D 96 03
+    sta $0731                                   ; 80B6 8D 31 07
+    lda #$01                                    ; 80B9 A9 01
+    sta $0720                                   ; 80BB 8D 20 07
+    sta L0727_NUM_PLAYERS                       ; 80BE 8D 27 07
+    sta L030B_P1_SPEED                          ; 80C1 8D 0B 03
+    sta L038B_P2_SPEED                          ; 80C4 8D 8B 03
+    lda #$02                                    ; 80C7 A9 02
+    sta $0722                                   ; 80C9 8D 22 07
+    lda #$03                                    ; 80CC A9 03
+    sta $0725                                   ; 80CE 8D 25 07
+    ldx #$0A                                    ; 80D1 A2 0A
+    loop
+        lda L9FEE-1,x                           ; 80D3 BD ED 9F
+        sta $070F,x                             ; 80D6 9D 0F 07
+        dex                                     ; 80D9 CA
+    while_ne                                    ; 80DA D0 F7
+L80DC:
+    ldx #$89                                    ; 80DC A2 89
+    stx $17                                     ; 80DE 86 17
+    dex                                         ; 80E0 CA
+    stx $18                                     ; 80E1 86 18
+    ldy #$00                                    ; 80E3 A0 00
+    sty $FD                                     ; 80E5 84 FD
+    sty $2005                                   ; 80E7 8C 05 20
+    ldy #$00                                    ; 80EA A0 00
+    sty $FC                                     ; 80EC 84 FC
+    sty $2005                                   ; 80EE 8C 05 20
+    lda #$90                                    ; 80F1 A9 90
+    sta $FF                                     ; 80F3 85 FF
+    sta L2000                                   ; 80F5 8D 00 20
+    lda #$06                                    ; 80F8 A9 06
+    sta L2001                                   ; 80FA 8D 01 20
+    jsr RFFD6                                   ; 80FD 20 D6 FF
+    jsr RFFD3                                   ; 8100 20 D3 FF
+    lda #$C0                                    ; 8103 A9 C0
+    sta $0100                                   ; 8105 8D 00 01
+    lda #$80                                    ; 8108 A9 80
+    sta L0101                                   ; 810A 8D 01 01
+    lda #$35                                    ; 810D A9 35
+    sta $0103                                   ; 810F 8D 03 01
+    lda #$AC                                    ; 8112 A9 AC
+    sta $0104                                   ; 8114 8D 04 01
+    jsr RB67C                                   ; 8117 20 7C B6
+    jsr RB6A2                                   ; 811A 20 A2 B6
+    lda #$20                                    ; 811D A9 20
+    jsr RB6AC                                   ; 811F 20 AC B6
+    lda #$24                                    ; 8122 A9 24
+    jsr RB6AC                                   ; 8124 20 AC B6
+    lda #$28                                    ; 8127 A9 28
+    jsr RB6AC                                   ; 8129 20 AC B6
+    lda #$2C                                    ; 812C A9 2C
+    jsr RB6AC                                   ; 812E 20 AC B6
+    lda #$00                                    ; 8131 A9 00
+    sta $5D                                     ; 8133 85 5D
+    jsr R90C9                                   ; 8135 20 C9 90
+    jsr RB695                                   ; 8138 20 95 B6
+    jsr RB654                                   ; 813B 20 54 B6
+    jsr RB689                                   ; 813E 20 89 B6
+    jsr RB654                                   ; 8141 20 54 B6
+    lda #$0E                                    ; 8144 A9 0E
+    sta $34                                     ; 8146 85 34
+    loop
+        jsr R8157                               ; 8148 20 57 81
+        jsr R978E                               ; 814B 20 8E 97
+        jsr RB654                               ; 814E 20 54 B6
+        jsr R8712 ; pad OAM with FF             ; 8151 20 12 87
+    forever                                     ; 8154 4C 48 81
 .endscope
 
 ; ----------------------------------------------------------------------------
@@ -280,7 +301,7 @@ L816E:
         sta $2006                               ; 81B4 8D 06 20
         lda #$F1                                ; 81B7 A9 F1
         sta $2006                               ; 81B9 8D 06 20
-        lda $038B                               ; 81BC AD 8B 03
+        lda L038B_P2_SPEED                      ; 81BC AD 8B 03
         asl a                                   ; 81BF 0A
         asl a                                   ; 81C0 0A
         tax                                     ; 81C1 AA
@@ -332,19 +353,19 @@ L8206:
     sta $7D                                     ; 8220 85 7D
     sta $A7                                     ; 8222 85 A7
     sta $0728                                   ; 8224 8D 28 07
-    sta $75                                     ; 8227 85 75
-    sta $76                                     ; 8229 85 76
-    sta $77                                     ; 822B 85 77
-    sta $78                                     ; 822D 85 78
-    sta $79                                     ; 822F 85 79
-    sta $7A                                     ; 8231 85 7A
-    sta $72                                     ; 8233 85 72
-    sta $73                                     ; 8235 85 73
-    sta $74                                     ; 8237 85 74
+    sta L75_V1_STATE                            ; 8227 85 75
+    sta L76_V2_STATE                            ; 8229 85 76
+    sta L77_V3_STATE                            ; 822B 85 77
+    sta L78_V1_TIMER                            ; 822D 85 78
+    sta L79_V2_TIMER                            ; 822F 85 79
+    sta L7A_V3_TIMER                            ; 8231 85 7A
+    sta L72_V1_COUNT                            ; 8233 85 72
+    sta L73_V2_COUNT                            ; 8235 85 73
+    sta L74_V3_COUNT                            ; 8237 85 74
     sta $7E                                     ; 8239 85 7E
     sta $61                                     ; 823B 85 61
     sta $55                                     ; 823D 85 55
-    sta $3E                                     ; 823F 85 3E
+    sta L3E_VIRUS_CYCLE                         ; 823F 85 3E
     lda #$06                                    ; 8241 A9 06
     sta $97                                     ; 8243 85 97
     lda #$04                                    ; 8245 A9 04
@@ -1171,13 +1192,14 @@ R8772:
     rts                                         ; 87A1 60
 
 ; ----------------------------------------------------------------------------
+; Display sprites on level screen
 R87A2:
-.scope
+    begin
         jsr R89C9                               ; 87A2 20 C9 89
         lda L0727_NUM_PLAYERS                   ; 87A5 AD 27 07
         cmp #$01                                ; 87A8 C9 01
         if_eq                                   ; 87AA D0 26
-            jsr R89D4                           ; 87AC 20 D4 89
+            jsr R89D4_VIRUS_SPRITES             ; 87AC 20 D4 89
             lda $0309                           ; 87AF AD 09 03
             if_ne                               ; 87B2 F0 12
                 lda #$C0                        ; 87B4 A9 C0
@@ -1188,12 +1210,12 @@ R87A2:
                 sta L53_SPRITE_NUM              ; 87BE 85 53
                 jsr R88F6_SPRITE                ; 87C0 20 F6 88
                 ; Shrugging Mario
-                jmp L886B ; rts                 ; 87C3 4C 6B 88
+                jmp break                       ; 87C3 4C 6B 88
             end_if
             jsr R9075 ; Load P1 state           ; 87C6 20 75 90
             jsr R89B6 ; Mario sprite            ; 87C9 20 B6 89
             jsr R88B1                           ; 87CC 20 B1 88
-            jmp L886B ; rts                     ; 87CF 4C 6B 88
+            jmp break                           ; 87CF 4C 6B 88
         end_if
 
         lda $61                                 ; 87D2 A5 61
@@ -1241,30 +1263,30 @@ R87A2:
         ldx $0316                               ; 882E AE 16 03
         lda LA777,x ; BCD table 00-29           ; 8831 BD 77 A7
         sta L53_SPRITE_NUM                      ; 8834 85 53
-        jsr R893B                               ; 8836 20 3B 89
+        jsr R893B_BCD_SPRITE                    ; 8836 20 3B 89
         lda #$84                                ; 8839 A9 84
         sta L44_SPRITE_X                        ; 883B 85 44
         ldx $0396                               ; 883D AE 96 03
         lda LA777,x ; BCD table 00-29           ; 8840 BD 77 A7
         sta L53_SPRITE_NUM                      ; 8843 85 53
-        jsr R893B                               ; 8845 20 3B 89
+        jsr R893B_BCD_SPRITE                    ; 8845 20 3B 89
         lda #$BF                                ; 8848 A9 BF
         sta L45_SPRITE_Y                        ; 884A 85 45
         lda #$6E                                ; 884C A9 6E
         sta L44_SPRITE_X                        ; 884E 85 44
         lda L0324_P1_VIRUS                      ; 8850 AD 24 03
         sta L53_SPRITE_NUM                      ; 8853 85 53
-        jsr R893B                               ; 8855 20 3B 89
+        jsr R893B_BCD_SPRITE                    ; 8855 20 3B 89
         lda #$83                                ; 8858 A9 83
         sta L44_SPRITE_X                        ; 885A 85 44
         lda L03A4_P2_VIRUS                      ; 885C AD A4 03
         sta L53_SPRITE_NUM                      ; 885F 85 53
-        jsr R893B                               ; 8861 20 3B 89
+        jsr R893B_BCD_SPRITE                    ; 8861 20 3B 89
         lda #$00                                ; 8864 A9 00
         sta $60                                 ; 8866 85 60
         jsr R886C                               ; 8868 20 6C 88
-L886B:  rts                                     ; 886B 60
-.endscope
+    end
+    rts                                         ; 886B 60
 
 ; ----------------------------------------------------------------------------
 R886C:
@@ -1420,11 +1442,11 @@ R88F6_SPRITE:
     rts                                         ; 893A 60
 
 ; ----------------------------------------------------------------------------
-; Add two sprites to sprite attribute table.
-; Both have same X and Y coordinates (L44_SPRITE_X and L45_SPRITE_Y).
+; Add two sprites to sprite attribute table for 2-digit number.
+; At coordinates (L44_SPRITE_X, L45_SPRITE_Y), (L44_SPRITE_X+8, L45_SPRITE_Y).
 ; The tile indexes come from high and low nybbles of L53_SPRITE_NUM.
 ; Both have same flags ($60).
-R893B:
+R893B_BCD_SPRITE:
     ldx L42_OAM_OFFSET                          ; 893B A6 42
     lda L45_SPRITE_Y                            ; 893D A5 45
     sta $0200,x                                 ; 893F 9D 00 02
@@ -1468,7 +1490,7 @@ R893B:
     sta L53_SPRITE_NUM                          ; 8988 85 53
     lda #$00                                    ; 898A A9 00
     sta $60                                     ; 898C 85 60
-    jsr R893B                                   ; 898E 20 3B 89
+    jsr R893B_BCD_SPRITE                        ; 898E 20 3B 89
     lda #$3F                                    ; 8991 A9 3F
     sta L45_SPRITE_Y                            ; 8993 85 45
     lda #$6C                                    ; 8995 A9 6C
@@ -1477,14 +1499,14 @@ R893B:
     sta L53_SPRITE_NUM                          ; 899C 85 53
     lda #$00                                    ; 899E A9 00
     sta $60                                     ; 89A0 85 60
-    jsr R893B                                   ; 89A2 20 3B 89
+    jsr R893B_BCD_SPRITE                        ; 89A2 20 3B 89
     lda #$84                                    ; 89A5 A9 84
     sta L44_SPRITE_X                            ; 89A7 85 44
     lda $039E                                   ; 89A9 AD 9E 03
     sta L53_SPRITE_NUM                          ; 89AC 85 53
     lda #$00                                    ; 89AE A9 00
     sta $60                                     ; 89B0 85 60
-    jsr R893B                                   ; 89B2 20 3B 89
+    jsr R893B_BCD_SPRITE                        ; 89B2 20 3B 89
 L89B5:
     rts                                         ; 89B5 60
 
@@ -1517,12 +1539,10 @@ R89C9:
     rts                                         ; 89D3 60
 
 ; ----------------------------------------------------------------------------
+; Display virus sprites
 ; No register inputs
-; READS $43 $72 $73 $74 $89 L067e
-; READS La0ff,X La101,X La103,X La11a,X La11f,X La134,X La149,X La19f,X La1b4,X La1c9,X La231,X La255,X La259,X La25d,X La8c2,X
-; WRITES L44_SPRITE_X L45_SPRITE_Y $47 $48 L53_SPRITE_NUM L06f0 L06f1 L0200,X
-; MODIFIES $38 $39 $3a $3b $3c $3d $3e $42 $75 $76 $77 $78 $79 $7a $7b L067f
-R89D4:
+; READS $43 L72_V1_COUNT L73_V2_COUNT L74_V3_COUNT $89 L067e
+R89D4_VIRUS_SPRITES:
 .scope
     lda $89                                     ; 89D4 A5 89
     if_ne                                       ; 89D6 F0 03
@@ -1533,100 +1553,104 @@ R89D4:
         lda $067E                               ; 89DB AD 7E 06
         cmp $067F                               ; 89DE CD 7F 06
         if_cc                                   ; 89E1 B0 34
-            inc $7B                             ; 89E3 E6 7B
-            lda $7B                             ; 89E5 A5 7B
+            ; increment MARCH mod 4
+            inc L7B_VIRUS_MARCH                 ; 89E3 E6 7B
+            lda L7B_VIRUS_MARCH                 ; 89E5 A5 7B
             and #$03                            ; 89E7 29 03
-            sta $7B                             ; 89E9 85 7B
+            sta L7B_VIRUS_MARCH                 ; 89E9 85 7B
             lda #$00                            ; 89EB A9 00
             sta $067F                           ; 89ED 8D 7F 06
-            ldx $75                             ; 89F0 A6 75
+            ldx L75_V1_STATE                    ; 89F0 A6 75
             lda LA11A,x                         ; 89F2 BD 1A A1
             bne break                           ; 89F5 D0 40
-            ldx $76                             ; 89F7 A6 76
+            ldx L76_V2_STATE                    ; 89F7 A6 76
             lda LA11A,x                         ; 89F9 BD 1A A1
             bne break                           ; 89FC D0 39
-            ldx $77                             ; 89FE A6 77
+            ldx L77_V3_STATE                    ; 89FE A6 77
             lda LA11A,x                         ; 8A00 BD 1A A1
             bne break                           ; 8A03 D0 32
-            lda $7B                             ; 8A05 A5 7B
+            lda L7B_VIRUS_MARCH                 ; 8A05 A5 7B
             and #$01                            ; 8A07 29 01
             bne break                           ; 8A09 D0 2C
-            inc $3E                             ; 8A0B E6 3E
-            lda $3E                             ; 8A0D A5 3E
+            ; increment CYCLE mod 64
+            inc L3E_VIRUS_CYCLE                 ; 8A0B E6 3E
+            lda L3E_VIRUS_CYCLE                 ; 8A0D A5 3E
             cmp #$40                            ; 8A0F C9 40
             if_eq                               ; 8A11 D0 04
                 lda #$00                        ; 8A13 A9 00
-                sta $3E                         ; 8A15 85 3E
+                sta L3E_VIRUS_CYCLE             ; 8A15 85 3E
             end_if
         end_if
-        ldx $3E                                 ; 8A17 A6 3E
+        ldx L3E_VIRUS_CYCLE                     ; 8A17 A6 3E
         lda LA11F,x                             ; 8A19 BD 1F A1
-        sta $38                                 ; 8A1C 85 38
+        sta L38_V1_X                            ; 8A1C 85 38
         lda LA19F,x                             ; 8A1E BD 9F A1
-        sta $39                                 ; 8A21 85 39
-        lda LA134,x                             ; 8A23 BD 34 A1
-        sta $3A                                 ; 8A26 85 3A
-        lda LA1B4,x                             ; 8A28 BD B4 A1
-        sta $3B                                 ; 8A2B 85 3B
-        lda LA149,x                             ; 8A2D BD 49 A1
-        sta $3C                                 ; 8A30 85 3C
-        lda LA1C9,x                             ; 8A32 BD C9 A1
-        sta $3D                                 ; 8A35 85 3D
+        sta L39_V1_Y                            ; 8A21 85 39
+        lda LA11F+21,x                          ; 8A23 BD 34 A1
+        sta L3A_V2_X                            ; 8A26 85 3A
+        lda LA19F+21,x                          ; 8A28 BD B4 A1
+        sta L3B_V2_Y                            ; 8A2B 85 3B
+        lda LA11F+42,x                          ; 8A2D BD 49 A1
+        sta L3C_V3_X                            ; 8A30 85 3C
+        lda LA19F+42,x                          ; 8A32 BD C9 A1
+        sta L3D_V3_Y                            ; 8A35 85 3D
     end
 
-    lda $38                                     ; 8A37 A5 38
+    lda L38_V1_X                                ; 8A37 A5 38
     sta L44_SPRITE_X                            ; 8A39 85 44
-    lda $39                                     ; 8A3B A5 39
+    lda L39_V1_Y                                ; 8A3B A5 39
     sta L45_SPRITE_Y                            ; 8A3D 85 45
 
-    begin ; switch $75
-        lda $75                                 ; 8A3F A5 75
+    begin ; switch L75_V1_STATE
+        lda L75_V1_STATE                        ; 8A3F A5 75
         if_eq                                   ; 8A41 D0 11
-            ldx $7B                             ; 8A43 A6 7B
+            ldx L7B_VIRUS_MARCH                 ; 8A43 A6 7B
             lda LA25D,x ; $29,$2A,$29,$2B       ; 8A45 BD 5D A2
             sta L53_SPRITE_NUM                  ; 8A48 85 53
             jsr R88F6_SPRITE                    ; 8A4A 20 F6 88
+            ; Yellow virus marching
             lda #$00                            ; 8A4D A9 00
-            sta $78                             ; 8A4F 85 78
+            sta L78_V1_TIMER                    ; 8A4F 85 78
             jmp break                           ; 8A51 4C C6 8A
         end_if
 
         cmp #$01                                ; 8A54 C9 01
         if_eq                                   ; 8A56 D0 22
-            inc $78                             ; 8A58 E6 78
+            inc L78_V1_TIMER                    ; 8A58 E6 78
             lda #$30                            ; 8A5A A9 30
             sta L53_SPRITE_NUM                  ; 8A5C 85 53
-            ldx $78                             ; 8A5E A6 78
+            ldx L78_V1_TIMER                    ; 8A5E A6 78
             lda LA231,x                         ; 8A60 BD 31 A2
             clc                                 ; 8A63 18
-            adc $39                             ; 8A64 65 39
+            adc L39_V1_Y                        ; 8A64 65 39
             sta L45_SPRITE_Y                    ; 8A66 85 45
             jsr R88F6_SPRITE                    ; 8A68 20 F6 88
+            ; Yellow virus fussy
             lda L45_SPRITE_Y                    ; 8A6B A5 45
-            cmp $39                             ; 8A6D C5 39
+            cmp L39_V1_Y                        ; 8A6D C5 39
             bne break                           ; 8A6F D0 55
-            inc $75                             ; 8A71 E6 75
+            inc L75_V1_STATE                    ; 8A71 E6 75
             lda #$00                            ; 8A73 A9 00
-            sta $78                             ; 8A75 85 78
+            sta L78_V1_TIMER                    ; 8A75 85 78
             jmp break                           ; 8A77 4C C6 8A
         end_if
 
         cmp #$02                                ; 8A7A C9 02
         if_eq                                   ; 8A7C D0 33
-            inc $78                             ; 8A7E E6 78
-            lda $78                             ; 8A80 A5 78
+            inc L78_V1_TIMER                    ; 8A7E E6 78
+            lda L78_V1_TIMER                    ; 8A80 A5 78
             cmp #$A0                            ; 8A82 C9 A0
             if_eq                               ; 8A84 D0 15
                 lda #$00                        ; 8A86 A9 00
-                sta $75                         ; 8A88 85 75
-                lda $72                         ; 8A8A A5 72
+                sta L75_V1_STATE                ; 8A88 85 75
+                lda L72_V1_COUNT                ; 8A8A A5 72
                 if_eq                           ; 8A8C D0 0D
                     lda #$09                    ; 8A8E A9 09
                     sta $06F1                   ; 8A90 8D F1 06
                     lda #$03                    ; 8A93 A9 03
-                    sta $75                     ; 8A95 85 75
+                    sta L75_V1_STATE            ; 8A95 85 75
                     lda #$00                    ; 8A97 A9 00
-                    sta $78                     ; 8A99 85 78
+                    sta L78_V1_TIMER            ; 8A99 85 78
                 end_if
             end_if
             lda #$03                            ; 8A9B A9 03
@@ -1639,6 +1663,7 @@ R89D4:
             adc #$30                            ; 8AA7 69 30
             sta L53_SPRITE_NUM                  ; 8AA9 85 53
             jsr R88F6_SPRITE                    ; 8AAB 20 F6 88
+            ; Yellow virus fussy animation
             jmp break                           ; 8AAE 4C C6 8A
         end_if
 
@@ -1647,68 +1672,71 @@ R89D4:
             lda #$33                            ; 8AB5 A9 33
             sta L53_SPRITE_NUM                  ; 8AB7 85 53
             jsr R88F6_SPRITE                    ; 8AB9 20 F6 88
-            inc $78                             ; 8ABC E6 78
-            lda $78                             ; 8ABE A5 78
+            ; 8-way pop lines
+            inc L78_V1_TIMER                    ; 8ABC E6 78
+            lda L78_V1_TIMER                    ; 8ABE A5 78
             cmp #$05                            ; 8AC0 C9 05
             if_cs                               ; 8AC2 90 02
-                inc $75                         ; 8AC4 E6 75
+                inc L75_V1_STATE                ; 8AC4 E6 75
             end_if
         end_if
     end
 
-    lda $3A                                     ; 8AC6 A5 3A
+    lda L3A_V2_X                                ; 8AC6 A5 3A
     sta L44_SPRITE_X                            ; 8AC8 85 44
-    lda $3B                                     ; 8ACA A5 3B
+    lda L3B_V2_Y                                ; 8ACA A5 3B
     sta L45_SPRITE_Y                            ; 8ACC 85 45
 
-    begin ; switch $76
-        lda $76                                 ; 8ACE A5 76
+    begin ; switch L76_V2_STATE
+        lda L76_V2_STATE                        ; 8ACE A5 76
         if_eq                                   ; 8AD0 D0 11
-            ldx $7B                             ; 8AD2 A6 7B
+            ldx L7B_VIRUS_MARCH                 ; 8AD2 A6 7B
             lda LA255,x ; $23,$24,$23,$25       ; 8AD4 BD 55 A2
             sta L53_SPRITE_NUM                  ; 8AD7 85 53
             jsr R88F6_SPRITE                    ; 8AD9 20 F6 88
+            ; Red virus marching
             lda #$00                            ; 8ADC A9 00
-            sta $79                             ; 8ADE 85 79
+            sta L79_V2_TIMER                    ; 8ADE 85 79
             jmp break                           ; 8AE0 4C 55 8B
         end_if
 
         cmp #$01                                ; 8AE3 C9 01
         if_eq                                   ; 8AE5 D0 22
-            inc $79                             ; 8AE7 E6 79
+            inc L79_V2_TIMER                    ; 8AE7 E6 79
             lda #$2C                            ; 8AE9 A9 2C
             sta L53_SPRITE_NUM                  ; 8AEB 85 53
-            ldx $79                             ; 8AED A6 79
+            ldx L79_V2_TIMER                    ; 8AED A6 79
             lda LA231,x                         ; 8AEF BD 31 A2
             clc                                 ; 8AF2 18
-            adc $3B                             ; 8AF3 65 3B
+            adc L3B_V2_Y                        ; 8AF3 65 3B
             sta L45_SPRITE_Y                    ; 8AF5 85 45
             jsr R88F6_SPRITE                    ; 8AF7 20 F6 88
+            ; Red virus fussy
             lda L45_SPRITE_Y                    ; 8AFA A5 45
-            cmp $3B                             ; 8AFC C5 3B
+            cmp L3B_V2_Y                        ; 8AFC C5 3B
             bne break                           ; 8AFE D0 55
-            inc $76                             ; 8B00 E6 76
+            inc L76_V2_STATE                    ; 8B00 E6 76
             lda #$00                            ; 8B02 A9 00
-            sta $79                             ; 8B04 85 79
+            sta L79_V2_TIMER                    ; 8B04 85 79
             jmp break                           ; 8B06 4C 55 8B
         end_if
 
         cmp #$02                                ; 8B09 C9 02
         if_eq                                   ; 8B0B D0 33
-            inc $79                             ; 8B0D E6 79
-            lda $79                             ; 8B0F A5 79
+            inc L79_V2_TIMER                    ; 8B0D E6 79
+            lda L79_V2_TIMER                    ; 8B0F A5 79
             cmp #$A0                            ; 8B11 C9 A0
             if_eq                               ; 8B13 D0 15
                 lda #$00                        ; 8B15 A9 00
-                sta $76                         ; 8B17 85 76
-                lda $73                         ; 8B19 A5 73
+                sta L76_V2_STATE                ; 8B17 85 76
+                lda L73_V2_COUNT                ; 8B19 A5 73
                 if_eq                           ; 8B1B D0 0D
                     lda #$09                    ; 8B1D A9 09
                     sta $06F1                   ; 8B1F 8D F1 06
                     lda #$03                    ; 8B22 A9 03
-                    sta $76                     ; 8B24 85 76
+                    sta L76_V2_STATE            ; 8B24 85 76
                     lda #$00                    ; 8B26 A9 00
-                    sta $79                     ; 8B28 85 79
+                    sta L79_V2_TIMER            ; 8B28 85 79
                 end_if
             end_if
             lda #$03                            ; 8B2A A9 03
@@ -1721,6 +1749,7 @@ R89D4:
             adc #$2C                            ; 8B36 69 2C
             sta L53_SPRITE_NUM                  ; 8B38 85 53
             jsr R88F6_SPRITE                    ; 8B3A 20 F6 88
+            ; Red virus fussy animated
             jmp break                           ; 8B3D 4C 55 8B
         end_if
 
@@ -1729,92 +1758,99 @@ R89D4:
             lda #$33                            ; 8B44 A9 33
             sta L53_SPRITE_NUM                  ; 8B46 85 53
             jsr R88F6_SPRITE                    ; 8B48 20 F6 88
-            inc $79                             ; 8B4B E6 79
-            lda $79                             ; 8B4D A5 79
+            ; 8-way pop
+            inc L79_V2_TIMER                    ; 8B4B E6 79
+            lda L79_V2_TIMER                    ; 8B4D A5 79
             cmp #$05                            ; 8B4F C9 05
             if_cs                               ; 8B51 90 02
-                inc $76                         ; 8B53 E6 76
+                inc L76_V2_STATE                ; 8B53 E6 76
             end_if
         end_if
     end
 
-    lda $3C                                     ; 8B55 A5 3C
+    lda L3C_V3_X                                ; 8B55 A5 3C
     sta L44_SPRITE_X                            ; 8B57 85 44
-    lda $3D                                     ; 8B59 A5 3D
+    lda L3D_V3_Y                                ; 8B59 A5 3D
     sta L45_SPRITE_Y                            ; 8B5B 85 45
-    lda $77                                     ; 8B5D A5 77
-    if_eq                                       ; 8B5F D0 11
-        ldx $7B                                 ; 8B61 A6 7B
-        lda LA259,x ; $26,$27,$26,$28           ; 8B63 BD 59 A2
-        sta L53_SPRITE_NUM                      ; 8B66 85 53
-        jsr R88F6_SPRITE                        ; 8B68 20 F6 88
-        lda #$00                                ; 8B6B A9 00
-        sta $7A                                 ; 8B6D 85 7A
-        jmp L8BE4                               ; 8B6F 4C E4 8B
-    end_if
-    cmp #$01                                    ; 8B72 C9 01
-    if_eq                                       ; 8B74 D0 22
-        inc $7A                                 ; 8B76 E6 7A
-        lda #$2E                                ; 8B78 A9 2E
-        sta L53_SPRITE_NUM                      ; 8B7A 85 53
-        ldx $7A                                 ; 8B7C A6 7A
-        lda LA231,x                             ; 8B7E BD 31 A2
-        clc                                     ; 8B81 18
-        adc $3D                                 ; 8B82 65 3D
-        sta L45_SPRITE_Y                        ; 8B84 85 45
-        jsr R88F6_SPRITE                        ; 8B86 20 F6 88
-        lda L45_SPRITE_Y                        ; 8B89 A5 45
-        cmp $3d                                 ; 8B8B C5 3D
-        bne L8BE4                               ; 8B8D D0 55
-        inc $77                                 ; 8B8F E6 77
-        lda #$00                                ; 8B91 A9 00
-        sta $7A                                 ; 8B93 85 7A
-        jmp L8BE4                               ; 8B95 4C E4 8B
-    end_if
-
-    cmp #$02                                    ; 8B98 C9 02
-    if_eq                                       ; 8B9A D0 33
-        inc $7A                                 ; 8B9C E6 7A
-        lda $7A                                 ; 8B9E A5 7A
-        cmp #$A0                                ; 8BA0 C9 A0
-        if_eq                                   ; 8BA2 D0 15
-            lda #$00                            ; 8BA4 A9 00
-            sta $77                             ; 8BA6 85 77
-            lda $74                             ; 8BA8 A5 74
-            if_eq                               ; 8BAA D0 0D
-                lda #$09                        ; 8BAC A9 09
-                sta $06F1                       ; 8BAE 8D F1 06
-                lda #$03                        ; 8BB1 A9 03
-                sta $77                         ; 8BB3 85 77
-                lda #$00                        ; 8BB5 A9 00
-                sta $7A                         ; 8BB7 85 7A
-            end_if
+    begin ; switch L77_V3_STATE
+        lda L77_V3_STATE                        ; 8B5D A5 77
+        if_eq                                   ; 8B5F D0 11
+            ldx L7B_VIRUS_MARCH                 ; 8B61 A6 7B
+            lda LA259,x ; $26,$27,$26,$28       ; 8B63 BD 59 A2
+            sta L53_SPRITE_NUM                  ; 8B66 85 53
+            jsr R88F6_SPRITE                    ; 8B68 20 F6 88
+            ; Blue virus marching
+            lda #$00                            ; 8B6B A9 00
+            sta L7A_V3_TIMER                    ; 8B6D 85 7A
+            jmp break                           ; 8B6F 4C E4 8B
         end_if
-        lda #$03                                ; 8BB9 A9 03
-        sta $06F0                               ; 8BBB 8D F0 06
-        lda $43                                 ; 8BBE A5 43
-        and #$04                                ; 8BC0 29 04
-        lsr a                                   ; 8BC2 4A
-        lsr a                                   ; 8BC3 4A
-        clc                                     ; 8BC4 18
-        adc #$2E                                ; 8BC5 69 2E
-        sta L53_SPRITE_NUM                      ; 8BC7 85 53
-        jsr R88F6_SPRITE                        ; 8BC9 20 F6 88
-    else                                        ; 8BCC 4C E4 8B
+
+        cmp #$01                                ; 8B72 C9 01
+        if_eq                                   ; 8B74 D0 22
+            inc L7A_V3_TIMER                    ; 8B76 E6 7A
+            lda #$2E                            ; 8B78 A9 2E
+            sta L53_SPRITE_NUM                  ; 8B7A 85 53
+            ldx L7A_V3_TIMER                    ; 8B7C A6 7A
+            lda LA231,x                         ; 8B7E BD 31 A2
+            clc                                 ; 8B81 18
+            adc L3D_V3_Y                        ; 8B82 65 3D
+            sta L45_SPRITE_Y                    ; 8B84 85 45
+            jsr R88F6_SPRITE                    ; 8B86 20 F6 88
+            ; Blue virus fussy
+            lda L45_SPRITE_Y                    ; 8B89 A5 45
+            cmp L3D_V3_Y                        ; 8B8B C5 3D
+            bne break                           ; 8B8D D0 55
+            inc L77_V3_STATE                    ; 8B8F E6 77
+            lda #$00                            ; 8B91 A9 00
+            sta L7A_V3_TIMER                    ; 8B93 85 7A
+            jmp break                           ; 8B95 4C E4 8B
+        end_if
+
+        cmp #$02                                ; 8B98 C9 02
+        if_eq                                   ; 8B9A D0 33
+            inc L7A_V3_TIMER                    ; 8B9C E6 7A
+            lda L7A_V3_TIMER                    ; 8B9E A5 7A
+            cmp #$A0                            ; 8BA0 C9 A0
+            if_eq                               ; 8BA2 D0 15
+                lda #$00                        ; 8BA4 A9 00
+                sta L77_V3_STATE                ; 8BA6 85 77
+                lda L74_V3_COUNT                ; 8BA8 A5 74
+                if_eq                           ; 8BAA D0 0D
+                    lda #$09                    ; 8BAC A9 09
+                    sta $06F1                   ; 8BAE 8D F1 06
+                    lda #$03                    ; 8BB1 A9 03
+                    sta L77_V3_STATE            ; 8BB3 85 77
+                    lda #$00                    ; 8BB5 A9 00
+                    sta L7A_V3_TIMER            ; 8BB7 85 7A
+                end_if
+            end_if
+            lda #$03                            ; 8BB9 A9 03
+            sta $06F0                           ; 8BBB 8D F0 06
+            lda $43                             ; 8BBE A5 43
+            and #$04                            ; 8BC0 29 04
+            lsr a                               ; 8BC2 4A
+            lsr a                               ; 8BC3 4A
+            clc                                 ; 8BC4 18
+            adc #$2E                            ; 8BC5 69 2E
+            sta L53_SPRITE_NUM                  ; 8BC7 85 53
+            jsr R88F6_SPRITE                    ; 8BC9 20 F6 88
+            jmp break                           ; 8BCC 4C E4 8B
+        end_if
+
         cmp #$03                                ; 8BCF C9 03
         if_eq                                   ; 8BD1 D0 11
             lda #$33                            ; 8BD3 A9 33
             sta L53_SPRITE_NUM                  ; 8BD5 85 53
             jsr R88F6_SPRITE                    ; 8BD7 20 F6 88
-            inc $7A                             ; 8BDA E6 7A
-            lda $7A                             ; 8BDC A5 7A
+            ; 8-way pop
+            inc L7A_V3_TIMER                    ; 8BDA E6 7A
+            lda L7A_V3_TIMER                    ; 8BDC A5 7A
             cmp #$05                            ; 8BDE C9 05
             if_cs                               ; 8BE0 90 02
-                inc $77                         ; 8BE2 E6 77
+                inc L77_V3_STATE                ; 8BE2 E6 77
             end_if
         end_if
-    end_if
-L8BE4:
+    end
     rts                                         ; 8BE4 60
 .endscope
 
@@ -1824,10 +1860,10 @@ R8BE5:
         lda $067E                                   ; 8BE5 AD 7E 06
         cmp $067F                                   ; 8BE8 CD 7F 06
         if_cc                                       ; 8BEB B0 0D
-        inc $7B                                     ; 8BED E6 7B
-        lda $7B                                     ; 8BEF A5 7B
+        inc L7B_VIRUS_MARCH                         ; 8BED E6 7B
+        lda L7B_VIRUS_MARCH                         ; 8BEF A5 7B
         and #$03                                    ; 8BF1 29 03
-        sta $7B                                     ; 8BF3 85 7B
+        sta L7B_VIRUS_MARCH                         ; 8BF3 85 7B
         lda #$00                                    ; 8BF5 A9 00
         sta $067F                                   ; 8BF7 8D 7F 06
         end_if
@@ -1835,10 +1871,11 @@ R8BE5:
         sta L44_SPRITE_X                            ; 8BFC 85 44
         lda #$B0                                    ; 8BFE A9 B0
         sta L45_SPRITE_Y                            ; 8C00 85 45
-        ldx $7B                                     ; 8C02 A6 7B
+        ldx L7B_VIRUS_MARCH                         ; 8C02 A6 7B
         lda LA259,x ; $26,$27,$26,$28               ; 8C04 BD 59 A2
         sta L53_SPRITE_NUM                          ; 8C07 85 53
         jsr R88F6_SPRITE                            ; 8C09 20 F6 88
+        ; Blue virus marching
         lda #$2C                                    ; 8C0C A9 2C
         sta L44_SPRITE_X                            ; 8C0E 85 44
         lda #$A7                                    ; 8C10 A9 A7
@@ -1846,7 +1883,7 @@ R8BE5:
         lda #$48                                    ; 8C14 A9 48
         sta L53_SPRITE_NUM                          ; 8C16 85 53
         jsr R88F6_SPRITE                            ; 8C18 20 F6 88
-        lda $7B                                     ; 8C1B A5 7B
+        lda L7B_VIRUS_MARCH                         ; 8C1B A5 7B
         and #$01                                    ; 8C1D 29 01
         clc                                         ; 8C1F 18
         adc #$49                                    ; 8C20 69 49
@@ -1856,11 +1893,11 @@ R8BE5:
 .endscope
 
 ; ----------------------------------------------------------------------------
-; Jump from R89D4
+; Jump from R89D4_VIRUS_SPRITES
 L8C28:
-    lda $38                                     ; 8C28 A5 38
+    lda L38_V1_X                                ; 8C28 A5 38
     sta L44_SPRITE_X                            ; 8C2A 85 44
-    lda $39                                     ; 8C2C A5 39
+    lda L39_V1_Y                                ; 8C2C A5 39
     sta L45_SPRITE_Y                            ; 8C2E 85 45
     lda $43                                     ; 8C30 A5 43
     and #$04                                    ; 8C32 29 04
@@ -1870,9 +1907,9 @@ L8C28:
     lda LA0FF,x ; $29,$14                       ; 8C37 BD FF A0
     sta L53_SPRITE_NUM                          ; 8C3A 85 53
     jsr R88F6_SPRITE                            ; 8C3C 20 F6 88
-    lda $3A                                     ; 8C3F A5 3A
+    lda L3A_V2_X                                ; 8C3F A5 3A
     sta L44_SPRITE_X                            ; 8C41 85 44
-    lda $3B                                     ; 8C43 A5 3B
+    lda L3B_V2_Y                                ; 8C43 A5 3B
     sta L45_SPRITE_Y                            ; 8C45 85 45
     lda $43                                     ; 8C47 A5 43
     and #$08                                    ; 8C49 29 08
@@ -1883,9 +1920,9 @@ L8C28:
     lda LA101,x ; #$23 or #$13                  ; 8C4F BD 01 A1
     sta L53_SPRITE_NUM                          ; 8C52 85 53
     jsr R88F6_SPRITE                            ; 8C54 20 F6 88
-    lda $3C                                     ; 8C57 A5 3C
+    lda L3C_V3_X                                ; 8C57 A5 3C
     sta L44_SPRITE_X                            ; 8C59 85 44
-    lda $3D                                     ; 8C5B A5 3D
+    lda L3D_V3_Y                                ; 8C5B A5 3D
     sta L45_SPRITE_Y                            ; 8C5D 85 45
     lda $43                                     ; 8C5F A5 43
     and #$04                                    ; 8C61 29 04
@@ -2125,52 +2162,54 @@ L8DBE:
 
 ; ----------------------------------------------------------------------------
 R8DBF:
-.scope
-        lda     $5B                             ; 8DBF A5 5B
-        and     #$03                            ; 8DC1 29 03
-        bne     L8DDA                           ; 8DC3 D0 15
-        lda     $5C                             ; 8DC5 A5 5C
-        and     #$03                            ; 8DC7 29 03
-        beq     L8E2A                           ; 8DC9 F0 5F
-        inc     $93                             ; 8DCB E6 93
-        lda     $93                             ; 8DCD A5 93
-        cmp     #$10                            ; 8DCF C9 10
-        bmi     L8E2A                           ; 8DD1 30 57
-        lda     #$0A                            ; 8DD3 A9 0A
-        sta     $93                             ; 8DD5 85 93
-        jmp     L8DE3                           ; 8DD7 4C E3 8D
-
-L8DDA:  lda     #$00                            ; 8DDA A9 00
-        sta     $93                             ; 8DDC 85 93
-        lda     #$03                            ; 8DDE A9 03
-        sta     $06F1                           ; 8DE0 8D F1 06
-L8DE3:  lda     $5C                             ; 8DE3 A5 5C
-        and     #$01                            ; 8DE5 29 01
-        beq     L8E09                           ; 8DE7 F0 20
-        lda     $A5                             ; 8DE9 A5 A5
-        and     #$01                            ; 8DEB 29 01
-        clc                                     ; 8DED 18
-        adc     #$06                            ; 8DEE 69 06
-        cmp     $85                             ; 8DF0 C5 85
-        beq     L8E09                           ; 8DF2 F0 15
-        inc     $85                             ; 8DF4 E6 85
-        jsr     R90D3                           ; 8DF6 20 D3 90
-        if_eq                                   ; 8DF9 D0 08
-            lda #$03                            ; 8DFB A9 03
-            sta $06F1                           ; 8DFD 8D F1 06
-        else                                    ; 8E00 4C 09 8E
-            dec $85                             ; 8E03 C6 85
-            lda #$0F                            ; 8E05 A9 0F
-            sta $93                             ; 8E07 85 93
+    begin
+        lda $5B                                 ; 8DBF A5 5B
+        and #$03                                ; 8DC1 29 03
+        if_eq                                   ; 8DC3 D0 15
+            lda $5C                             ; 8DC5 A5 5C
+            and #$03                            ; 8DC7 29 03
+            beq break                           ; 8DC9 F0 5F
+            inc $93                             ; 8DCB E6 93
+            lda $93                             ; 8DCD A5 93
+            cmp #$10                            ; 8DCF C9 10
+            bmi break                           ; 8DD1 30 57
+            lda #$0A                            ; 8DD3 A9 0A
+            sta $93                             ; 8DD5 85 93
+        else                                    ; 8DD7 4C E3 8D
+            lda #$00                            ; 8DDA A9 00
+            sta $93                             ; 8DDC 85 93
+            lda #$03                            ; 8DDE A9 03
+            sta $06F1                           ; 8DE0 8D F1 06
         end_if
-L8E09:  lda     $5C                             ; 8E09 A5 5C
-        and     #$02                            ; 8E0B 29 02
-        beq     L8E2A                           ; 8E0D F0 1B
-        lda     $85                             ; 8E0F A5 85
-        cmp     #$00                            ; 8E11 C9 00
-        beq     L8E2A                           ; 8E13 F0 15
-        dec     $85                             ; 8E15 C6 85
-        jsr     R90D3                           ; 8E17 20 D3 90
+        lda $5C                                 ; 8DE3 A5 5C
+        and #$01                                ; 8DE5 29 01
+        if_ne                                   ; 8DE7 F0 20
+            lda $A5                             ; 8DE9 A5 A5
+            and #$01                            ; 8DEB 29 01
+            clc                                 ; 8DED 18
+            adc #$06                            ; 8DEE 69 06
+            cmp $85                             ; 8DF0 C5 85
+            if_ne                               ; 8DF2 F0 15
+                inc $85                         ; 8DF4 E6 85
+                jsr R90D3                       ; 8DF6 20 D3 90
+                if_eq                           ; 8DF9 D0 08
+                    lda #$03                    ; 8DFB A9 03
+                    sta $06F1                   ; 8DFD 8D F1 06
+                else                            ; 8E00 4C 09 8E
+                    dec $85                     ; 8E03 C6 85
+                    lda #$0F                    ; 8E05 A9 0F
+                    sta $93                     ; 8E07 85 93
+                end_if
+            end_if
+        end_if
+        lda $5C                                 ; 8E09 A5 5C
+        and #$02                                ; 8E0B 29 02
+        beq break                               ; 8E0D F0 1B
+        lda $85                                 ; 8E0F A5 85
+        cmp #$00                                ; 8E11 C9 00
+        beq break                               ; 8E13 F0 15
+        dec $85                                 ; 8E15 C6 85
+        jsr R90D3                               ; 8E17 20 D3 90
         if_eq                                   ; 8E1A D0 08
             lda #$03                            ; 8E1C A9 03
             sta $06F1                           ; 8E1E 8D F1 06
@@ -2179,60 +2218,58 @@ L8E09:  lda     $5C                             ; 8E09 A5 5C
             lda #$0F                            ; 8E26 A9 0F
             sta $93                             ; 8E28 85 93
         end_if
-L8E2A:  rts                                     ; 8E2A 60
-.endscope
+    end
+    rts                                         ; 8E2A 60
 
 ; ----------------------------------------------------------------------------
 R8E2B:
-.scope
-        lda     $A5                             ; 8E2B A5 A5
-        sta     $4A                             ; 8E2D 85 4A
-        lda     $85                             ; 8E2F A5 85
-        sta     $4B                             ; 8E31 85 4B
-        lda     $5B                             ; 8E33 A5 5B
-        and     #$80                            ; 8E35 29 80
-        if_ne                                   ; 8E37 F0 10
-            lda #$05                            ; 8E39 A9 05
-            sta $06F1                           ; 8E3B 8D F1 06
-            dec $A5                             ; 8E3E C6 A5
-            lda $A5                             ; 8E40 A5 A5
-            and #$03                            ; 8E42 29 03
-            sta $A5                             ; 8E44 85 A5
-            jsr R8E60                           ; 8E46 20 60 8E
-        end_if
-        lda     $5B                             ; 8E49 A5 5B
-        and     #$40                            ; 8E4B 29 40
-        if_ne                                   ; 8E4D F0 10
-            lda #$05                            ; 8E4F A9 05
-            sta $06F1                           ; 8E51 8D F1 06
-            inc $A5                             ; 8E54 E6 A5
-            lda $A5                             ; 8E56 A5 A5
-            and #$03                            ; 8E58 29 03
-            sta $A5                             ; 8E5A 85 A5
-            jsr R8E60                           ; 8E5C 20 60 8E
-        end_if
-        rts                                     ; 8E5F 60
-.endscope
+    lda $A5                                     ; 8E2B A5 A5
+    sta $4A                                     ; 8E2D 85 4A
+    lda $85                                     ; 8E2F A5 85
+    sta $4B                                     ; 8E31 85 4B
+    lda $5B                                     ; 8E33 A5 5B
+    and #$80                                    ; 8E35 29 80
+    if_ne                                       ; 8E37 F0 10
+        lda #$05                                ; 8E39 A9 05
+        sta $06F1                               ; 8E3B 8D F1 06
+        dec $A5                                 ; 8E3E C6 A5
+        lda $A5                                 ; 8E40 A5 A5
+        and #$03                                ; 8E42 29 03
+        sta $A5                                 ; 8E44 85 A5
+        jsr R8E60                               ; 8E46 20 60 8E
+    end_if
+    lda $5B                                     ; 8E49 A5 5B
+    and #$40                                    ; 8E4B 29 40
+    if_ne                                       ; 8E4D F0 10
+        lda #$05                                ; 8E4F A9 05
+        sta $06F1                               ; 8E51 8D F1 06
+        inc $A5                                 ; 8E54 E6 A5
+        lda $A5                                 ; 8E56 A5 A5
+        and #$03                                ; 8E58 29 03
+        sta $A5                                 ; 8E5A 85 A5
+        jsr R8E60                               ; 8E5C 20 60 8E
+    end_if
+    rts                                         ; 8E5F 60
 
 ; ----------------------------------------------------------------------------
 R8E60:
 .scope
-        lda     $A5                             ; 8E60 A5 A5
-        and     #$01                            ; 8E62 29 01
-        bne     L8E7F                           ; 8E64 D0 19
-        jsr     R90D3                           ; 8E66 20 D3 90
-        bne     L8E7D                           ; 8E69 D0 12
-        lda     $5C                             ; 8E6B A5 5C
-        and     #$02                            ; 8E6D 29 02
-        beq     L8E8C                           ; 8E6F F0 1B
-        dec     $85                             ; 8E71 C6 85
-        jsr     R90D3                           ; 8E73 20 D3 90
-        beq     L8E8C                           ; 8E76 F0 14
-        inc     $85                             ; 8E78 E6 85
-        jmp     L8E8C                           ; 8E7A 4C 8C 8E
+        lda $A5                                 ; 8E60 A5 A5
+        and #$01                                ; 8E62 29 01
+        bne L8E7F                               ; 8E64 D0 19
+        jsr R90D3                               ; 8E66 20 D3 90
+        bne L8E7D                               ; 8E69 D0 12
+        lda $5C                                 ; 8E6B A5 5C
+        and #$02                                ; 8E6D 29 02
+        beq L8E8C                               ; 8E6F F0 1B
+        dec $85                                 ; 8E71 C6 85
+        jsr R90D3                               ; 8E73 20 D3 90
+        beq L8E8C                               ; 8E76 F0 14
+        inc $85                                 ; 8E78 E6 85
+        jmp L8E8C                               ; 8E7A 4C 8C 8E
 
-L8E7D:  dec     $85                             ; 8E7D C6 85
-L8E7F:  jsr     R90D3                           ; 8E7F 20 D3 90
+L8E7D:  dec $85                                 ; 8E7D C6 85
+L8E7F:  jsr R90D3                               ; 8E7F 20 D3 90
         if_ne                                   ; 8E82 F0 08
             lda $4A                             ; 8E84 A5 4A
             sta $A5                             ; 8E86 85 A5
@@ -2442,7 +2479,7 @@ R8F52:
 .endscope
 
 ; ----------------------------------------------------------------------------
-; Copy $031E $039E $0316 $0396 L030B_P1_SPEED $038B
+; Copy $031E $039E $0316 $0396 L030B_P1_SPEED L038B_P2_SPEED
 ; to   $0732 $0733 $0734 $0735 $0736 $0737
 R8FA5:
     lda $031E                                   ; 8FA5 AD 1E 03
@@ -2455,13 +2492,13 @@ R8FA5:
     sta $0735                                   ; 8FBA 8D 35 07
     lda L030B_P1_SPEED                          ; 8FBD AD 0B 03
     sta $0736                                   ; 8FC0 8D 36 07
-    lda $038B                                   ; 8FC3 AD 8B 03
+    lda L038B_P2_SPEED                          ; 8FC3 AD 8B 03
     sta $0737                                   ; 8FC6 8D 37 07
     rts                                         ; 8FC9 60
 
 ; ----------------------------------------------------------------------------
 ; Copy $0732 $0733 $0734 $0735 $0736 $0737
-; to   $031E $039E $0316 $0396 L030B_P1_SPEED $038B
+; to   $031E $039E $0316 $0396 L030B_P1_SPEED L038B_P2_SPEED
 R8FCA:
     lda $0732                                   ; 8FCA AD 32 07
     sta $031E                                   ; 8FCD 8D 1E 03
@@ -2474,7 +2511,7 @@ R8FCA:
     lda $0736                                   ; 8FE2 AD 36 07
     sta L030B_P1_SPEED                          ; 8FE5 8D 0B 03
     lda $0737                                   ; 8FE8 AD 37 07
-    sta $038B                                   ; 8FEB 8D 8B 03
+    sta L038B_P2_SPEED                          ; 8FEB 8D 8B 03
     rts                                         ; 8FEE 60
 
 ; ----------------------------------------------------------------------------
@@ -2561,7 +2598,7 @@ R901C:
     rts                                         ; 9074 60
 
 ; ----------------------------------------------------------------------------
-; Load P1 state
+; Load P1 state into zero page
 ; Copy $0300-$032F to $80-$AF
 ; $F5 -> $5B (controller 1 edge)
 ; $F7 -> $5C (controller 1 state)
@@ -2586,7 +2623,7 @@ R9075:
     rts                                         ; 9091 60
 
 ; ----------------------------------------------------------------------------
-; Load P2 state
+; Load P2 state into zero page
 ; Copy $0380-$038F to $80-$AF
 ; $F6 -> $5B (controller 2 edge)
 ; $F8 -> $5C (controller 2 state)
@@ -2610,7 +2647,7 @@ R9092:
     rts                                         ; 90AE 60
 
 ; ----------------------------------------------------------------------------
-; Save P1 state
+; Save P1 state from zero page
 ; Copy $80-$AF to $0300-$032F
 R90AF:
     ldx #$00                                    ; 90AF A2 00
@@ -2623,7 +2660,7 @@ R90AF:
     rts                                         ; 90BB 60
 
 ; ----------------------------------------------------------------------------
-; Save P2 state
+; Save P2 state from zero page
 ; Copy $80-$AF to $0380-$03AF
 R90BC:
     ldx #$00                                    ; 90BC A2 00
@@ -3182,19 +3219,20 @@ L9413:
         rts                                     ; 9419 60
 
 ; ----------------------------------------------------------------------------
-; Input: Y
+; Input: ($57),Y
+; ($57),Y should point at byte with virus color in low nybble
 R941A:
     lda ($57),y                                 ; 941A B1 57
     and #$0F                                    ; 941C 29 0F
     tax                                         ; 941E AA
     lda #$01                                    ; 941F A9 01
-    sta $75,x                                   ; 9421 95 75
+    sta L75_V1_STATE,x                          ; 9421 95 75
     lda #$00                                    ; 9423 A9 00
-    sta $78,x                                   ; 9425 95 78
-    lda $72,x                                   ; 9427 B5 72
+    sta L78_V1_TIMER,x                          ; 9425 95 78
+    lda L72_V1_COUNT,x                          ; 9427 B5 72
     sec                                         ; 9429 38
     sbc #$01                                    ; 942A E9 01
-    sta $72,x                                   ; 942C 95 72
+    sta L72_V1_COUNT,x                          ; 942C 95 72
     jsr R8FF4 ; Increment score                 ; 942E 20 F4 8F
     ; decrement virus count
     lda LA4_VIRUS_BCD                           ; 9431 A5 A4
@@ -3550,24 +3588,22 @@ R9682:
 ; Copy null-terminated 36-byte string from LA80F to offsets $28-$4B
 ; Also set $80 to #$0F.
 R9691:
-.scope
-        lda     #$00                            ; 9691 A9 00
-        sta     $57                             ; 9693 85 57
-        ldy     #$28                            ; 9695 A0 28
-        loop
-            tya                                 ; 9697 98
-            sec                                 ; 9698 38
-            sbc #$28                            ; 9699 E9 28
-            tax                                 ; 969B AA
-            lda LA80F,x                         ; 969C BD 0F A8
-            beq break                           ; 969F F0 06
-            sta ($57),y                         ; 96A1 91 57
-            iny                                 ; 96A3 C8
-        forever                                 ; 96A4 4C 97 96
-        lda     #$0F                            ; 96A7 A9 0F
-        sta     $80                             ; 96A9 85 80
-        rts                                     ; 96AB 60
-.endscope
+    lda #$00                                    ; 9691 A9 00
+    sta $57                                     ; 9693 85 57
+    ldy #$28                                    ; 9695 A0 28
+    loop
+        tya                                     ; 9697 98
+        sec                                     ; 9698 38
+        sbc #$28                                ; 9699 E9 28
+        tax                                     ; 969B AA
+        lda LA80F,x                             ; 969C BD 0F A8
+        beq break                               ; 969F F0 06
+        sta ($57),y                             ; 96A1 91 57
+        iny                                     ; 96A3 C8
+    forever                                     ; 96A4 4C 97 96
+    lda #$0F                                    ; 96A7 A9 0F
+    sta $80                                     ; 96A9 85 80
+    rts                                         ; 96AB 60
 
 ; ----------------------------------------------------------------------------
 ; unreachable?
@@ -3591,56 +3627,50 @@ R9691:
 ; Fill offsets #$40 to #$7f with value #$ff.
 ; Also set $80 to #$0F.
 R96C0:
-.scope
-        lda     #$00                            ; 96C0 A9 00
-        sta     $57                             ; 96C2 85 57
-        ldy     #$40                            ; 96C4 A0 40
-        loop
-            lda #$FF                            ; 96C6 A9 FF
-            sta ($57),y                         ; 96C8 91 57
-            iny                                 ; 96CA C8
-            cpy #$80                            ; 96CB C0 80
-        while_ne                                ; 96CD D0 F7
-        lda     #$0F                            ; 96CF A9 0F
-        sta     $80                             ; 96D1 85 80
-        rts                                     ; 96D3 60
-.endscope
+    lda #$00                                    ; 96C0 A9 00
+    sta $57                                     ; 96C2 85 57
+    ldy #$40                                    ; 96C4 A0 40
+    loop
+        lda #$FF                                ; 96C6 A9 FF
+        sta ($57),y                             ; 96C8 91 57
+        iny                                     ; 96CA C8
+        cpy #$80                                ; 96CB C0 80
+    while_ne                                    ; 96CD D0 F7
+    lda #$0F                                    ; 96CF A9 0F
+    sta $80                                     ; 96D1 85 80
+    rts                                         ; 96D3 60
 
 ; ----------------------------------------------------------------------------
 ; In page pointed to by $58 (#$04 or #$05)
 ; Copy null-terminated 50-byte string from LA838 to offsets $10-$41.
 ; Also set $80 to #$0F.
 R96D4:
-.scope
-        lda     #$00                            ; 96D4 A9 00
-        sta     $57                             ; 96D6 85 57
-        ldx     #$00                            ; 96D8 A2 00
-        ldy     #$10                            ; 96DA A0 10
-        loop
-            lda LA838,x                         ; 96DC BD 38 A8
-            beq break                           ; 96DF F0 07
-            sta ($57),y                         ; 96E1 91 57
-            inx                                 ; 96E3 E8
-            iny                                 ; 96E4 C8
-        forever                                 ; 96E5 4C DC 96
-        lda     #$0F                            ; 96E8 A9 0F
-        sta     $80                             ; 96EA 85 80
-        rts                                     ; 96EC 60
-.endscope
+    lda #$00                                    ; 96D4 A9 00
+    sta $57                                     ; 96D6 85 57
+    ldx #$00                                    ; 96D8 A2 00
+    ldy #$10                                    ; 96DA A0 10
+    loop
+        lda LA838,x                             ; 96DC BD 38 A8
+        beq break                               ; 96DF F0 07
+        sta ($57),y                             ; 96E1 91 57
+        inx                                     ; 96E3 E8
+        iny                                     ; 96E4 C8
+    forever                                     ; 96E5 4C DC 96
+    lda #$0F                                    ; 96E8 A9 0F
+    sta $80                                     ; 96EA 85 80
+    rts                                         ; 96EC 60
 
 ; ----------------------------------------------------------------------------
 R96ED:
-.scope
-        lda     #$0F                            ; 96ED A9 0F
-        sta     $0300                           ; 96EF 8D 00 03
-        sta     $0380                           ; 96F2 8D 80 03
-        loop
-           jsr RB654                           ; 96F5 20 54 B6
-           lda $0300                           ; 96F8 AD 00 03
-           cmp #$FF                            ; 96FB C9 FF
-        while_ne                                ; 96FD D0 F6
-        rts                                     ; 96FF 60
-.endscope
+    lda #$0F                                    ; 96ED A9 0F
+    sta $0300                                   ; 96EF 8D 00 03
+    sta $0380                                   ; 96F2 8D 80 03
+    loop
+       jsr RB654                                ; 96F5 20 54 B6
+       lda $0300                                ; 96F8 AD 00 03
+       cmp #$FF                                 ; 96FB C9 FF
+    while_ne                                    ; 96FD D0 F6
+    rts                                         ; 96FF 60
 
 ; ----------------------------------------------------------------------------
 ; R9BB9 routine 4.
@@ -3648,17 +3678,15 @@ L9700:  rts                                     ; 9700 60
 
 ; ----------------------------------------------------------------------------
 R9701:
-.scope
-        sta     $51                             ; 9701 85 51
-        lda     #$01                            ; 9703 A9 01
-        sta     $5D                             ; 9705 85 5D
-        loop
-            jsr RB654                           ; 9707 20 54 B6
-            dec $51                             ; 970A C6 51
-            lda $51                             ; 970C A5 51
-        while_ne                                ; 970E D0 F7
-        rts                                     ; 9710 60
-.endscope
+    sta $51                                     ; 9701 85 51
+    lda #$01                                    ; 9703 A9 01
+    sta $5D                                     ; 9705 85 5D
+    loop
+        jsr RB654                               ; 9707 20 54 B6
+        dec $51                                 ; 970A C6 51
+        lda $51                                 ; 970C A5 51
+    while_ne                                    ; 970E D0 F7
+    rts                                         ; 9710 60
 
 ; ----------------------------------------------------------------------------
 ; unused?
@@ -4644,10 +4672,10 @@ L9D61:  lda $48                                 ; 9D61 A5 48
         sta ($57),y                             ; 9E0C 91 57
         and #$07                                ; 9E0E 29 07
         tax                                     ; 9E10 AA
-        lda $72,x                               ; 9E11 B5 72
+        lda L72_V1_COUNT,x                      ; 9E11 B5 72
         clc                                     ; 9E13 18
         adc #$01                                ; 9E14 69 01
-        sta $72,x                               ; 9E16 95 72
+        sta L72_V1_COUNT,x                      ; 9E16 95 72
         lda $0316                               ; 9E18 AD 16 03
         cmp $0396                               ; 9E1B CD 96 03
         if_eq                                   ; 9E1E D0 09
@@ -4730,16 +4758,16 @@ L9E67:
     jsr R9F09                                   ; 9EA7 20 09 9F
     jsr RB352 ; Initialize $0580                ; 9EAA 20 52 B3
     lda #$70                                    ; 9EAD A9 70
-    sta $38                                     ; 9EAF 85 38
+    sta L38_V1_X                                ; 9EAF 85 38
     lda #$82                                    ; 9EB1 A9 82
-    sta $39                                     ; 9EB3 85 39
+    sta L39_V1_Y                                ; 9EB3 85 39
     lda #$5E                                    ; 9EB5 A9 5E
     sta $4F                                     ; 9EB7 85 4F
     lda #$F8                                    ; 9EB9 A9 F8
     sta $50                                     ; 9EBB 85 50
     lda #$00                                    ; 9EBD A9 00
-    sta $3A                                     ; 9EBF 85 3A
-    sta $3D                                     ; 9EC1 85 3D
+    sta L3A_V2_X                                ; 9EBF 85 3A
+    sta L3D_V3_Y                                ; 9EC1 85 3D
     loop
         jsr R9F18                               ; 9EC3 20 18 9F
         jsr RB42F                               ; 9EC6 20 2F B4
@@ -4842,9 +4870,9 @@ L9F6F:
 ; Load tiny alien sprite $20 or $22 depending on $43 bit 3.
 ; Called once in R9E4C.
 R9F70:
-    lda $38                                     ; 9F70 A5 38
+    lda L38_V1_X                                ; 9F70 A5 38
     sta L44_SPRITE_X                            ; 9F72 85 44
-    lda $39                                     ; 9F74 A5 39
+    lda L39_V1_Y                                ; 9F74 A5 39
     sta L45_SPRITE_Y                            ; 9F76 85 45
     lda $43                                     ; 9F78 A5 43
     and #$08                                    ; 9F7A 29 08
@@ -5033,41 +5061,31 @@ LA113:  .byte $04,$04,$05,$00                   ; A113 04 04 05 00
 LA117:  .byte $38,$70,$A7                       ; A117 38 70 A7
 
 ; ----------------------------------------------------------------------------
-; lookup table, used in R89D4, indexed by $75
+; lookup table, used in R89D4, indexed by L75_V1_STATE
 LA11A:  .byte $00,$01,$01,$01,$00               ; A11A 00 01 01 01 00
 
 ; ----------------------------------------------------------------------------
-; 21-byte lookup table, used in R89D4, indexed by $3E
+; Table of 128 virus X-coordinates, used in R89D4, indexed by L3E_VIRUS_CYCLE.
+; Viruses 2 and 3 use offsets of 21 and 42.
 LA11F:  .byte $20,$22,$24,$25,$27,$28,$2A,$2B,$2C,$2D,$2E,$2F,$2F,$2F,$30,$30
-        .byte $30,$30,$30,$2F,$2F
+        .byte $30,$30,$30,$2F,$2F,$2F,$2E,$2D,$2C,$2B,$2A,$28,$27,$25,$24,$22
+        .byte $20,$1E,$1C,$1B,$19,$18,$16,$15,$14,$13,$12,$11,$11,$11,$10,$10
+        .byte $10,$10,$10,$11,$11,$11,$12,$13,$14,$15,$16,$18,$19,$1B,$1C,$1E
+        .byte $20,$22,$24,$25,$27,$28,$2A,$2B,$2C,$2D,$2E,$2F,$2F,$2F,$30,$30
+        .byte $30,$30,$30,$2F,$2F,$2F,$2E,$2D,$2C,$2B,$2A,$28,$27,$25,$24,$22
+        .byte $20,$1E,$1C,$1B,$19,$18,$16,$15,$14,$13,$12,$11,$11,$11,$10,$10
+        .byte $10,$10,$10,$11,$11,$11,$12,$13,$14,$15,$16,$18,$19,$1B,$1C,$1E
 ; ----------------------------------------------------------------------------
-; 21-byte lookup table, used in R89D4, indexed by $3E
-LA134:  .byte $2F,$2E,$2D,$2C,$2B,$2A,$28,$27,$25,$24,$22,$20,$1E,$1C,$1B,$19
-        .byte $18,$16,$15,$14,$13
-; ----------------------------------------------------------------------------
-; 86-byte lookup table, used in R89D4, indexed by $3E
-LA149:  .byte $12,$11,$11,$11,$10,$10,$10,$10,$10,$11,$11,$11,$12,$13,$14,$15
-        .byte $16,$18,$19,$1B,$1C,$1E,$20,$22,$24,$25,$27,$28,$2A,$2B,$2C,$2D
-        .byte $2E,$2F,$2F,$2F,$30,$30,$30,$30,$30,$2F,$2F,$2F,$2E,$2D,$2C,$2B
-        .byte $2A,$28,$27,$25,$24,$22,$20,$1E,$1C,$1B,$19,$18,$16,$15,$14,$13
-        .byte $12,$11,$11,$11,$10,$10,$10,$10,$10,$11,$11,$11,$12,$13,$14,$15
-        .byte $16,$18,$19,$1B,$1C,$1E
-; ----------------------------------------------------------------------------
-; 21-byte lookup table, used in R89D4, indexed by $3E
+; Table of 128 virus Y-coordinates, used in R89D4, indexed by L3E_VIRUS_CYCLE.
+; Viruses 2 and 3 use offsets of 21 and 42.
 LA19F:  .byte $AF,$AF,$AE,$AE,$AD,$AC,$AB,$AA,$A8,$A7,$A5,$A3,$A2,$A0,$9E,$9D
-        .byte $9B,$99,$98,$96,$94
-; ----------------------------------------------------------------------------
-; 21-byte lookup table, used in R89D4, indexed by $3E
-LA1B4:  .byte $93,$91,$8F,$8E,$8C,$8B,$8A,$89,$88,$88,$87,$87,$87,$88,$88,$89
-        .byte $8A,$8B,$8C,$8E,$8F
-; ----------------------------------------------------------------------------
-; 86-byte lookup table, used in R89D4, indexed by $3E
-LA1C9:  .byte $91,$93,$94,$96,$98,$99,$9B,$9D,$9E,$A0,$A2,$A3,$A5,$A7,$A8,$AA
-        .byte $AB,$AC,$AD,$AE,$AE,$AF,$AF,$AF,$AE,$AE,$AD,$AC,$AB,$AA,$A8,$A7
-        .byte $A5,$A3,$A2,$A0,$9E,$9D,$9B,$99,$98,$96,$94,$93,$91,$8F,$8E,$8C
-        .byte $8B,$8A,$89,$88,$88,$87,$87,$87,$88,$88,$89,$8A,$8B,$8C,$8E,$8F
-        .byte $91,$93,$94,$96,$98,$99,$9B,$9D,$9E,$A0,$A2,$A3,$A5,$A7,$A8,$AA
-        .byte $AB,$AC,$AD,$AE,$AE,$AF
+        .byte $9B,$99,$98,$96,$94,$93,$91,$8F,$8E,$8C,$8B,$8A,$89,$88,$88,$87
+        .byte $87,$87,$88,$88,$89,$8A,$8B,$8C,$8E,$8F,$91,$93,$94,$96,$98,$99
+        .byte $9B,$9D,$9E,$A0,$A2,$A3,$A5,$A7,$A8,$AA,$AB,$AC,$AD,$AE,$AE,$AF
+        .byte $AF,$AF,$AE,$AE,$AD,$AC,$AB,$AA,$A8,$A7,$A5,$A3,$A2,$A0,$9E,$9D
+        .byte $9B,$99,$98,$96,$94,$93,$91,$8F,$8E,$8C,$8B,$8A,$89,$88,$88,$87
+        .byte $87,$87,$88,$88,$89,$8A,$8B,$8C,$8E,$8F,$91,$93,$94,$96,$98,$99
+        .byte $9B,$9D,$9E,$A0,$A2,$A3,$A5,$A7,$A8,$AA,$AB,$AC,$AD,$AE,$AE,$AF
 
 ; ----------------------------------------------------------------------------
 ; lookup table, used by R8FF4
@@ -5085,10 +5103,11 @@ LA22A:  .byte $0A,$03,$00                       ; A22A 0A 03 00
 LA22D:  .byte $01,$02,$04,$00                   ; A22D 01 02 04 00
 
 ; ----------------------------------------------------------------------------
-; lookup table, indexed by $78,$79,$7A
+; 12-byte table of virus y-coordinate offsets, indexed by L78_V{1,2,3}_TIMER.
+; Falling animation for viruses.
 LA231:  .byte $FC,$F8,$F4,$F2,$F1,$F0,$F1,$F2,$F4,$F8,$FC,$00
 ; ----------------------------------------------------------------------------
-; lookup table, used by R82D1 (indexed by L030B_P1_SPEED * 4) and L816E (also by $038B * 4)
+; lookup table, used by R82D1 (indexed by L030B_P1_SPEED * 4) and L816E (also by L038B_P2_SPEED * 4)
 LA23D:  .byte $15,$18,$20,$00  ; "LOW"
         .byte $16,$0E,$0D,$00  ; "MED"
         .byte $FE,$11,$12,$00  ; " HI"
@@ -5099,13 +5118,16 @@ LA249:  .byte $15,$18,$20,$00  ; "LOW"
         .byte $16,$0E,$0D,$00  ; "MED"
         .byte $FF,$11,$12,$00  ; " HI"
 ; ----------------------------------------------------------------------------
-; Table of sprite numbers, used by R89D4, indexed by $7B.
+; Table of sprite numbers, used by R89D4, indexed by L7B_VIRUS_MARCH.
+; Red virus marching animation
 LA255:  .byte $23,$24,$23,$25
 ; ----------------------------------------------------------------------------
-; Table of sprite numbers, used by R89D4 and R8BE5, indexed by $7B.
+; Table of sprite numbers, used by R89D4 and R8BE5, indexed by L7B_VIRUS_MARCH.
+; Blue virus marching animation
 LA259:  .byte $26,$27,$26,$28
 ; ----------------------------------------------------------------------------
-; Table of sprite numbers, used by R89D4, indexed by $7B.
+; Table of sprite numbers, used by R89D4, indexed by L7B_VIRUS_MARCH.
+; Yellow virus marching animation
 LA25D:  .byte $29,$2A,$29,$2B
 ; ----------------------------------------------------------------------------
 ; lookup table, used by
@@ -5639,36 +5661,60 @@ LACD6:  .byte $00,$29,$01,$00,$80
 ; Sprite $22: Tiny aliens (page 7)
 ; 10  11  12
 LACDB:  .byte $00,$10,$00,$00,$00,$11,$00,$0A,$00,$12,$00,$14,$80
-LACE8:  .byte $00,$83,$01,$00,$00,$84,$01,$08,$00,$83,$41,$10,$08,$93,$01,$00
-        .byte $08,$94,$01,$08,$08,$93,$41,$10,$10,$A3,$01,$00,$10,$A4,$01,$08
-        .byte $10,$A3,$41,$10,$80
+; Sprite $23: Red virus, symmetrical (page 2)
+; 83 84 83
+; 93 94 93
+; A3 A4 A3
+LACE8:  .byte $00,$83,$01,$00,$00,$84,$01,$08,$00,$83,$41,$10
+        .byte $08,$93,$01,$00,$08,$94,$01,$08,$08,$93,$41,$10
+        .byte $10,$A3,$01,$00,$10,$A4,$01,$08,$10,$A3,$41,$10,$80
 LAD0D:  .byte $00,$85,$01,$00,$00,$86,$01,$08,$00,$87,$01,$10,$08,$95,$01,$00
         .byte $08,$96,$01,$08,$08,$97,$01,$10,$10,$A5,$01,$00,$10,$A6,$01,$08
         .byte $10,$A7,$01,$10,$80
 LAD32:  .byte $00,$87,$41,$00,$00,$86,$41,$08,$00,$85,$41,$10,$08,$97,$41,$00
         .byte $08,$96,$41,$08,$08,$95,$41,$10,$10,$A7,$41,$00,$10,$A6,$41,$08
         .byte $10,$A5,$41,$10,$80
-LAD57:  .byte $00,$B3,$03,$00,$00,$B4,$03,$08,$00,$B3,$43,$10,$08,$C3,$03,$00
-        .byte $08,$C4,$03,$08,$08,$C3,$43,$10,$10,$D3,$03,$00,$10,$D4,$03,$08
-        .byte $10,$D3,$43,$10,$80
+; Sprite $26: Blue virus, symmetrical (page 2)
+; B3 B4 B3
+; C3 C4 C3
+; D3 D4 D3
+LAD57:  .byte $00,$B3,$03,$00,$00,$B4,$03,$08,$00,$B3,$43,$10
+        .byte $08,$C3,$03,$00,$08,$C4,$03,$08,$08,$C3,$43,$10
+        .byte $10,$D3,$03,$00,$10,$D4,$03,$08,$10,$D3,$43,$10,$80
 LAD7C:  .byte $00,$B5,$03,$00,$00,$B6,$03,$08,$00,$B7,$03,$10,$08,$C5,$03,$00
         .byte $08,$C6,$03,$08,$08,$C7,$03,$10,$10,$D5,$03,$00,$10,$D6,$03,$08
         .byte $10,$D7,$03,$10,$80
 LADA1:  .byte $00,$B7,$43,$00,$00,$B6,$43,$08,$00,$B5,$43,$10,$08,$C7,$43,$00
         .byte $08,$C6,$43,$08,$08,$C5,$43,$10,$10,$D7,$43,$00,$10,$D6,$43,$08
         .byte $10,$D5,$43,$10,$80
-LADC6:  .byte $00,$88,$03,$00,$00,$89,$03,$08,$00,$88,$43,$10,$08,$98,$03,$00
-        .byte $08,$99,$03,$08,$08,$98,$43,$10,$10,$A8,$03,$00,$10,$A9,$03,$08
-        .byte $10,$A8,$43,$10,$80
-LADEB:  .byte $00,$8A,$03,$00,$00,$8B,$03,$08,$00,$8C,$03,$10,$08,$9A,$03,$00
-        .byte $08,$9B,$03,$08,$08,$9C,$03,$10,$10,$AA,$03,$00,$10,$AB,$03,$08
-        .byte $10,$AC,$03,$10,$80
-LAE10:  .byte $00,$8C,$43,$00,$00,$8B,$43,$08,$00,$8A,$43,$10,$08,$9C,$43,$00
-        .byte $08,$9B,$43,$08,$08,$9A,$43,$10,$10,$AC,$43,$00,$10,$AB,$43,$08
-        .byte $10,$AA,$43,$10,$80
-LAE35:  .byte $00,$BB,$01,$00,$00,$BC,$01,$08,$08,$CB,$01,$00,$08,$CC,$01,$08
-        .byte $08,$CD,$01,$10,$10,$DB,$01,$00,$10,$DC,$01,$08,$10,$DD,$01,$10
-        .byte $80
+; Sprite $29: Yellow virus, symmetrical (page 2)
+; 88 89 88
+; 98 99 98
+; A8 A9 A8
+LADC6:  .byte $00,$88,$03,$00,$00,$89,$03,$08,$00,$88,$43,$10
+        .byte $08,$98,$03,$00,$08,$99,$03,$08,$08,$98,$43,$10
+        .byte $10,$A8,$03,$00,$10,$A9,$03,$08,$10,$A8,$43,$10,$80
+; Sprite $2A: Yellow virus, marching R (page 2)
+; 8A 8B 8C
+; 9A 9B 9C
+; AA AB AC
+LADEB:  .byte $00,$8A,$03,$00,$00,$8B,$03,$08,$00,$8C,$03,$10
+        .byte $08,$9A,$03,$00,$08,$9B,$03,$08,$08,$9C,$03,$10
+        .byte $10,$AA,$03,$00,$10,$AB,$03,$08,$10,$AC,$03,$10,$80
+; Sprite $2B: Yellow virus, marching L (page 2)
+; 8C 8B 8A
+; 9C 9B 9A
+; AC AB AA
+LAE10:  .byte $00,$8C,$43,$00,$00,$8B,$43,$08,$00,$8A,$43,$10
+        .byte $08,$9C,$43,$00,$08,$9B,$43,$08,$08,$9A,$43,$10
+        .byte $10,$AC,$43,$00,$10,$AB,$43,$08,$10,$AA,$43,$10,$80
+; Sprite $2C: Red virus fussy
+; BB BC
+; CB CC CD
+; DB DC DD
+LAE35:  .byte $00,$BB,$01,$00,$00,$BC,$01,$08
+        .byte $08,$CB,$01,$00,$08,$CC,$01,$08,$08,$CD,$01,$10
+        .byte $10,$DB,$01,$00,$10,$DC,$01,$08,$10,$DD,$01,$10,$80
 LAE56:  .byte $00,$BC,$41,$08,$00,$BB,$41,$10,$08,$CD,$41,$00,$08,$CC,$41,$08
         .byte $08,$CB,$41,$10,$10,$DD,$41,$00,$10,$DC,$41,$08,$10,$DB,$41,$10
         .byte $80
@@ -6046,7 +6092,7 @@ RB42F:
 ; RTS: 0->6->0
 ; READS $43 $8b ($47),Y L0760,X L0762,X La085,X La0e1,X La0ef,X La8c2,X
 ; WRITES $47 $48 $49 $4a $4b L53_SPRITE_NUM L66_PALETTE $7f L06f0 L06f3 L06f4 L06f5 L0200,Y L0200,X
-; MODIFIES $39 $42 L44_SPRITE_X L45_SPRITE_Y $4f $50 $5e L0580,X L0761,X
+; MODIFIES L39_V1_Y $42 L44_SPRITE_X L45_SPRITE_Y $4f $50 $5e L0580,X L0761,X
 ; JSR $9f28 $b371 $b569 $b5a7 $b8ac
 
 RB43F:
@@ -6307,19 +6353,19 @@ RB569:
 ; RB43F routine 19.
 LB589:
     jsr RB5A7                                   ; B589 20 A7 B5
-    lda $39                                     ; B58C A5 39
+    lda L39_V1_Y                                ; B58C A5 39
     sec                                         ; B58E 38
     sbc #$24                                    ; B58F E9 24
     cmp $50                                     ; B591 C5 50
     if_cc                                       ; B593 B0 09
         lda #$F8                                ; B595 A9 F8
-        sta $39                                 ; B597 85 39
+        sta L39_V1_Y                            ; B597 85 39
         inc $5E                                 ; B599 E6 5E
     else                                        ; B59B 4C A6 B5
         lda $43                                 ; B59E A5 43
         and #$03                                ; B5A0 29 03
         if_eq                                   ; B5A2 D0 02
-            dec $39                             ; B5A4 C6 39
+            dec L39_V1_Y                        ; B5A4 C6 39
         end_if
     end_if
     rts                                         ; B5A6 60
@@ -6354,21 +6400,21 @@ RB5B8:
         bne LB5CB                               ; B5C6 D0 03
         jmp LB653                               ; B5C8 4C 53 B6
 
-LB5CB:  lda $3D                                 ; B5CB A5 3D
+LB5CB:  lda L3D_V3_Y                            ; B5CB A5 3D
         cmp #$04                                ; B5CD C9 04
         bne LB5D7                               ; B5CF D0 06
         lda #$81                                ; B5D1 A9 81
         sta $7F                                 ; B5D3 85 7F
-        inc $3D                                 ; B5D5 E6 3D
-LB5D7:  lda $3D                                 ; B5D7 A5 3D
+        inc L3D_V3_Y                            ; B5D5 E6 3D
+LB5D7:  lda L3D_V3_Y                            ; B5D7 A5 3D
         cmp #$06                                ; B5D9 C9 06
         beq LB60B                               ; B5DB F0 2E
         lda $43                                 ; B5DD A5 43
         beq LB5E4                               ; B5DF F0 03
         jmp LB653                               ; B5E1 4C 53 B6
 
-LB5E4:  inc $3D                                 ; B5E4 E6 3D
-        lda $3D                                 ; B5E6 A5 3D
+LB5E4:  inc L3D_V3_Y                            ; B5E4 E6 3D
+        lda L3D_V3_Y                            ; B5E6 A5 3D
         cmp #$02                                ; B5E8 C9 02
         beq LB5EF                               ; B5EA F0 03
         jmp LB653                               ; B5EC 4C 53 B6
@@ -6383,14 +6429,14 @@ LB5EF:  lda L8B_SPEED                           ; B5EF A5 8B
         adc L96_LEVEL                           ; B5F7 65 96
         tax                                     ; B5F9 AA
         lda L9FF8,x                             ; B5FA BD F8 9F
-        sta $3A                                 ; B5FD 85 3A
-        lda $3A                                 ; B5FF A5 3A
+        sta L3A_V2_X                            ; B5FD 85 3A
+        lda L3A_V2_X                            ; B5FF A5 3A
         tax                                     ; B601 AA
         lda LA06A,x                             ; B602 BD 6A A0
-        sta $3B                                 ; B605 85 3B
+        sta L3B_V2_Y                            ; B605 85 3B
         lda #$50                                ; B607 A9 50
-        sta $3C                                 ; B609 85 3C
-LB60B:  ldx $3A                                 ; B60B A6 3A
+        sta L3C_V3_X                            ; B609 85 3C
+LB60B:  ldx L3A_V2_X                            ; B60B A6 3A
         lda LA073,x                             ; B60D BD 73 A0
         sta $47                                 ; B610 85 47
         lda $43                                 ; B612 A5 43
@@ -6398,12 +6444,12 @@ LB60B:  ldx $3A                                 ; B60B A6 3A
         bne LB62B                               ; B616 D0 13
         lda LA07C,x                             ; B618 BD 7C A0
         clc                                     ; B61B 18
-        adc $3B                                 ; B61C 65 3B
-        sta $3B                                 ; B61E 85 3B
+        adc L3B_V2_Y                            ; B61C 65 3B
+        sta L3B_V2_Y                            ; B61E 85 3B
         cmp #$F1                                ; B620 C9 F1
         bcc LB62B                               ; B622 90 07
         lda #$F8                                ; B624 A9 F8
-        sta $3B                                 ; B626 85 3B
+        sta L3B_V2_Y                            ; B626 85 3B
         jmp LB653                               ; B628 4C 53 B6
 
 LB62B:  lda LA058,x                             ; B62B BD 58 A0
@@ -6411,18 +6457,18 @@ LB62B:  lda LA058,x                             ; B62B BD 58 A0
         lda $43                                 ; B630 A5 43
         and $47                                 ; B632 25 47
         bne LB63E                               ; B634 D0 08
-        lda $3E                                 ; B636 A5 3E
+        lda L3E_VIRUS_CYCLE                     ; B636 A5 3E
         eor #$01                                ; B638 49 01
         and #$01                                ; B63A 29 01
-        sta $3E                                 ; B63C 85 3E
-LB63E:  lda $3B                                 ; B63E A5 3B
+        sta L3E_VIRUS_CYCLE                     ; B63C 85 3E
+LB63E:  lda L3B_V2_Y                            ; B63E A5 3B
         sta L44_SPRITE_X                        ; B640 85 44
-        lda $3C                                 ; B642 A5 3C
+        lda L3C_V3_X                            ; B642 A5 3C
         sta L45_SPRITE_Y                        ; B644 85 45
-        ldx $3A                                 ; B646 A6 3A
+        ldx L3A_V2_X                            ; B646 A6 3A
         lda LA061,x                             ; B648 BD 61 A0
         clc                                     ; B64B 18
-        adc $3E                                 ; B64C 65 3E
+        adc L3E_VIRUS_CYCLE                     ; B64C 65 3E
         sta L53_SPRITE_NUM                      ; B64E 85 53
         jsr R88F6_SPRITE                        ; B650 20 F6 88
 LB653:  rts                                     ; B653 60
