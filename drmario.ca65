@@ -75,8 +75,12 @@ L072C_SCORE_3 := $072C
 L072D_SCORE_4 := $072D
 L072E_SCORE_5 := $072E
 
-L2000 := $2000
-L2001 := $2001
+L2000_PPUCTRL   := $2000
+L2001_PPUMASK   := $2001
+L2002_PPUSTATUS := $2002
+L2005_PPUSCROLL := $2005
+L2006_PPUADDR   := $2006
+L2007_PPUDATA   := $2007
 
 .org    $8000
 .export LOADADDR = *
@@ -101,8 +105,8 @@ L8005:  pha                                     ; 8005 48
         adc #$01                                ; 8019 69 01
         sta $43                                 ; 801B 85 43
         lda #$00                                ; 801D A9 00
-        sta $2005                               ; 801F 8D 05 20
-        sta $2005                               ; 8022 8D 05 20
+        sta L2005_PPUSCROLL                     ; 801F 8D 05 20
+        sta L2005_PPUSCROLL                     ; 8022 8D 05 20
         ; signal to RB654 to continue
         lda #$01                                ; 8025 A9 01
         sta L33_NMI_SIGNAL                      ; 8027 85 33
@@ -121,6 +125,8 @@ L8035:  rti                                     ; 8035 40
 ; Continuation of RESET vector
 L8036:
 .scope
+    ; zero out pages $01 to $06
+    ; but preserve $0316, $0396, L030B_P1_SPEED, and L038B_P2_SPEED.
     lda $0316                                   ; 8036 AD 16 03
     sta $0732                                   ; 8039 8D 32 07
     lda $0396                                   ; 803C AD 96 03
@@ -129,7 +135,6 @@ L8036:
     sta $0734                                   ; 8045 8D 34 07
     lda L038B_P2_SPEED                          ; 8048 AD 8B 03
     sta $0735                                   ; 804B 8D 35 07
-    ; clear pages $01 to $06
     ldy #$06                                    ; 804E A0 06
     sty $01                                     ; 8050 84 01
     ldy #$00                                    ; 8052 A0 00
@@ -142,7 +147,6 @@ L8036:
         while_ne                                ; 805B D0 FB
         dec $01                                 ; 805D C6 01
     while_pl                                    ; 805F 10 F7
-
     lda $0732                                   ; 8061 AD 32 07
     sta $0316                                   ; 8064 8D 16 03
     lda $0733                                   ; 8067 AD 33 07
@@ -151,6 +155,10 @@ L8036:
     sta L030B_P1_SPEED                          ; 8070 8D 0B 03
     lda $0735                                   ; 8073 AD 35 07
     sta L038B_P2_SPEED                          ; 8076 8D 8B 03
+
+    ; Compare $0710-$0719 with $9FEE-$9FF7.
+    ; If string matches, then jmp L80DC.
+    ; If mismatch is found, then reset top score and speed.
     ldx #$0A                                    ; 8079 A2 0A
 L807B:
     lda $070F,x                                 ; 807B BD 0F 07
@@ -189,28 +197,31 @@ L808D:
     sta $0722                                   ; 80C9 8D 22 07
     lda #$03                                    ; 80CC A9 03
     sta $0725                                   ; 80CE 8D 25 07
+    ; Copy string from $9FEE-$9FF7 to $0710-$0719.
     ldx #$0A                                    ; 80D1 A2 0A
     loop
         lda L9FEE-1,x                           ; 80D3 BD ED 9F
         sta $070F,x                             ; 80D6 9D 0F 07
         dex                                     ; 80D9 CA
     while_ne                                    ; 80DA D0 F7
+
 L80DC:
+    ; Seed LFSR in $17/$18.
     ldx #$89                                    ; 80DC A2 89
     stx $17                                     ; 80DE 86 17
     dex                                         ; 80E0 CA
     stx $18                                     ; 80E1 86 18
     ldy #$00                                    ; 80E3 A0 00
     sty $FD                                     ; 80E5 84 FD
-    sty $2005                                   ; 80E7 8C 05 20
+    sty L2005_PPUSCROLL                         ; 80E7 8C 05 20
     ldy #$00                                    ; 80EA A0 00
     sty $FC                                     ; 80EC 84 FC
-    sty $2005                                   ; 80EE 8C 05 20
+    sty L2005_PPUSCROLL                         ; 80EE 8C 05 20
     lda #$90                                    ; 80F1 A9 90
     sta $FF                                     ; 80F3 85 FF
-    sta L2000                                   ; 80F5 8D 00 20
+    sta L2000_PPUCTRL                           ; 80F5 8D 00 20
     lda #$06                                    ; 80F8 A9 06
-    sta L2001                                   ; 80FA 8D 01 20
+    sta L2001_PPUMASK                           ; 80FA 8D 01 20
     jsr RFFD6                                   ; 80FD 20 D6 FF
     jsr RFFD3                                   ; 8100 20 D3 FF
     lda #$C0                                    ; 8103 A9 C0
@@ -221,22 +232,22 @@ L80DC:
     sta $0103                                   ; 810F 8D 03 01
     lda #$AC                                    ; 8112 A9 AC
     sta $0104                                   ; 8114 8D 04 01
-    jsr RB67C                                   ; 8117 20 7C B6
+    jsr RB67C_DISABLE_VIDEO                     ; 8117 20 7C B6
     jsr RB6A2                                   ; 811A 20 A2 B6
     lda #$20                                    ; 811D A9 20
-    jsr RB6AC                                   ; 811F 20 AC B6
+    jsr RB6AC_INIT_NAMETABLE                    ; 811F 20 AC B6
     lda #$24                                    ; 8122 A9 24
-    jsr RB6AC                                   ; 8124 20 AC B6
+    jsr RB6AC_INIT_NAMETABLE                    ; 8124 20 AC B6
     lda #$28                                    ; 8127 A9 28
-    jsr RB6AC                                   ; 8129 20 AC B6
+    jsr RB6AC_INIT_NAMETABLE                    ; 8129 20 AC B6
     lda #$2C                                    ; 812C A9 2C
-    jsr RB6AC                                   ; 812E 20 AC B6
+    jsr RB6AC_INIT_NAMETABLE                    ; 812E 20 AC B6
     lda #$00                                    ; 8131 A9 00
     sta $5D                                     ; 8133 85 5D
-    jsr R90C9                                   ; 8135 20 C9 90
-    jsr RB695                                   ; 8138 20 95 B6
+    jsr R90C9_INIT_4_5                          ; 8135 20 C9 90
+    jsr RB695_ENABLE_NMI                        ; 8138 20 95 B6
     jsr RB654_NEXT_FRAME                        ; 813B 20 54 B6
-    jsr RB689                                   ; 813E 20 89 B6
+    jsr RB689_ENABLE_VIDEO                      ; 813E 20 89 B6
     jsr RB654_NEXT_FRAME                        ; 8141 20 54 B6
     lda #$0E                                    ; 8144 A9 0E
     sta $34                                     ; 8146 85 34
@@ -254,23 +265,23 @@ L80DC:
 ; State ranges from 0 to 8.
 R8157:
 .scope
-        lda L46_TOP_STATE                       ; 8157 A5 46
-        jsr     RB8AC_JUMP_TABLE                ; 8159 20 AC B8
-        .word   L981C
-        .word   L9953
-        .word   L816E
-        .word   L8206
-        .word   L9B73
-        .word   L9532
-        .word   L8FEF
-        .word   L958A
-        .word   L9C91
+    lda L46_TOP_STATE                           ; 8157 A5 46
+    jsr RB8AC_JUMP_TABLE                        ; 8159 20 AC B8
+    .word L981C_TOP_0
+    .word L9953_TOP_1
+    .word L816E_TOP_2
+    .word L8206_TOP_3
+    .word L9B73_TOP_4
+    .word L9532_TOP_5
+    .word L8FEF_TOP_6
+    .word L958A_TOP_7
+    .word L9C91_TOP_8
 
 ; ----------------------------------------------------------------------------
 ; jump table vector 2
 
-L816E:
-    jsr RB67C                                   ; 816E 20 7C B6
+L816E_TOP_2:
+    jsr RB67C_DISABLE_VIDEO                     ; 816E 20 7C B6
     jsr RB6A2                                   ; 8171 20 A2 B6
     lda #$02                                    ; 8174 A9 02
     jsr RB8E0 ; Set mapper CHR bank 0.          ; 8176 20 E0 B8
@@ -285,44 +296,44 @@ L816E:
         .word LC5F9
         ; PPU address $20EC (row 7, col 12)
         lda #$20                                ; 8190 A9 20
-        sta $2006                               ; 8192 8D 06 20
+        sta L2006_PPUADDR                       ; 8192 8D 06 20
         lda #$EC                                ; 8195 A9 EC
-        sta $2006                               ; 8197 8D 06 20
+        sta L2006_PPUADDR                       ; 8197 8D 06 20
         lda L030B_P1_SPEED                      ; 819A AD 0B 03
         asl a                                   ; 819D 0A
         asl a                                   ; 819E 0A
         tax                                     ; 819F AA
         lda LA23D,x                             ; 81A0 BD 3D A2
-        sta $2007                               ; 81A3 8D 07 20
+        sta L2007_PPUDATA                       ; 81A3 8D 07 20
         lda LA23D+1,x                           ; 81A6 BD 3E A2
-        sta $2007                               ; 81A9 8D 07 20
+        sta L2007_PPUDATA                       ; 81A9 8D 07 20
         lda LA23D+2,x                           ; 81AC BD 3F A2
-        sta $2007                               ; 81AF 8D 07 20
+        sta L2007_PPUDATA                       ; 81AF 8D 07 20
         ; PPU address $20F1 (row 7, col 17)
         lda #$20                                ; 81B2 A9 20
-        sta $2006                               ; 81B4 8D 06 20
+        sta L2006_PPUADDR                       ; 81B4 8D 06 20
         lda #$F1                                ; 81B7 A9 F1
-        sta $2006                               ; 81B9 8D 06 20
+        sta L2006_PPUADDR                       ; 81B9 8D 06 20
         lda L038B_P2_SPEED                      ; 81BC AD 8B 03
         asl a                                   ; 81BF 0A
         asl a                                   ; 81C0 0A
         tax                                     ; 81C1 AA
         lda LA23D,x                             ; 81C2 BD 3D A2
-        sta $2007                               ; 81C5 8D 07 20
+        sta L2007_PPUDATA                       ; 81C5 8D 07 20
         lda LA23D+1,x                           ; 81C8 BD 3E A2
-        sta $2007                               ; 81CB 8D 07 20
+        sta L2007_PPUDATA                       ; 81CB 8D 07 20
         lda LA23D+2,x                           ; 81CE BD 3F A2
-        sta $2007                               ; 81D1 8D 07 20
+        sta L2007_PPUDATA                       ; 81D1 8D 07 20
         lda #$83                                ; 81D4 A9 83
         sta L66_PALETTE                         ; 81D6 85 66
     end_if
     lda #$FF                                    ; 81D8 A9 FF
     sta $5D                                     ; 81DA 85 5D
-    jsr RB695                                   ; 81DC 20 95 B6
-    jsr RB689                                   ; 81DF 20 89 B6
+    jsr RB695_ENABLE_NMI                        ; 81DC 20 95 B6
+    jsr RB689_ENABLE_VIDEO                      ; 81DF 20 89 B6
     lda #$0F                                    ; 81E2 A9 0F
     sta $80                                     ; 81E4 85 80
-    jsr R90C9                                   ; 81E6 20 C9 90
+    jsr R90C9_INIT_4_5                          ; 81E6 20 C9 90
     lda #$00                                    ; 81E9 A9 00
     sta L0729_SCORE_0                           ; 81EB 8D 29 07
     sta L072A_SCORE_1                           ; 81EE 8D 2A 07
@@ -338,7 +349,7 @@ L816E:
 
 ; ----------------------------------------------------------------------------
 ; jump table vector 3
-L8206:
+L8206_TOP_3:
     lda #$00                                    ; 8206 A9 00
     sta $92                                     ; 8208 85 92
     sta $57                                     ; 820A 85 57
@@ -459,12 +470,12 @@ R82D1:
     ; PPU address $22DA (row 22, col 26)
     ; 1-player screen speed
     lda #$22                                    ; 82E2 A9 22
-    sta $2006                                   ; 82E4 8D 06 20
+    sta L2006_PPUADDR                           ; 82E4 8D 06 20
     lda #$DA                                    ; 82E7 A9 DA
-    sta $2006                                   ; 82E9 8D 06 20
+    sta L2006_PPUADDR                           ; 82E9 8D 06 20
     loop
         lda LA23D,x                             ; 82EC BD 3D A2
-        sta $2007                               ; 82EF 8D 07 20
+        sta L2007_PPUDATA                       ; 82EF 8D 07 20
         inx                                     ; 82F2 E8
         dey                                     ; 82F3 88
     while_ne                                    ; 82F4 D0 F6
@@ -476,7 +487,7 @@ R82F7:
     sta $58                                     ; 82F9 85 58
     lda $0300                                   ; 82FB AD 00 03
     sta $80                                     ; 82FE 85 80
-    jsr R8321                                   ; 8300 20 21 83
+    jsr R8321_OUTPUT_PLAYFIELD_ROW              ; 8300 20 21 83
     lda $80                                     ; 8303 A5 80
     sta $0300                                   ; 8305 8D 00 03
     lda L0727_NUM_PLAYERS                       ; 8308 AD 27 07
@@ -486,76 +497,80 @@ R82F7:
         sta $58                                 ; 8311 85 58
         lda $0380                               ; 8313 AD 80 03
         sta $80                                 ; 8316 85 80
-        jsr R8321                               ; 8318 20 21 83
+        jsr R8321_OUTPUT_PLAYFIELD_ROW          ; 8318 20 21 83
         lda $80                                 ; 831B A5 80
         sta $0380                               ; 831D 8D 80 03
     end_if
     rts                                         ; 8320 60
 
 ; ----------------------------------------------------------------------------
-R8321:
-.scope
-        lda $80                                 ; 8321 A5 80
-        cmp #$FF                                ; 8323 C9 FF
-        if_ne                                   ; 8325 F0 6B
-            lda L0727_NUM_PLAYERS               ; 8327 AD 27 07
-            cmp #$01                            ; 832A C9 01
-            if_eq                               ; 832C D0 13
-                lda $80                         ; 832E A5 80
-                asl a                           ; 8330 0A
-                tay                             ; 8331 A8
-                lda LA717,y                     ; 8332 B9 17 A7
-                sta $2006                       ; 8335 8D 06 20
-                lda LA717+1,y                   ; 8338 B9 18 A7
-                sta $2006                       ; 833B 8D 06 20
-            else                                ; 833E 4C 6A 83
-                lda $58                         ; 8341 A5 58
-                cmp #$04                        ; 8343 C9 04
-                if_eq                           ; 8345 D0 13
-                    lda $80                     ; 8347 A5 80
-                    asl a                       ; 8349 0A
-                    tay                         ; 834A A8
-                    lda LA737,y                 ; 834B B9 37 A7
-                    sta $2006                   ; 834E 8D 06 20
-                    lda LA737+1,y               ; 8351 B9 38 A7
-                    sta $2006                   ; 8354 8D 06 20
-                else                            ; 8357 4C 6A 83
-                    lda $80                     ; 835A A5 80
-                    asl a                       ; 835C 0A
-                    tay                         ; 835D A8
-                    lda LA757,y                 ; 835E B9 57 A7
-                    sta $2006                   ; 8361 8D 06 20
-                    lda LA757+1,y               ; 8364 B9 58 A7
-                    sta $2006                   ; 8367 8D 06 20
-                end_if
+; Copy one row of playfield to display.
+; Input: $80 is row number of playfield.
+; Called from R82F7.
+R8321_OUTPUT_PLAYFIELD_ROW:
+    lda $80                                     ; 8321 A5 80
+    cmp #$FF                                    ; 8323 C9 FF
+    if_ne                                       ; 8325 F0 6B
+        lda L0727_NUM_PLAYERS                   ; 8327 AD 27 07
+        cmp #$01                                ; 832A C9 01
+        if_eq                                   ; 832C D0 13
+            ; Rows 10-25, column 12
+            lda $80                             ; 832E A5 80
+            asl a                               ; 8330 0A
+            tay                                 ; 8331 A8
+            lda LA717,y                         ; 8332 B9 17 A7
+            sta L2006_PPUADDR                   ; 8335 8D 06 20
+            lda LA717+1,y                       ; 8338 B9 18 A7
+            sta L2006_PPUADDR                   ; 833B 8D 06 20
+        else                                    ; 833E 4C 6A 83
+            lda $58                             ; 8341 A5 58
+            cmp #$04                            ; 8343 C9 04
+            if_eq                               ; 8345 D0 13
+                ; Rows 10-25, column 4
+                lda $80                         ; 8347 A5 80
+                asl a                           ; 8349 0A
+                tay                             ; 834A A8
+                lda LA737,y                     ; 834B B9 37 A7
+                sta L2006_PPUADDR               ; 834E 8D 06 20
+                lda LA737+1,y                   ; 8351 B9 38 A7
+                sta L2006_PPUADDR               ; 8354 8D 06 20
+            else                                ; 8357 4C 6A 83
+                ; Rows 10-25, column 20
+                lda $80                         ; 835A A5 80
+                asl a                           ; 835C 0A
+                tay                             ; 835D A8
+                lda LA757,y                     ; 835E B9 57 A7
+                sta L2006_PPUADDR               ; 8361 8D 06 20
+                lda LA757+1,y                   ; 8364 B9 58 A7
+                sta L2006_PPUADDR               ; 8367 8D 06 20
             end_if
-            lda #$00                            ; 836A A9 00
-            sta $57                             ; 836C 85 57
-            lda $80                             ; 836E A5 80
-            asl a                               ; 8370 0A
-            asl a                               ; 8371 0A
-            asl a                               ; 8372 0A
-            tay                                 ; 8373 A8
-            ldx #$08                            ; 8374 A2 08
-            loop
-                lda ($57),y                     ; 8376 B1 57
-                and #$F0                        ; 8378 29 F0
-                cmp #$B0                        ; 837A C9 B0
-                if_eq                           ; 837C D0 09
-                    lda ($57),y                 ; 837E B1 57
-                    and #$0F                    ; 8380 29 0F
-                    ora #$F0                    ; 8382 09 F0
-                else                            ; 8384 4C 89 83
-                    lda ($57),y                 ; 8387 B1 57
-                end_if
-                sta $2007                       ; 8389 8D 07 20
-                iny                             ; 838C C8
-                dex                             ; 838D CA
-            while_ne                            ; 838E D0 E6
-            dec $80                             ; 8390 C6 80
         end_if
-        rts                                     ; 8392 60
-.endscope
+        lda #$00                                ; 836A A9 00
+        sta $57                                 ; 836C 85 57
+        lda $80                                 ; 836E A5 80
+        asl a                                   ; 8370 0A
+        asl a                                   ; 8371 0A
+        asl a                                   ; 8372 0A
+        tay                                     ; 8373 A8
+        ldx #$08                                ; 8374 A2 08
+        loop
+            lda ($57),y                         ; 8376 B1 57
+            and #$F0                            ; 8378 29 F0
+            cmp #$B0                            ; 837A C9 B0
+            if_eq                               ; 837C D0 09
+                lda ($57),y                     ; 837E B1 57
+                and #$0F                        ; 8380 29 0F
+                ora #$F0                        ; 8382 09 F0
+            else                                ; 8384 4C 89 83
+                lda ($57),y                     ; 8387 B1 57
+            end_if
+            sta L2007_PPUDATA                   ; 8389 8D 07 20
+            iny                                 ; 838C C8
+            dex                                 ; 838D CA
+        while_ne                                ; 838E D0 E6
+        dec $80                                 ; 8390 C6 80
+    end_if
+    rts                                         ; 8392 60
 
 ; ----------------------------------------------------------------------------
 R8393:
@@ -585,21 +600,21 @@ R8393:
         ; PPU address $2162 (row 11, col 2)
         ; 1-player screen score
         lda #$21                                ; 83B8 A9 21
-        sta $2006                               ; 83BA 8D 06 20
+        sta L2006_PPUADDR                       ; 83BA 8D 06 20
         lda #$62                                ; 83BD A9 62
-        sta $2006                               ; 83BF 8D 06 20
+        sta L2006_PPUADDR                       ; 83BF 8D 06 20
         lda L072E_SCORE_5                       ; 83C2 AD 2E 07
-        sta $2007                               ; 83C5 8D 07 20
+        sta L2007_PPUDATA                       ; 83C5 8D 07 20
         lda L072D_SCORE_4                       ; 83C8 AD 2D 07
-        sta $2007                               ; 83CB 8D 07 20
+        sta L2007_PPUDATA                       ; 83CB 8D 07 20
         lda L072C_SCORE_3                       ; 83CE AD 2C 07
-        sta $2007                               ; 83D1 8D 07 20
+        sta L2007_PPUDATA                       ; 83D1 8D 07 20
         lda L072B_SCORE_2                       ; 83D4 AD 2B 07
-        sta $2007                               ; 83D7 8D 07 20
+        sta L2007_PPUDATA                       ; 83D7 8D 07 20
         lda L072A_SCORE_1                       ; 83DA AD 2A 07
-        sta $2007                               ; 83DD 8D 07 20
+        sta L2007_PPUDATA                       ; 83DD 8D 07 20
         lda L0729_SCORE_0                       ; 83E0 AD 29 07
-        sta $2007                               ; 83E3 8D 07 20
+        sta L2007_PPUDATA                       ; 83E3 8D 07 20
         ; clear bit 2
         lda L52_REDRAW_FLAGS                    ; 83E6 A5 52
         and #$FB                                ; 83E8 29 FB
@@ -613,21 +628,21 @@ R8393:
         ; PPU address $2102 (row 8, col 2)
         ; 1-player screen top score
         lda #$21                                ; 83F2 A9 21
-        sta $2006                               ; 83F4 8D 06 20
+        sta L2006_PPUADDR                       ; 83F4 8D 06 20
         lda #$02                                ; 83F7 A9 02
-        sta $2006                               ; 83F9 8D 06 20
+        sta L2006_PPUADDR                       ; 83F9 8D 06 20
         lda L0705_TOP_SCORE_5                   ; 83FC AD 05 07
-        sta $2007                               ; 83FF 8D 07 20
+        sta L2007_PPUDATA                       ; 83FF 8D 07 20
         lda L0704_TOP_SCORE_4                   ; 8402 AD 04 07
-        sta $2007                               ; 8405 8D 07 20
+        sta L2007_PPUDATA                       ; 8405 8D 07 20
         lda L0703_TOP_SCORE_3                   ; 8408 AD 03 07
-        sta $2007                               ; 840B 8D 07 20
+        sta L2007_PPUDATA                       ; 840B 8D 07 20
         lda L0702_TOP_SCORE_2                   ; 840E AD 02 07
-        sta $2007                               ; 8411 8D 07 20
+        sta L2007_PPUDATA                       ; 8411 8D 07 20
         lda L0701_TOP_SCORE_1                   ; 8414 AD 01 07
-        sta $2007                               ; 8417 8D 07 20
+        sta L2007_PPUDATA                       ; 8417 8D 07 20
         lda L0700_TOP_SCORE_0                   ; 841A AD 00 07
-        sta $2007                               ; 841D 8D 07 20
+        sta L2007_PPUDATA                       ; 841D 8D 07 20
         ; clear bit 3
         lda L52_REDRAW_FLAGS                    ; 8420 A5 52
         and #$F7                                ; 8422 29 F7
@@ -641,19 +656,19 @@ R8393:
         ; PPU address $233B (row 25, col 27)
         ; 1-player screen virus count
         lda #$23                                ; 842C A9 23
-        sta $2006                               ; 842E 8D 06 20
+        sta L2006_PPUADDR                       ; 842E 8D 06 20
         lda #$3B                                ; 8431 A9 3B
-        sta $2006                               ; 8433 8D 06 20
+        sta L2006_PPUADDR                       ; 8433 8D 06 20
         lda L0324_P1_VIRUS                      ; 8436 AD 24 03
         and #$F0                                ; 8439 29 F0
         lsr a                                   ; 843B 4A
         lsr a                                   ; 843C 4A
         lsr a                                   ; 843D 4A
         lsr a                                   ; 843E 4A
-        sta $2007                               ; 843F 8D 07 20
+        sta L2007_PPUDATA                       ; 843F 8D 07 20
         lda LA4_VIRUS_BCD                       ; 8442 A5 A4
         and #$0F                                ; 8444 29 0F
-        sta $2007                               ; 8446 8D 07 20
+        sta L2007_PPUDATA                       ; 8446 8D 07 20
         ; clear bit 4
         lda L52_REDRAW_FLAGS                    ; 8449 A5 52
         and #$EF                                ; 844B 29 EF
@@ -667,9 +682,9 @@ R8393:
         ; PPU address $227B (row 19, col 27)
         ; 1-player screen level number
         lda #$22                                ; 8455 A9 22
-        sta $2006                               ; 8457 8D 06 20
+        sta L2006_PPUADDR                       ; 8457 8D 06 20
         lda #$7B                                ; 845A A9 7B
-        sta $2006                               ; 845C 8D 06 20
+        sta L2006_PPUADDR                       ; 845C 8D 06 20
         ldx $0316                               ; 845F AE 16 03
         lda LA777,x ; BCD table 00-29           ; 8462 BD 77 A7
         jsr R864E ; write nybbles to $2007      ; 8465 20 4E 86
@@ -701,15 +716,15 @@ L846E:
             dex                                 ; 8488 CA
             dex                                 ; 8489 CA
             lda LA396,x                         ; 848A BD 96 A3
-            sta $2006                           ; 848D 8D 06 20
+            sta L2006_PPUADDR                   ; 848D 8D 06 20
             sta $48                             ; 8490 85 48
             lda LA396+1,x                       ; 8492 BD 97 A3
-            sta $2006                           ; 8495 8D 06 20
+            sta L2006_PPUADDR                   ; 8495 8D 06 20
             sta $47                             ; 8498 85 47
             lda #$5C                            ; 849A A9 5C
-            sta $2007                           ; 849C 8D 07 20
+            sta L2007_PPUDATA                   ; 849C 8D 07 20
             lda #$5D                            ; 849F A9 5D
-            sta $2007                           ; 84A1 8D 07 20
+            sta L2007_PPUDATA                   ; 84A1 8D 07 20
             ; $47/$48 += #$0020
             ; set PPU address one row down
             lda $47                             ; 84A4 A5 47
@@ -718,13 +733,13 @@ L846E:
             sta $47                             ; 84A9 85 47
             lda #$00                            ; 84AB A9 00
             adc $48                             ; 84AD 65 48
-            sta $2006                           ; 84AF 8D 06 20
+            sta L2006_PPUADDR                   ; 84AF 8D 06 20
             lda $47                             ; 84B2 A5 47
-            sta $2006                           ; 84B4 8D 06 20
+            sta L2006_PPUADDR                   ; 84B4 8D 06 20
             lda #$6C                            ; 84B7 A9 6C
-            sta $2007                           ; 84B9 8D 07 20
+            sta L2007_PPUDATA                   ; 84B9 8D 07 20
             lda #$6D                            ; 84BC A9 6D
-            sta $2007                           ; 84BE 8D 07 20
+            sta L2007_PPUDATA                   ; 84BE 8D 07 20
         end_if
         lda $039E                               ; 84C1 AD 9E 03
         if_ne                                   ; 84C4 F0 3B
@@ -735,15 +750,15 @@ L846E:
             dex                                 ; 84C8 CA
             dex                                 ; 84C9 CA
             lda LA39C,x                         ; 84CA BD 9C A3
-            sta $2006                           ; 84CD 8D 06 20
+            sta L2006_PPUADDR                   ; 84CD 8D 06 20
             sta $48                             ; 84D0 85 48
             lda LA39C+1,x                       ; 84D2 BD 9D A3
-            sta $2006                           ; 84D5 8D 06 20
+            sta L2006_PPUADDR                   ; 84D5 8D 06 20
             sta $47                             ; 84D8 85 47
             lda #$5C                            ; 84DA A9 5C
-            sta $2007                           ; 84DC 8D 07 20
+            sta L2007_PPUDATA                   ; 84DC 8D 07 20
             lda #$5D                            ; 84DF A9 5D
-            sta $2007                           ; 84E1 8D 07 20
+            sta L2007_PPUDATA                   ; 84E1 8D 07 20
             ; $47/$48 += #$0020
             ; set PPU address one row down
             lda $47                             ; 84E4 A5 47
@@ -752,13 +767,13 @@ L846E:
             sta $47                             ; 84E9 85 47
             lda #$00                            ; 84EB A9 00
             adc $48                             ; 84ED 65 48
-            sta $2006                           ; 84EF 8D 06 20
+            sta L2006_PPUADDR                   ; 84EF 8D 06 20
             lda $47                             ; 84F2 A5 47
-            sta $2006                           ; 84F4 8D 06 20
+            sta L2006_PPUADDR                   ; 84F4 8D 06 20
             lda #$6C                            ; 84F7 A9 6C
-            sta $2007                           ; 84F9 8D 07 20
+            sta L2007_PPUDATA                   ; 84F9 8D 07 20
             lda #$6D                            ; 84FC A9 6D
-            sta $2007                           ; 84FE 8D 07 20
+            sta L2007_PPUDATA                   ; 84FE 8D 07 20
         end_if
         ; clear bit 7
         lda L52_REDRAW_FLAGS                    ; 8501 A5 52
@@ -812,9 +827,9 @@ R8508:
         ; row 10, column 23
         ; (virus level on settings screen)
         lda #$21                                ; 854C A9 21
-        sta $2006                               ; 854E 8D 06 20
+        sta L2006_PPUADDR                       ; 854E 8D 06 20
         lda #$57                                ; 8551 A9 57
-        sta $2006                               ; 8553 8D 06 20
+        sta L2006_PPUADDR                       ; 8553 8D 06 20
         ldx $0316                               ; 8556 AE 16 03
         lda LA777,x ; BCD table 00-29           ; 8559 BD 77 A7
         jsr R864E ; write nybbles to $2007      ; 855C 20 4E 86
@@ -824,9 +839,9 @@ R8508:
         ; PPU address $21B7
         ; row 13, column 23
         lda #$21                                ; 8566 A9 21
-        sta $2006                               ; 8568 8D 06 20
+        sta L2006_PPUADDR                       ; 8568 8D 06 20
         lda #$B7                                ; 856B A9 B7
-        sta $2006                               ; 856D 8D 06 20
+        sta L2006_PPUADDR                       ; 856D 8D 06 20
         ldx $0396                               ; 8570 AE 96 03
         lda LA777,x ; BCD table 00-29           ; 8573 BD 77 A7
         jsr R864E ; write nybbles to $2007      ; 8576 20 4E 86
@@ -940,30 +955,30 @@ R8617:
     ; PPU address $3F03
     ; Background palette 0, color 3
     lda #$3F                            ; 8617 A9 3F
-    sta $2006                           ; 8619 8D 06 20
+    sta L2006_PPUADDR                   ; 8619 8D 06 20
     lda #$03                            ; 861C A9 03
-    sta $2006                           ; 861E 8D 06 20
+    sta L2006_PPUADDR                   ; 861E 8D 06 20
     ldx L8B_SPEED                       ; 8621 A6 8B
     lda LA22A,x                         ; 8623 BD 2A A2
-    sta $2007                           ; 8626 8D 07 20
+    sta L2007_PPUDATA                   ; 8626 8D 07 20
     ; PPU address $3F07
     ; Background palette 1, color 3
     lda #$3F                            ; 8629 A9 3F
-    sta $2006                           ; 862B 8D 06 20
+    sta L2006_PPUADDR                   ; 862B 8D 06 20
     lda #$07                            ; 862E A9 07
-    sta $2006                           ; 8630 8D 06 20
+    sta L2006_PPUADDR                   ; 8630 8D 06 20
     ldx L8B_SPEED                       ; 8633 A6 8B
     lda LA22A,x                         ; 8635 BD 2A A2
-    sta $2007                           ; 8638 8D 07 20
+    sta L2007_PPUDATA                   ; 8638 8D 07 20
     ; PPU address $3F0F
     ; Background palette 3, color 3
     lda #$3F                            ; 863B A9 3F
-    sta $2006                           ; 863D 8D 06 20
+    sta L2006_PPUADDR                   ; 863D 8D 06 20
     lda #$0F                            ; 8640 A9 0F
-    sta $2006                           ; 8642 8D 06 20
+    sta L2006_PPUADDR                   ; 8642 8D 06 20
     ldx L8B_SPEED                       ; 8645 A6 8B
     lda LA22A,x                         ; 8647 BD 2A A2
-    sta $2007                           ; 864A 8D 07 20
+    sta L2007_PPUDATA                   ; 864A 8D 07 20
     rts                                 ; 864D 60
 
 ; ----------------------------------------------------------------------------
@@ -976,10 +991,10 @@ R864E:
     lsr a                                       ; 8653 4A
     lsr a                                       ; 8654 4A
     lsr a                                       ; 8655 4A
-    sta $2007                                   ; 8656 8D 07 20
+    sta L2007_PPUDATA                           ; 8656 8D 07 20
     lda $47                                     ; 8659 A5 47
     and #$0F                                    ; 865B 29 0F
-    sta $2007                                   ; 865D 8D 07 20
+    sta L2007_PPUDATA                           ; 865D 8D 07 20
     rts                                         ; 8660 60
 
 ; ----------------------------------------------------------------------------
@@ -1000,9 +1015,9 @@ R8661:
         sta $06F1                               ; 8674 8D F1 06
         ; screen position depends on $7F
         lda #$21                                ; 8677 A9 21
-        sta $2006                               ; 8679 8D 06 20
+        sta L2006_PPUADDR                       ; 8679 8D 06 20
         lda LA098,x                             ; 867C BD 98 A0
-        sta $2006                               ; 867F 8D 06 20
+        sta L2006_PPUADDR                       ; 867F 8D 06 20
         lda LA0BB,x                             ; 8682 BD BB A0
         jsr R8693 ; output LOW/MED/HI           ; 8685 20 93 86
         inc $7F                                 ; 8688 E6 7F
@@ -1023,11 +1038,11 @@ R8693:
     asl a                                       ; 8698 0A
     tax                                         ; 8699 AA
     lda LA249,x                                 ; 869A BD 49 A2
-    sta $2007                                   ; 869D 8D 07 20
+    sta L2007_PPUDATA                           ; 869D 8D 07 20
     lda LA249+1,x                               ; 86A0 BD 4A A2
-    sta $2007                                   ; 86A3 8D 07 20
+    sta L2007_PPUDATA                           ; 86A3 8D 07 20
     lda LA249+2,x                               ; 86A6 BD 4B A2
-    sta $2007                                   ; 86A9 8D 07 20
+    sta L2007_PPUDATA                           ; 86A9 8D 07 20
     rts                                         ; 86AC 60
 
 L86AD:
@@ -1041,14 +1056,14 @@ L86AD:
     lsr a                                       ; 86BA 4A
     lsr a                                       ; 86BB 4A
     lsr a                                       ; 86BC 4A
-    sta $2007                                   ; 86BD 8D 07 20
+    sta L2007_PPUDATA                           ; 86BD 8D 07 20
     lda LA777,x ; BCD table 00-29               ; 86C0 BD 77 A7
     and #$0F                                    ; 86C3 29 0F
-    sta $2007                                   ; 86C5 8D 07 20
+    sta L2007_PPUDATA                           ; 86C5 8D 07 20
     rts                                         ; 86C8 60
 
 L86C9:
-    sta $2007                                   ; 86C9 8D 07 20
+    sta L2007_PPUDATA                           ; 86C9 8D 07 20
     rts                                         ; 86CC 60
 
 L86CD:
@@ -1056,9 +1071,9 @@ L86CD:
     and #$7F                                    ; 86CF 29 7F
     tax                                         ; 86D1 AA
     lda #$21                                    ; 86D2 A9 21
-    sta $2006                                   ; 86D4 8D 06 20
+    sta L2006_PPUADDR                           ; 86D4 8D 06 20
     lda LA098,x                                 ; 86D7 BD 98 A0
-    sta $2006                                   ; 86DA 8D 06 20
+    sta L2006_PPUADDR                           ; 86DA 8D 06 20
     lda LA0BB,x                                 ; 86DD BD BB A0
     jsr R86F1                                   ; 86E0 20 F1 86
     inc $7F                                     ; 86E3 E6 7F
@@ -1074,20 +1089,20 @@ L86CD:
 R86F1:
     if_eq                                       ; 86F1 D0 0C
         lda #$FF                                ; 86F3 A9 FF
-        sta $2007                               ; 86F5 8D 07 20
-        sta $2007                               ; 86F8 8D 07 20
-        sta $2007                               ; 86FB 8D 07 20
+        sta L2007_PPUDATA                       ; 86F5 8D 07 20
+        sta L2007_PPUDATA                       ; 86F8 8D 07 20
+        sta L2007_PPUDATA                       ; 86FB 8D 07 20
         rts                                     ; 86FE 60
     end_if
     cmp #$01                                    ; 86FF C9 01
     if_eq                                       ; 8701 D0 09
         lda #$FF                                ; 8703 A9 FF
-        sta $2007                               ; 8705 8D 07 20
-        sta $2007                               ; 8708 8D 07 20
+        sta L2007_PPUDATA                       ; 8705 8D 07 20
+        sta L2007_PPUDATA                       ; 8708 8D 07 20
         rts                                     ; 870B 60
     end_if
     lda #$FF                                    ; 870C A9 FF
-    sta $2007                                   ; 870E 8D 07 20
+    sta L2007_PPUDATA                           ; 870E 8D 07 20
     rts                                         ; 8711 60
 .endscope
 
@@ -2519,9 +2534,10 @@ R8FCA:
 ; ----------------------------------------------------------------------------
 ; jump table vector 6
 ; enter top-level state 4
-L8FEF:  lda #$04                                ; 8FEF A9 04
-        sta L46_TOP_STATE                       ; 8FF1 85 46
-        rts                                     ; 8FF3 60
+L8FEF_TOP_6:
+    lda #$04                                    ; 8FEF A9 04
+    sta L46_TOP_STATE                           ; 8FF1 85 46
+    rts                                         ; 8FF3 60
 
 ; ----------------------------------------------------------------------------
 ; Add value to score, with streak multiplier
@@ -2676,7 +2692,7 @@ R90BC:
 
 ; ----------------------------------------------------------------------------
 ; Fill pages 4 and 5 with #$FF.
-R90C9:
+R90C9_INIT_4_5:
     lda #$FF                                    ; 90C9 A9 FF
     ldx #$04                                    ; 90CB A2 04
     ldy #$05                                    ; 90CD A0 05
@@ -2861,8 +2877,8 @@ R91C2:
 ; ----------------------------------------------------------------------------
 ; Compute checksum of all bytes from $b900 to $bdff.
 ; Set $0740 to #$ff if the sum is not #$C1, else #$00.
-R91D0:
-.scope
+; Called once in L981C_TOP_0.
+R91D0_CHECKSUM:
     lda #$B9                                    ; 91D0 A9 B9
     sta $48                                     ; 91D2 85 48
     ldy #$00                                    ; 91D4 A0 00
@@ -2888,7 +2904,6 @@ R91D0:
         sta $0740                               ; 91F7 8D 40 07
     end_if
     rts                                         ; 91FA 60
-.endscope
 
 ; ----------------------------------------------------------------------------
 ; R8C73 routine 5.
@@ -3284,15 +3299,15 @@ R944B:
 
 ; ----------------------------------------------------------------------------
 ; unreachable?
-        lda     $8F                             ; 945A A5 8F
-        cmp     #$02                            ; 945C C9 02
-        if_eq                                   ; 945E D0 08
-            lda $58                             ; 9460 A5 58
-            sec                                 ; 9462 38
-            sbc #$03                            ; 9463 E9 03
-            sta $06F4                           ; 9465 8D F4 06
-        end_if
-        rts                                     ; 9468 60
+    lda $8F                                     ; 945A A5 8F
+    cmp #$02                                    ; 945C C9 02
+    if_eq                                       ; 945E D0 08
+        lda $58                                 ; 9460 A5 58
+        sec                                     ; 9462 38
+        sbc #$03                                ; 9463 E9 03
+        sta $06F4                               ; 9465 8D F4 06
+    end_if
+    rts                                         ; 9468 60
 
 ; ----------------------------------------------------------------------------
 ; R8C73 routine 6.
@@ -3415,7 +3430,7 @@ L9517:
 
 ; ----------------------------------------------------------------------------
 ; jump table vector 5
-L9532:
+L9532_TOP_5:
 .scope
     lda #$00                                    ; 9532 A9 00
     sta $54                                     ; 9534 85 54
@@ -3463,7 +3478,7 @@ L9585:
 
 ; ----------------------------------------------------------------------------
 ; jump table vector 7
-L958A:
+L958A_TOP_7:
 .scope
     lda #$40                                    ; 958A A9 40
     jsr R9701                                   ; 958C 20 01 97
@@ -3503,12 +3518,12 @@ L958A:
     jsr RB894_FILL_PAGES ; fill 4-5 with FF     ; 95D4 20 94 B8
     lda #$04                                    ; 95D7 A9 04
     sta $58                                     ; 95D9 85 58
-    jsr R96D4                                   ; 95DB 20 D4 96
+    jsr R96D4_INIT_410_510                      ; 95DB 20 D4 96
     lda #$0F                                    ; 95DE A9 0F
     sta $0300                                   ; 95E0 8D 00 03
     lda #$05                                    ; 95E3 A9 05
     sta $58                                     ; 95E5 85 58
-    jsr R96D4                                   ; 95E7 20 D4 96
+    jsr R96D4_INIT_410_510                      ; 95E7 20 D4 96
     lda #$0F                                    ; 95EA A9 0F
     sta $0380                                   ; 95EC 8D 80 03
     lda #$0F                                    ; 95EF A9 0F
@@ -3535,21 +3550,23 @@ L958A:
             lda #$10                            ; 9619 A9 10
             sta L53_SPRITE_NUM                  ; 961B 85 53
             jsr R88F6_SPRITE                    ; 961D 20 F6 88
+            ; "START" sprite
         end_if
         jsr RB654_NEXT_FRAME                    ; 9620 20 54 B6
+        ; wait for button press
         lda $F5                                 ; 9623 A5 F5
         and #$10                                ; 9625 29 10
     while_eq                                    ; 9627 F0 DE
     lda #$FE                                    ; 9629 A9 FE
     ldx #$04                                    ; 962B A2 04
     ldy #$05                                    ; 962D A0 05
-    jsr RB894_FILL_PAGES ; fill page 4-5 (FF)   ; 962F 20 94 B8
+    jsr RB894_FILL_PAGES ; fill page 4-5 (FE)   ; 962F 20 94 B8
     ; enter top-level state 1.
     lda #$01                                    ; 9632 A9 01
     sta L46_TOP_STATE                           ; 9634 85 46
     lda #$00                                    ; 9636 A9 00
     sta $89                                     ; 9638 85 89
-    jsr R9721                                   ; 963A 20 21 97
+    jsr R9721_UPDATE_TOP_SCORE                  ; 963A 20 21 97
     lda #$00                                    ; 963D A9 00
     sta $F5                                     ; 963F 85 F5
     lda #$FF                                    ; 9641 A9 FF
@@ -3575,7 +3592,7 @@ L9646:
         lda $F5                                 ; 9665 A5 F5
         cmp #$10                                ; 9667 C9 10
     while_ne                                    ; 9669 D0 DE
-    jsr R90C9                                   ; 966B 20 C9 90
+    jsr R90C9_INIT_4_5                          ; 966B 20 C9 90
     jsr R96ED                                   ; 966E 20 ED 96
     ; enter top-level state 3.
     lda #$03                                    ; 9671 A9 03
@@ -3662,7 +3679,7 @@ R96C0:
 ; In page pointed to by $58 (#$04 or #$05)
 ; Copy null-terminated 50-byte string from LA838 to offsets $10-$41.
 ; Also set $80 to #$0F.
-R96D4:
+R96D4_INIT_410_510:
     lda #$00                                    ; 96D4 A9 00
     sta $57                                     ; 96D6 85 57
     ldx #$00                                    ; 96D8 A2 00
@@ -3679,6 +3696,7 @@ R96D4:
     rts                                         ; 96EC 60
 
 ; ----------------------------------------------------------------------------
+; Wait for $0300 to be set to #$FF.
 R96ED:
     lda #$0F                                    ; 96ED A9 0F
     sta $0300                                   ; 96EF 8D 00 03
@@ -3720,53 +3738,63 @@ R9701:
     rts                                         ; 9720 60
 
 ; ----------------------------------------------------------------------------
-R9721:
+; Compare score to top score.
+; If score is greater than top score, then copy it to top score.
+; Called once in L958A_TOP_7.
+R9721_UPDATE_TOP_SCORE:
 .scope
-        lda L0705_TOP_SCORE_5                   ; 9721 AD 05 07
-        cmp L072E_SCORE_5                       ; 9724 CD 2E 07
-        beq L972D                               ; 9727 F0 04
+    lda L0705_TOP_SCORE_5                       ; 9721 AD 05 07
+    cmp L072E_SCORE_5                           ; 9724 CD 2E 07
+    if_ne                                       ; 9727 F0 04
         bcs L978D ;exit                         ; 9729 B0 62
         bcc L9769 ;always taken                 ; 972B 90 3C
-L972D:  iny                                     ; 972D C8
-        lda L0704_TOP_SCORE_4                   ; 972E AD 04 07
-        cmp L072D_SCORE_4                       ; 9731 CD 2D 07
-        beq L973A                               ; 9734 F0 04
+    end_if
+    iny                                         ; 972D C8
+    lda L0704_TOP_SCORE_4                       ; 972E AD 04 07
+    cmp L072D_SCORE_4                           ; 9731 CD 2D 07
+    if_ne                                       ; 9734 F0 04
         bcs L978D                               ; 9736 B0 55
         bcc L9769 ;always taken                 ; 9738 90 2F
-L973A:  iny                                     ; 973A C8
-        lda L0703_TOP_SCORE_3                   ; 973B AD 03 07
-        cmp L072C_SCORE_3                       ; 973E CD 2C 07
-        beq L9747                               ; 9741 F0 04
+    end_if
+    iny                                         ; 973A C8
+    lda L0703_TOP_SCORE_3                       ; 973B AD 03 07
+    cmp L072C_SCORE_3                           ; 973E CD 2C 07
+    if_ne                                       ; 9741 F0 04
         bcs L978D                               ; 9743 B0 48
         bcc L9769 ;always taken                 ; 9745 90 22
-L9747:  lda L0702_TOP_SCORE_2                   ; 9747 AD 02 07
-        cmp L072B_SCORE_2                       ; 974A CD 2B 07
-        beq L9753                               ; 974D F0 04
+    end_if
+    lda L0702_TOP_SCORE_2                       ; 9747 AD 02 07
+    cmp L072B_SCORE_2                           ; 974A CD 2B 07
+    if_ne                                       ; 974D F0 04
         bcs L978D                               ; 974F B0 3C
         bcc L9769 ;always taken                 ; 9751 90 16
-L9753:  iny                                     ; 9753 C8
-        lda L0701_TOP_SCORE_1                   ; 9754 AD 01 07
-        cmp L072A_SCORE_1                       ; 9757 CD 2A 07
-        beq L9760                               ; 975A F0 04
+    end_if
+    iny                                         ; 9753 C8
+    lda L0701_TOP_SCORE_1                       ; 9754 AD 01 07
+    cmp L072A_SCORE_1                           ; 9757 CD 2A 07
+    if_ne                                       ; 975A F0 04
         bcs L978D                               ; 975C B0 2F
         bcc L9769 ;always taken                 ; 975E 90 09
-L9760:  iny                                     ; 9760 C8
-        lda L0700_TOP_SCORE_0                   ; 9761 AD 00 07
-        cmp L0729_SCORE_0                       ; 9764 CD 29 07
-        bcs L978D                               ; 9767 B0 24
-L9769:  lda L072E_SCORE_5                       ; 9769 AD 2E 07
-        sta L0705_TOP_SCORE_5                   ; 976C 8D 05 07
-        lda L072D_SCORE_4                       ; 976F AD 2D 07
-        sta L0704_TOP_SCORE_4                   ; 9772 8D 04 07
-        lda L072C_SCORE_3                       ; 9775 AD 2C 07
-        sta L0703_TOP_SCORE_3                   ; 9778 8D 03 07
-        lda L072B_SCORE_2                       ; 977B AD 2B 07
-        sta L0702_TOP_SCORE_2                   ; 977E 8D 02 07
-        lda L072A_SCORE_1                       ; 9781 AD 2A 07
-        sta L0701_TOP_SCORE_1                   ; 9784 8D 01 07
-        lda L0729_SCORE_0                       ; 9787 AD 29 07
-        sta L0700_TOP_SCORE_0                   ; 978A 8D 00 07
-L978D:  rts                                     ; 978D 60
+    end_if
+    iny                                         ; 9760 C8
+    lda L0700_TOP_SCORE_0                       ; 9761 AD 00 07
+    cmp L0729_SCORE_0                           ; 9764 CD 29 07
+    bcs L978D                                   ; 9767 B0 24
+L9769:
+    lda L072E_SCORE_5                           ; 9769 AD 2E 07
+    sta L0705_TOP_SCORE_5                       ; 976C 8D 05 07
+    lda L072D_SCORE_4                           ; 976F AD 2D 07
+    sta L0704_TOP_SCORE_4                       ; 9772 8D 04 07
+    lda L072C_SCORE_3                           ; 9775 AD 2C 07
+    sta L0703_TOP_SCORE_3                       ; 9778 8D 03 07
+    lda L072B_SCORE_2                           ; 977B AD 2B 07
+    sta L0702_TOP_SCORE_2                       ; 977E 8D 02 07
+    lda L072A_SCORE_1                           ; 9781 AD 2A 07
+    sta L0701_TOP_SCORE_1                       ; 9784 8D 01 07
+    lda L0729_SCORE_0                           ; 9787 AD 29 07
+    sta L0700_TOP_SCORE_0                       ; 978A 8D 00 07
+L978D:
+    rts                                         ; 978D 60
 .endscope
 
 ; ----------------------------------------------------------------------------
@@ -3795,7 +3823,7 @@ L97A3:  lda $54                                 ; 97A3 A5 54
         sta $5D                                 ; 97B4 85 5D
         jsr RB654_NEXT_FRAME                    ; 97B6 20 54 B6
         lda #$16                                ; 97B9 A9 16
-        sta L2001                               ; 97BB 8D 01 20
+        sta L2001_PPUMASK                       ; 97BB 8D 01 20
         lda #$FF                                ; 97BE A9 FF
         ldx #$02                                ; 97C0 A2 02
         ldy #$02                                ; 97C2 A0 02
@@ -3819,7 +3847,7 @@ L97C7:  lda #$70                                ; 97C7 A9 70
 L97E8:  lda #$FF                                ; 97E8 A9 FF
         sta $5D                                 ; 97EA 85 5D
         lda #$1E                                ; 97EC A9 1E
-        sta L2001                               ; 97EE 8D 01 20
+        sta L2001_PPUMASK                       ; 97EE 8D 01 20
         lda #$00                                ; 97F1 A9 00
         sta L068D                               ; 97F3 8D 8D 06
 L97F6:  rts                                     ; 97F6 60
@@ -3845,7 +3873,7 @@ L97F7:  lda $F5                                 ; 97F7 A5 F5
 
 ; ----------------------------------------------------------------------------
 ; jump table vector 0
-L981C:
+L981C_TOP_0:
 .scope
         lda $0741                               ; 981C AD 41 07
         cmp #$FE                                ; 981F C9 FE
@@ -3880,15 +3908,15 @@ L981C:
         sta $36                                 ; 9862 85 36
         lda #$D0                                ; 9864 A9 D0
         sta $37                                 ; 9866 85 37
-        jsr RB67C                               ; 9868 20 7C B6
+        jsr RB67C_DISABLE_VIDEO                 ; 9868 20 7C B6
         jsr RB6A2                               ; 986B 20 A2 B6
         jsr RB6C2                               ; 986E 20 C2 B6
         .word   LB91C                           ; 9871 1C B9
         lda #$81                                ; 9873 A9 81
         sta L66_PALETTE                         ; 9875 85 66
-        jsr R91D0                               ; 9877 20 D0 91
-        jsr RB695                               ; 987A 20 95 B6
-        jsr RB689                               ; 987D 20 89 B6
+        jsr R91D0_CHECKSUM                      ; 9877 20 D0 91
+        jsr RB695_ENABLE_NMI                    ; 987A 20 95 B6
+        jsr RB689_ENABLE_VIDEO                  ; 987D 20 89 B6
         lda #$00                                ; 9880 A9 00
         sta $54                                 ; 9882 85 54
         lda #$FF                                ; 9884 A9 FF
@@ -3991,11 +4019,11 @@ L9912:  lda #$FE                                ; 9912 A9 FE
         lda #$0A                                ; 994B A9 0A
         sta $0316                               ; 994D 8D 16 03
         jmp L990F                               ; 9950 4C 0F 99
-.endscope ;L981C
+.endscope ;L981C_TOP_0
 
 ; ----------------------------------------------------------------------------
 ; jump table vector 1
-L9953:
+L9953_TOP_1:
 .scope
     lda     $0741                               ; 9953 AD 41 07
     if_ne                                       ; 9956 F0 03
@@ -4023,7 +4051,7 @@ L9953:
         lda #$14                                ; 9989 A9 14
         sta $0316                               ; 998B 8D 16 03
     end_if
-    jsr RB67C                                   ; 998E 20 7C B6
+    jsr RB67C_DISABLE_VIDEO                     ; 998E 20 7C B6
     jsr RB6A2                                   ; 9991 20 A2 B6
     jsr RB6C2                                   ; 9994 20 C2 B6
     .word LBD7D ; settings screen               ; 9997 7D BD
@@ -4035,11 +4063,11 @@ L9953:
     ; PPU address $20AA (row 5, col 10)
     ; "_ PLAYER GAME"
     lda #$20                                    ; 99A4 A9 20
-    sta $2006                                   ; 99A6 8D 06 20
+    sta L2006_PPUADDR                           ; 99A6 8D 06 20
     lda #$AA                                    ; 99A9 A9 AA
-    sta $2006                                   ; 99AB 8D 06 20
+    sta L2006_PPUADDR                           ; 99AB 8D 06 20
     lda L0727_NUM_PLAYERS                       ; 99AE AD 27 07
-    sta $2007                                   ; 99B1 8D 07 20
+    sta L2007_PPUDATA                           ; 99B1 8D 07 20
     lda L0727_NUM_PLAYERS                       ; 99B4 AD 27 07
     cmp #$01                                    ; 99B7 C9 01
     if_eq                                       ; 99B9 D0 05
@@ -4048,8 +4076,8 @@ L9953:
     end_if
     lda #$04                                    ; 99C0 A9 04
     sta $68                                     ; 99C2 85 68
-    jsr RB695                                   ; 99C4 20 95 B6
-    jsr RB689                                   ; 99C7 20 89 B6
+    jsr RB695_ENABLE_NMI                        ; 99C4 20 95 B6
+    jsr RB689_ENABLE_VIDEO                      ; 99C7 20 89 B6
     lda #$00                                    ; 99CA A9 00
     sta $54                                     ; 99CC 85 54
     lda #$FF                                    ; 99CE A9 FF
@@ -4178,10 +4206,10 @@ L9AC2:
     inc L46_TOP_STATE                           ; 9AC2 E6 46
 L9AC4:
     rts                                         ; 9AC4 60
-.endscope ;L9953
+.endscope ;L9953_TOP_1
 
 ; ----------------------------------------------------------------------------
-; Called by L9953, if $65 == 0.
+; Called by L9953_TOP_1, if $65 == 0.
 R9AC5:
     begin
         lda $93                                 ; 9AC5 A5 93
@@ -4237,7 +4265,7 @@ R9AC5:
     rts                                         ; 9B1C 60
 
 ; ----------------------------------------------------------------------------
-; Called by L9953, if $65 == 1.
+; Called by L9953_TOP_1, if $65 == 1.
 R9B1D:
     lda $5B                                     ; 9B1D A5 5B
     cmp #$01                                    ; 9B1F C9 01
@@ -4295,7 +4323,7 @@ R9B42:
 
 ; ----------------------------------------------------------------------------
 ; jump table vector 4
-L9B73:
+L9B73_TOP_4:
 .scope
         jsr R9075 ; Load P1 state               ; 9B73 20 75 90
         jsr R9BB9                               ; 9B76 20 B9 9B
@@ -4486,7 +4514,7 @@ R9C01:
 
 ; ----------------------------------------------------------------------------
 ; R8157 jump table vector 8
-L9C91:
+L9C91_TOP_8:
 .scope
         lda $0741                               ; 9C91 AD 41 07
         bne L9CEA                               ; 9C94 D0 54
@@ -4753,7 +4781,7 @@ cutscene:
     jsr RB8E0 ; Set mapper CHR bank 0.          ; 9E69 20 E0 B8
     lda #$06                                    ; 9E6C A9 06
     jsr RB8F4 ; Set mapper CHR bank 1.          ; 9E6E 20 F4 B8
-    jsr RB67C                                   ; 9E71 20 7C B6
+    jsr RB67C_DISABLE_VIDEO                     ; 9E71 20 7C B6
     jsr RB6A2                                   ; 9E74 20 A2 B6
     ldx L8B_SPEED                               ; 9E77 A6 8B
     lda LA0DE,x                                 ; 9E79 BD DE A0
@@ -4766,8 +4794,8 @@ cutscene:
     lda #$FF                                    ; 9E89 A9 FF
     sta $0300                                   ; 9E8B 8D 00 03
     sta $0380                                   ; 9E8E 8D 80 03
-    jsr RB695                                   ; 9E91 20 95 B6
-    jsr RB689                                   ; 9E94 20 89 B6
+    jsr RB695_ENABLE_NMI                        ; 9E91 20 95 B6
+    jsr RB689_ENABLE_VIDEO                      ; 9E94 20 89 B6
     ldx L8B_SPEED                               ; 9E97 A6 8B
     lda LA095,x ; $08,$01,$01                   ; 9E99 BD 95 A0
     sta $06F5                                   ; 9E9C 8D F5 06
@@ -4811,15 +4839,15 @@ next_level:
     jsr RB8E0 ; Set mapper CHR bank 0.          ; 9EED 20 E0 B8
     lda #$03                                    ; 9EF0 A9 03
     jsr RB8F4 ; Set mapper CHR bank 1.          ; 9EF2 20 F4 B8
-    jsr RB67C                                   ; 9EF5 20 7C B6
+    jsr RB67C_DISABLE_VIDEO                     ; 9EF5 20 7C B6
     jsr RB6A2                                   ; 9EF8 20 A2 B6
     jsr R82D1                                   ; 9EFB 20 D1 82
     ; set bits 1,2,3,4,7
     ; (level, score, top, virus, victory)
     lda #$9E                                    ; 9EFE A9 9E
     sta L52_REDRAW_FLAGS                        ; 9F00 85 52
-    jsr RB695                                   ; 9F02 20 95 B6
-    jsr RB689                                   ; 9F05 20 89 B6
+    jsr RB695_ENABLE_NMI                        ; 9F02 20 95 B6
+    jsr RB689_ENABLE_VIDEO                      ; 9F05 20 89 B6
     rts                                         ; 9F08 60
 .endscope
 
@@ -4970,8 +4998,10 @@ L9FED:
 
 ; ----------------------------------------------------------------------------
 ; 10-byte lookup table, used by L8036
+; Ascii string "!DR.MARIO!"
 L9FEE:  .byte $21,$44,$52,$2E,$4D,$41,$52,$49   ; 9FEE 21 44 52 2E 4D 41 52 49
         .byte $4F,$21                           ; 9FF6 4F 21
+
 ; ----------------------------------------------------------------------------
 ; 96-byte lookup table, used by RB5B8 and others
 ; Indexed by L8B_SPEED * 32 + L96_LEVEL.
@@ -5081,10 +5111,10 @@ LA10E:  .byte $06,$11                           ; A10E 06 11
         .byte $00,$40,$C0                       ; A110 00 40 C0
 
 ; ----------------------------------------------------------------------------
-; Table of sprite numbers, used in L9953, indexed by $0731.
+; Table of sprite numbers, used in L9953_TOP_1, indexed by $0731.
 LA113:  .byte $04,$04,$05,$00                   ; A113 04 04 05 00
 ; ----------------------------------------------------------------------------
-; Table of sprite X-coordinates, used in L9953, indexed by $0731.
+; Table of sprite X-coordinates, used in L9953_TOP_1, indexed by $0731.
 LA117:  .byte $38,$70,$A7                       ; A117 38 70 A7
 
 ; ----------------------------------------------------------------------------
@@ -5134,7 +5164,8 @@ LA22D:  .byte $01,$02,$04,$00                   ; A22D 01 02 04 00
 ; Falling animation for viruses.
 LA231:  .byte $FC,$F8,$F4,$F2,$F1,$F0,$F1,$F2,$F4,$F8,$FC,$00
 ; ----------------------------------------------------------------------------
-; lookup table, used by R82D1 (indexed by L030B_P1_SPEED * 4) and L816E (also by L038B_P2_SPEED * 4)
+; lookup table, used by R82D1 (indexed by L030B_P1_SPEED * 4)
+; and L816E_TOP_2 (also by L038B_P2_SPEED * 4)
 LA23D:  .byte $15,$18,$20,$00  ; "LOW"
         .byte $16,$0E,$0D,$00  ; "MED"
         .byte $FE,$11,$12,$00  ; " HI"
@@ -5163,7 +5194,7 @@ LA261:  .byte $09,$0A,$09
 ; lookup table, used by
 LA264:  .byte $04,$02,$03
 ; ----------------------------------------------------------------------------
-; lookup table, used by L981C
+; lookup table, used by L981C_TOP_0
 LA267:  .byte $00,$A7,$B7
 ; ----------------------------------------------------------------------------
 ; Argument to RB6C2, 1-player settings screen
@@ -5436,25 +5467,31 @@ LA6FB:  .byte $60,$60,$20,$A0,$C0,$F8,$6E,$82
         .byte $00,$30,$00,$00
 
 ; ----------------------------------------------------------------------------
-; array of pairs of bytes, used by R8321
-LA717:  .byte $21,$4C,$21,$6C,$21,$8C,$21,$AC
-        .byte $21,$CC,$21,$EC,$22,$0C,$22,$2C
-        .byte $22,$4C,$22,$6C,$22,$8C,$22,$AC
-        .byte $22,$CC,$22,$EC,$23,$0C,$23,$2C
+; Table of PPU addresses, used by R8321
+; Screen position of play field rows (one player mode)
+; Rows 10-25, column 12
+LA717:  .dbyt $214C,$216C,$218C,$21AC
+        .dbyt $21CC,$21EC,$220C,$222C
+        .dbyt $224C,$226C,$228C,$22AC
+        .dbyt $22CC,$22EC,$230C,$232C
 
 ; ----------------------------------------------------------------------------
-; array of pairs of bytes, used by R8321
-LA737:  .byte $21,$44,$21,$64,$21,$84,$21,$A4
-        .byte $21,$C4,$21,$E4,$22,$04,$22,$24
-        .byte $22,$44,$22,$64,$22,$84,$22,$A4
-        .byte $22,$C4,$22,$E4,$23,$04,$23,$24
+; Table of PPU addresses, used by R8321
+; Screen position of play field rows (player 1 of 2)
+; Rows 10-25, column 4
+LA737:  .dbyt $2144,$2164,$2184,$21A4
+        .dbyt $21C4,$21E4,$2204,$2224
+        .dbyt $2244,$2264,$2284,$22A4
+        .dbyt $22C4,$22E4,$2304,$2324
 
 ; ----------------------------------------------------------------------------
-; array of pairs of bytes, used by R8321
-LA757:  .byte $21,$54,$21,$74,$21,$94,$21,$B4
-        .byte $21,$D4,$21,$F4,$22,$14,$22,$34
-        .byte $22,$54,$22,$74,$22,$94,$22,$B4
-        .byte $22,$D4,$22,$F4,$23,$14,$23,$34
+; Table of PPU addresses, used by R8321
+; Screen position of play field rows (player 2 of 2)
+; Rows 10-25, column 20
+LA757:  .dbyt $2154,$2174,$2194,$21B4
+        .dbyt $21D4,$21F4,$2214,$2234
+        .dbyt $2254,$2274,$2294,$22B4
+        .dbyt $22D4,$22F4,$2314,$2334
 
 ; ----------------------------------------------------------------------------
 ; lookup table, used in multiple places: R8393, R8508, R86AD, R87A2
@@ -5500,18 +5537,20 @@ LA80F:  .byte $8B,$8C,$8C,$8C,$8C,$8C,$8C,$8D,$8E
         .byte $EE,$EE,$EE,$EF,$00
 
 ; ----------------------------------------------------------------------------
-; 50-byte null-terminated string, used by R96D4
-LA838:  .byte $8B,$8C,$8C,$8C,$8C,$8C,$8C,$8D,$8E
-        .byte $FE,$FE,$FE,$FE,$FE,$FE,$8F,$8E,$FE
-        .byte $10,$0A,$16,$0E,$FE,$8F,$8E,$FE,$FE
-        .byte $FE,$FE,$FE,$FE,$8F,$8E,$FE,$18,$1F
-        .byte $0E,$1B,$FE,$8F,$8E,$FE,$FE,$FE,$FE
-        .byte $FE,$FE,$8F,$ED,$EE,$EE,$EE,$EE,$EE
-        .byte $EE,$EF,$00
+; 56-byte null-terminated string, used by R96D4_INIT_410_510
+; Copied to $0410 or $0510.
+LA838:  .byte $8B,$8C,$8C,$8C,$8C,$8C,$8C,$8D
+        .byte $8E,$FE,$FE,$FE,$FE,$FE,$FE,$8F
+        .byte $8E,$FE,$10,$0A,$16,$0E,$FE,$8F
+        .byte $8E,$FE,$FE,$FE,$FE,$FE,$FE,$8F
+        .byte $8E,$FE,$18,$1F,$0E,$1B,$FE,$8F
+        .byte $8E,$FE,$FE,$FE,$FE,$FE,$FE,$8F
+        .byte $ED,$EE,$EE,$EE,$EE,$EE,$EE,$EF
+        .byte $00
 
 ; ----------------------------------------------------------------------------
 ; 80-byte null-terminated string, used by RB337
-; Copied to $0400-$044f or $0500-$054f
+; Copied to $0400-$044f or $0500-$054f.
 LA871:  .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         .byte $8B,$8C,$8C,$8C,$8C,$8C,$8C,$8D
         .byte $8E,$FE,$FE,$FE,$FE,$FE,$FE,$8F
@@ -5658,6 +5697,8 @@ LAB63:  .byte $00,$36,$00,$00,$00,$34,$00,$08,$00,$35,$00,$10,$08,$37,$00,$00
 LABA0:  .byte $00,$15,$00,$00,$00,$18,$00,$08,$00,$20,$00,$10,$80
 LABAD:  .byte $00,$16,$00,$00,$00,$0E,$00,$08,$00,$0D,$00,$10,$80
 LABBA:  .byte $00,$11,$00,$00,$00,$12,$00,$08,$80
+; Sprite $10: "START" (page 2)
+; 0D 0F 0B 14 0F
 LABC3:  .byte $00,$0D,$00,$00,$00,$0F,$00,$08,$00,$0B,$00,$10,$00,$14,$00,$18
         .byte $00,$0F,$00,$20,$80
 ; Sprite $11: red virus
@@ -6600,17 +6641,17 @@ RB670_NEXT_FRAME:
 
 ; ----------------------------------------------------------------------------
 ; Next frame, and turn off background and sprites.
-RB67C:
+RB67C_DISABLE_VIDEO:
     jsr RB670_NEXT_FRAME                        ; B67C 20 70 B6
     lda $FE                                     ; B67F A5 FE
     and #$E1                                    ; B681 29 E1
 LB683:
-    sta L2001                                   ; B683 8D 01 20
+    sta L2001_PPUMASK                           ; B683 8D 01 20
     sta $FE                                     ; B686 85 FE
     rts                                         ; B688 60
 
 ; Next frame, and turn on background and sprites.
-RB689:
+RB689_ENABLE_VIDEO:
     jsr RB670_NEXT_FRAME                        ; B689 20 70 B6
     jsr RB6B4                                   ; B68C 20 B4 B6
     lda $FE                                     ; B68F A5 FE
@@ -6619,9 +6660,9 @@ RB689:
 
 ; ----------------------------------------------------------------------------
 ; Wait for VBLANK, and enable PPU NMI.
-RB695:
+RB695_ENABLE_NMI:
     loop
-        lda $2002                               ; B695 AD 02 20
+        lda L2002_PPUSTATUS                     ; B695 AD 02 20
         and #$80                                ; B698 29 80
     while_ne                                    ; B69A D0 F9
     lda $FF                                     ; B69C A5 FF
@@ -6633,29 +6674,27 @@ RB6A2:
     lda $FF                                     ; B6A2 A5 FF
     and #$7F                                    ; B6A4 29 7F
 LB6A6:
-    sta L2000                                   ; B6A6 8D 00 20
+    sta L2000_PPUCTRL                           ; B6A6 8D 00 20
     sta $FF                                     ; B6A9 85 FF
     rts                                         ; B6AB 60
 
 ; ----------------------------------------------------------------------------
-RB6AC:
-.scope
-        ldx     #$FF                            ; B6AC A2 FF
-        ldy     #$00                            ; B6AE A0 00
-        jsr     RB846                           ; B6B0 20 46 B8
-        rts                                     ; B6B3 60
-.endscope
+; Input in A: PPU page of nametable
+; Fill nametable with #$FF, and attributes with #$00.
+RB6AC_INIT_NAMETABLE:
+    ldx #$FF                                    ; B6AC A2 FF
+    ldy #$00                                    ; B6AE A0 00
+    jsr RB846_FILL_PPU_PAGES                    ; B6B0 20 46 B8
+    rts                                         ; B6B3 60
 
 ; ----------------------------------------------------------------------------
 RB6B4:
-.scope
-        lda     #$00                            ; B6B4 A9 00
-        sta     $2005                           ; B6B6 8D 05 20
-        sta     $2005                           ; B6B9 8D 05 20
-        lda     $FF                             ; B6BC A5 FF
-        sta     L2000                           ; B6BE 8D 00 20
-        rts                                     ; B6C1 60
-.endscope
+    lda #$00                                    ; B6B4 A9 00
+    sta L2005_PPUSCROLL                         ; B6B6 8D 05 20
+    sta L2005_PPUSCROLL                         ; B6B9 8D 05 20
+    lda $FF                                     ; B6BC A5 FF
+    sta L2000_PPUCTRL                           ; B6BE 8D 00 20
+    rts                                         ; B6C1 60
 
 ; ----------------------------------------------------------------------------
 
@@ -6672,10 +6711,10 @@ LB6C8:
 ; case A = anything 00-7F except 60 or 4C
 ; Y = 0
         pha                                     ; B6C8 48
-            sta $2006                           ; B6C9 8D 06 20    ;p[0] -> $2006 (PPU addr hi)
+            sta L2006_PPUADDR                   ; B6C9 8D 06 20    ;p[0] -> $2006 (PPU addr hi)
             iny                                 ; B6CC C8          ;Y=1
             lda ($00),y                         ; B6CD B1 00       ;A=p[1]
-            sta $2006                           ; B6CF 8D 06 20    ;p[1] -> $2006 (PPU addr lo)
+            sta L2006_PPUADDR                   ; B6CF 8D 06 20    ;p[1] -> $2006 (PPU addr lo)
             iny                                 ; B6D2 C8          ;Y=2
             lda ($00),y                         ; B6D3 B1 00       ;A = p[2] = abcdefgh
             asl a                               ; B6D5 0A          ;A = p[2]*2 = bcdefgh0
@@ -6685,7 +6724,7 @@ LB6C8:
                 if_cc                           ; B6DB B0 02
                     and #$FB                    ; B6DD 29 FB
                 end_if
-                sta L2000                       ; B6DF 8D 00 20
+                sta L2000_PPUCTRL               ; B6DF 8D 00 20
                 sta $FF                         ; B6E2 85 FF
             pla                                 ; B6E4 68          ;A = p[2]*2 = bcdefgh0
             asl a                               ; B6E5 0A          ;A = p[2]*4 = cdefgh00 (C = b)
@@ -6707,16 +6746,16 @@ LB6C8:
                     iny                         ; B6F6 C8
                 end_if
                 lda ($00),y                     ; B6F7 B1 00
-                sta $2007                       ; B6F9 8D 07 20    ;Copy value to PPU data
+                sta L2007_PPUDATA               ; B6F9 8D 07 20    ;Copy value to PPU data
                 dex                             ; B6FC CA
             while_ne                            ; B6FD D0 F5
         pla                                     ; B6FF 68          ;a=p[0]
         cmp #$3F                                ; B700 C9 3F       ;if PPU addr hi = $3f
         if_eq                                   ; B702 D0 0C
-            sta $2006                           ; B704 8D 06 20    ;PPU addr = $3f00
-            stx $2006                           ; B707 8E 06 20
-            stx $2006                           ; B70A 8E 06 20    ;PPU addr = $0000
-            stx $2006                           ; B70D 8E 06 20
+            sta L2006_PPUADDR                   ; B704 8D 06 20    ;PPU addr = $3f00
+            stx L2006_PPUADDR                   ; B707 8E 06 20
+            stx L2006_PPUADDR                   ; B70A 8E 06 20    ;PPU addr = $0000
+            stx L2006_PPUADDR                   ; B70D 8E 06 20
         end_if
 LB710:
         ; increment $00/$01 by Y+1.
@@ -6728,7 +6767,7 @@ LB710:
         adc $01                                 ; B718 65 01
         sta $01                                 ; B71A 85 01
 ; entry point
-LB71C:  ldx $2002                               ; B71C AE 02 20
+LB71C:  ldx L2002_PPUSTATUS                     ; B71C AE 02 20
         ldy #$00                                ; B71F A0 00
         lda ($00),y                             ; B721 B1 00
         if_mi                                   ; B723 10 01
@@ -6823,7 +6862,7 @@ RB788:
 ; $F6 = controller 2 button state.
 ; $00 = expansion port controller 1 button state.
 ; $01 = expansion port controller 2 button state.
-RB793:
+RB793_READ_CONTROLLERS:
     ldx $FB                                     ; B793 A6 FB
     inx                                         ; B795 E8
     stx $4016                                   ; B796 8E 16 40
@@ -6860,7 +6899,7 @@ RB7B5:
 
 ; ----------------------------------------------------------------------------
 ; unreachable
-    jsr RB793                                   ; B7C2 20 93 B7
+    jsr RB793_READ_CONTROLLERS                  ; B7C2 20 93 B7
     beq LB7E7                                   ; B7C5 F0 20
 
 ; ----------------------------------------------------------------------------
@@ -6870,13 +6909,13 @@ RB7B5:
 ; WRITES $48 $49 L4016
 ; MODIFIES $00 $01 $f5 $f6 $f5,X $f7,X
 RB7C7:
-    jsr RB793                                   ; B7C7 20 93 B7  ; read controller state into $F5,$F6
+    jsr RB793_READ_CONTROLLERS                  ; B7C7 20 93 B7  ; read controller state into $F5,$F6
     jsr RB7B5                                   ; B7CA 20 B5 B7
     lda $F5                                     ; B7CD A5 F5
     sta $48                                     ; B7CF 85 48
     lda $F6                                     ; B7D1 A5 F6
     sta $49                                     ; B7D3 85 49
-    jsr RB793                                   ; B7D5 20 93 B7  ; read controller state again
+    jsr RB793_READ_CONTROLLERS                  ; B7D5 20 93 B7  ; read controller state again
     jsr RB7B5                                   ; B7D8 20 B5 B7
     lda $F5                                     ; B7DB A5 F5
     and $48                                     ; B7DD 25 48
@@ -6899,87 +6938,104 @@ LB7E7:
 
 ; ----------------------------------------------------------------------------
 ; unreachable
-        jsr     RB793                           ; B7F8 20 93 B7
-LB7FB:  ldy     $F5                             ; B7FB A4 F5
-LB7FD:  lda     $F6                             ; B7FD A5 F6
-        pha                                     ; B7FF 48
-        jsr     RB793                           ; B800 20 93 B7
-        pla                                     ; B803 68
-        cmp     $F6                             ; B804 C5 F6
-        bne     LB7FB                           ; B806 D0 F3
-        cpy     $F5                             ; B808 C4 F5
-        bne     LB7FB                           ; B80A D0 EF
-        beq     LB7E7                           ; B80C F0 D9
-        jsr     RB793                           ; B80E 20 93 B7
-        jsr     RB7B5                           ; B811 20 B5 B7
-LB814:  ldy     $F5                             ; B814 A4 F5
-        lda     $F6                             ; B816 A5 F6
-        pha                                     ; B818 48
-        jsr     RB793                           ; B819 20 93 B7
-        jsr     RB7B5                           ; B81C 20 B5 B7
-        pla                                     ; B81F 68
-        cmp     $F6                             ; B820 C5 F6
-        bne     LB814                           ; B822 D0 F0
-        cpy     $F5                             ; B824 C4 F5
-        bne     LB814                           ; B826 D0 EC
-        beq     LB7E7                           ; B828 F0 BD
-        jsr     RB793                           ; B82A 20 93 B7
-        lda     $00                             ; B82D A5 00
-        sta     $F7                             ; B82F 85 F7
-        lda     $01                             ; B831 A5 01
-        sta     $F8                             ; B833 85 F8
-        ldx     #$03                            ; B835 A2 03
-LB837:  lda     $F5,x                           ; B837 B5 F5
+    jsr RB793_READ_CONTROLLERS                  ; B7F8 20 93 B7
+    loop
+        loop
+            ldy $F5                             ; B7FB A4 F5
+            lda $F6                             ; B7FD A5 F6
+            pha                                 ; B7FF 48
+                jsr RB793_READ_CONTROLLERS      ; B800 20 93 B7
+            pla                                 ; B803 68
+            cmp $F6                             ; B804 C5 F6
+        while_ne                                ; B806 D0 F3
+        cpy $F5                                 ; B808 C4 F5
+    while_ne                                    ; B80A D0 EF
+    beq LB7E7                                   ; B80C F0 D9
+    jsr RB793_READ_CONTROLLERS                  ; B80E 20 93 B7
+    jsr RB7B5                                   ; B811 20 B5 B7
+    loop
+        loop
+            ldy $F5                             ; B814 A4 F5
+            lda $F6                             ; B816 A5 F6
+            pha                                 ; B818 48
+                jsr RB793_READ_CONTROLLERS      ; B819 20 93 B7
+                jsr RB7B5                       ; B81C 20 B5 B7
+            pla                                 ; B81F 68
+            cmp $F6                             ; B820 C5 F6
+        while_ne                                ; B822 D0 F0
+        cpy $F5                                 ; B824 C4 F5
+    while_ne                                    ; B826 D0 EC
+    beq LB7E7                                   ; B828 F0 BD
+    jsr RB793_READ_CONTROLLERS                  ; B82A 20 93 B7
+    lda $00                                     ; B82D A5 00
+    sta $F7                                     ; B82F 85 F7
+    lda $01                                     ; B831 A5 01
+    sta $F8                                     ; B833 85 F8
+    ldx #$03                                    ; B835 A2 03
+    loop
+        lda $F5,x                               ; B837 B5 F5
         tay                                     ; B839 A8
-        eor     $F1,x                           ; B83A 55 F1
-        and     $F5,x                           ; B83C 35 F5
-        sta     $F5,x                           ; B83E 95 F5
-        sty     $F1,x                           ; B840 94 F1
+        eor $F1,x                               ; B83A 55 F1
+        and $F5,x                               ; B83C 35 F5
+        sta $F5,x                               ; B83E 95 F5
+        sty $F1,x                               ; B840 94 F1
         dex                                     ; B842 CA
-        bpl     LB837                           ; B843 10 F2
-        rts                                     ; B845 60
+    while_pl                                    ; B843 10 F2
+    rts                                         ; B845 60
 
 ; ----------------------------------------------------------------------------
-RB846:
-.scope
-        sta     $00                             ; B846 85 00
-        stx     $01                             ; B848 86 01
-        sty     $02                             ; B84A 84 02
-        lda     $2002                           ; B84C AD 02 20
-        lda     $FF                             ; B84F A5 FF
-        and     #$FB                            ; B851 29 FB
-        sta     L2000                           ; B853 8D 00 20
-        sta     $FF                             ; B856 85 FF
-        lda     $00                             ; B858 A5 00
-        sta     $2006                           ; B85A 8D 06 20
-        ldy     #$00                            ; B85D A0 00
-        sty     $2006                           ; B85F 8C 06 20
-        ldx     #$04                            ; B862 A2 04
-        cmp     #$20                            ; B864 C9 20
-        bcs     LB86A                           ; B866 B0 02
-        ldx     $02                             ; B868 A6 02
-LB86A:  ldy     #$00                            ; B86A A0 00
-        lda     $01                             ; B86C A5 01
-LB86E:  sta     $2007                           ; B86E 8D 07 20
-        dey                                     ; B871 88
-        bne     LB86E                           ; B872 D0 FA
+; Input A = Starting PPU page
+; Input X = Value to fill
+; Input Y = Number of pages
+; If A < #$20: Fill Y pages with X, starting at page A.
+; If A ≥ #$20: Fill 4 pages with X, starting at A; also fill nametable attributes with Y.
+; Called once in RB6AC_INIT_NAMETABLE.
+RB846_FILL_PPU_PAGES:
+    sta $00                                     ; B846 85 00
+    stx $01                                     ; B848 86 01
+    sty $02                                     ; B84A 84 02
+    lda L2002_PPUSTATUS                         ; B84C AD 02 20
+    lda $FF                                     ; B84F A5 FF
+    and #$FB                                    ; B851 29 FB
+    sta L2000_PPUCTRL                           ; B853 8D 00 20
+    sta $FF                                     ; B856 85 FF
+    ; PPU page A
+    lda $00                                     ; B858 A5 00
+    sta L2006_PPUADDR                           ; B85A 8D 06 20
+    ldy #$00                                    ; B85D A0 00
+    sty L2006_PPUADDR                           ; B85F 8C 06 20
+    ldx #$04                                    ; B862 A2 04
+    cmp #$20                                    ; B864 C9 20
+    if_cc                                       ; B866 B0 02
+        ldx $02                                 ; B868 A6 02
+    end_if
+    ; num_pages = a<#$20 ? y : 4
+    ldy #$00                                    ; B86A A0 00
+    lda $01                                     ; B86C A5 01
+    loop
+        loop
+            sta L2007_PPUDATA                   ; B86E 8D 07 20
+            dey                                 ; B871 88
+        while_ne                                ; B872 D0 FA
         dex                                     ; B874 CA
-        bne     LB86E                           ; B875 D0 F7
-        ldy     $02                             ; B877 A4 02
-        lda     $00                             ; B879 A5 00
-        cmp     #$20                            ; B87B C9 20
-        bcc     LB891                           ; B87D 90 12
-        adc     #$02                            ; B87F 69 02
-        sta     $2006                           ; B881 8D 06 20
-        lda     #$C0                            ; B884 A9 C0
-        sta     $2006                           ; B886 8D 06 20
-        ldx     #$40                            ; B889 A2 40
-LB88B:  sty     $2007                           ; B88B 8C 07 20
-        dex                                     ; B88E CA
-        bne     LB88B                           ; B88F D0 FA
-LB891:  ldx     $01                             ; B891 A6 01
-        rts                                     ; B893 60
-.endscope
+    while_ne                                    ; B875 D0 F7
+    ldy $02                                     ; B877 A4 02
+    lda $00                                     ; B879 A5 00
+    cmp #$20                                    ; B87B C9 20
+    if_cs                                       ; B87D 90 12
+        ; PPU address $03C0
+        adc #$02                                ; B87F 69 02
+        sta L2006_PPUADDR                       ; B881 8D 06 20
+        lda #$C0                                ; B884 A9 C0
+        sta L2006_PPUADDR                       ; B886 8D 06 20
+        ldx #$40                                ; B889 A2 40
+        loop
+            sty L2007_PPUDATA                   ; B88B 8C 07 20
+            dex                                 ; B88E CA
+        while_ne                                ; B88F D0 FA
+    end_if
+    ldx $01                                     ; B891 A6 01
+    rts                                         ; B893 60
 
 ; ----------------------------------------------------------------------------
 ; Input A X Y
@@ -7711,10 +7767,10 @@ LFF00:
     stx $2001                                   ; FF07 8E 01 20
     ; wait for vblank
     loop
-        lda $2002                               ; FF0A AD 02 20
+        lda L2002_PPUSTATUS                     ; FF0A AD 02 20
     while_pl                                    ; FF0D 10 FB
     loop
-        lda $2002                               ; FF0F AD 02 20
+        lda L2002_PPUSTATUS                     ; FF0F AD 02 20
     while_pl                                    ; FF12 10 FB
     dex                                         ; FF14 CA
     txs                                         ; FF15 9A
