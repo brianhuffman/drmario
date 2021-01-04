@@ -43,13 +43,25 @@
 .define L7A_V3_TIMER     $7A
 .define L7B_VIRUS_MARCH  $7B
 
-.define L85_PILL_COL     $85
+.define L81_PILL_COLOR_0 $81
+.define L82_PILL_COLOR_1 $82
+.define L83_PILL_COLOR_2 $83
+.define L84_PILL_COLOR_3 $84
+.define L85_PILL_COLUMN  $85
+.define L86_PILL_ROW     $86
 .define L8B_SPEED        $8B
 .define L93_REPEAT_TIMER $93
 .define L96_LEVEL        $96
+.define L9A_NEXT_COLOR_0 $9A
+.define L9B_NEXT_COLOR_1 $9B
+.define L9C_NEXT_COLOR_2 $9C
+.define L9D_NEXT_COLOR_3 $9D
 .define L9E_WINS         $9E
+.define LA2_NEXT_DIR     $A2
+.define LA3_NEXT_SHAPE   $A3
 .define LA4_VIRUS_BCD    $A4
 .define LA5_PILL_DIR     $A5
+.define LA6_PILL_SHAPE   $A6
 .define LA8_VIRUS_TO_ADD $A8
 .define LAD_VIRUS_COMBO  $AD
 
@@ -1168,20 +1180,21 @@ R871F:
     adc $47                                     ; 872E 65 47
     tay                                         ; 8730 A8
     lda LA6FB,y                                 ; 8731 B9 FB A6
+    ; y = coordinate of left edge of playfield
     sta $47                                     ; 8734 85 47
-    lda L85_PILL_COL                            ; 8736 A5 85
+    lda L85_PILL_COLUMN                         ; 8736 A5 85
     asl a                                       ; 8738 0A
     asl a                                       ; 8739 0A
     asl a                                       ; 873A 0A
     clc                                         ; 873B 18
     adc $47                                     ; 873C 65 47
     sta L44_SPRITE_X                            ; 873E 85 44
-    ldx $86                                     ; 8740 A6 86
+    ldx L86_PILL_ROW                            ; 8740 A6 86
     lda LA484,x                                 ; 8742 BD 84 A4
     sta L45_SPRITE_Y                            ; 8745 85 45
 ; from this point, similar to R88CB
     ldy L42_OAM_OFFSET                          ; 8747 A4 42
-    lda $A6                                     ; 8749 A5 A6
+    lda LA6_PILL_SHAPE                          ; 8749 A5 A6
     asl a                                       ; 874B 0A
     asl a                                       ; 874C 0A
     clc                                         ; 874D 18
@@ -1189,32 +1202,30 @@ R871F:
     tax                                         ; 8750 AA
     lda LA494,x                                 ; 8751 BD 94 A4
     tax                                         ; 8754 AA
-    lda $81                                     ; 8755 A5 81
+    lda L81_PILL_COLOR_0                        ; 8755 A5 81
     sta $47                                     ; 8757 85 47
-    jsr R8772                                   ; 8759 20 72 87
-    lda $82                                     ; 875C A5 82
+    jsr R8772_PILL_SPRITE                       ; 8759 20 72 87
+    lda L82_PILL_COLOR_1                        ; 875C A5 82
     sta $47                                     ; 875E 85 47
-    jsr R8772                                   ; 8760 20 72 87
-    lda $83                                     ; 8763 A5 83
+    jsr R8772_PILL_SPRITE                       ; 8760 20 72 87
+    lda L83_PILL_COLOR_2                        ; 8763 A5 83
     sta $47                                     ; 8765 85 47
-    jsr R8772                                   ; 8767 20 72 87
-    lda $84                                     ; 876A A5 84
+    jsr R8772_PILL_SPRITE                       ; 8767 20 72 87
+    lda L84_PILL_COLOR_3                        ; 876A A5 84
     sta $47                                     ; 876C 85 47
-    jsr R8772                                   ; 876E 20 72 87
+    jsr R8772_PILL_SPRITE                       ; 876E 20 72 87
     rts                                         ; 8771 60
 
 ; ----------------------------------------------------------------------------
-; -XY----D--/AXY-CZ--VN
-; RTS
-; READS L44_SPRITE_X L45_SPRITE_Y $47 La4a0,X
-; WRITES L42_OAM_OFFSET L0200,Y
-; Precondition: L42_OAM_OFFSET is loaded into Y.
-; Copy 4 bytes of sprite data from LA4A0,x into page 2.
+; Input: X = Pill sprite data index from LA494 (based on orientation).
+; Input: Y = L42_OAM_OFFSET (required as precondition)
+; Input: $47 = pill color (0 = yellow, 1 = red, 2 = blue)
+; Input: L44_SPRITE_X L45_SPRITE_Y (screen position of pill)
 ; Increment x and y by 4.
 ; Add L45_SPRITE_Y to 1st byte (Y coordinate).
 ; Add L44_SPRITE_X to 4th byte (X coordinate).
 ; Add $47 to 2nd byte (Tile index number).
-R8772:
+R8772_PILL_SPRITE:
     lda LA4A0,x                                 ; 8772 BD A0 A4
     cmp #$FF                                    ; 8775 C9 FF
     if_ne                                       ; 8777 F0 28
@@ -1276,13 +1287,13 @@ R87A2_LEVEL_SPRITES:
             lda $55                             ; 87D6 A5 55
             if_eq                               ; 87D8 D0 48
                 lda $031A                       ; 87DA AD 1A 03
-                sta $9A                         ; 87DD 85 9A
+                sta L9A_NEXT_COLOR_0            ; 87DD 85 9A
                 lda $031B                       ; 87DF AD 1B 03
-                sta $9B                         ; 87E2 85 9B
+                sta L9B_NEXT_COLOR_1            ; 87E2 85 9B
                 lda $031C                       ; 87E4 AD 1C 03
-                sta $9C                         ; 87E7 85 9C
+                sta L9C_NEXT_COLOR_2            ; 87E7 85 9C
                 lda $031D                       ; 87E9 AD 1D 03
-                sta $9D                         ; 87EC 85 9D
+                sta L9D_NEXT_COLOR_3            ; 87EC 85 9D
                 lda L0325_P1_PILL_DIR           ; 87EE AD 25 03
                 sta LA5_PILL_DIR                ; 87F1 85 A5
                 lda #$38                        ; 87F3 A9 38
@@ -1290,14 +1301,15 @@ R87A2_LEVEL_SPRITES:
                 lda #$33                        ; 87F7 A9 33
                 sta L45_SPRITE_Y                ; 87F9 85 45
                 jsr R88CB                       ; 87FB 20 CB 88
+
                 lda $039A                       ; 87FE AD 9A 03
-                sta $9A                         ; 8801 85 9A
+                sta L9A_NEXT_COLOR_0            ; 8801 85 9A
                 lda $039B                       ; 8803 AD 9B 03
-                sta $9B                         ; 8806 85 9B
+                sta L9B_NEXT_COLOR_1            ; 8806 85 9B
                 lda $039C                       ; 8808 AD 9C 03
-                sta $9C                         ; 880B 85 9C
+                sta L9C_NEXT_COLOR_2            ; 880B 85 9C
                 lda $039D                       ; 880D AD 9D 03
-                sta $9D                         ; 8810 85 9D
+                sta L9D_NEXT_COLOR_3            ; 8810 85 9D
                 lda L03A5_P2_PILL_DIR           ; 8812 AD A5 03
                 sta LA5_PILL_DIR                ; 8815 85 A5
                 lda #$B8                        ; 8817 A9 B8
@@ -1387,10 +1399,10 @@ R886C:
 
 ; ----------------------------------------------------------------------------
 ; Adds 4 entries to the sprite attribute table.
-; L44_SPRITE_X = LA401,$7D + ($A2 & #$01 × #4)
-; L45_SPRITE_Y (Y-coord) = LA41B,$7D + ($A2 & #$01 × #4)
+; L44_SPRITE_X = LA401,$7D + (LA2_NEXT_DIR & #$01 × #4)
+; L45_SPRITE_Y (Y-coord) = LA41B,$7D + (LA2_NEXT_DIR & #$01 × #4)
 R88B1:
-    lda $A2                                     ; 88B1 A5 A2
+    lda LA2_NEXT_DIR                            ; 88B1 A5 A2
     and #$01                                    ; 88B3 29 01
     asl a                                       ; 88B5 0A
     asl a                                       ; 88B6 0A
@@ -1407,31 +1419,31 @@ R88B1:
 ; Adds 4 entries to the sprite attribute table.
 ; Inputs:
 ; L44_SPRITE_X L45_SPRITE_Y
-; $9a $9b $9c $9d: 4 sprite table indexes
-; 4×$A3+$A2 used as index to LA494.
+; L9A_NEXT_COLOR_0 L9B_NEXT_COLOR_1 L9C_NEXT_COLOR_2 L9D_NEXT_COLOR_3: 4 pill colors (0-2)
+; 4×LA3_NEXT_SHAPE+LA2_NEXT_DIR used as index to LA494.
 ; called from R87A2
 R88CB:
     ldy L42_OAM_OFFSET                          ; 88CB A4 42
-    lda $A3                                     ; 88CD A5 A3
+    lda LA3_NEXT_SHAPE                          ; 88CD A5 A3
     asl a                                       ; 88CF 0A
     asl a                                       ; 88D0 0A
     clc                                         ; 88D1 18
-    adc $A2                                     ; 88D2 65 A2
+    adc LA2_NEXT_DIR                            ; 88D2 65 A2
     tax                                         ; 88D4 AA
     lda LA494,x                                 ; 88D5 BD 94 A4
     tax                                         ; 88D8 AA
-    lda $9A                                     ; 88D9 A5 9A
+    lda L9A_NEXT_COLOR_0                        ; 88D9 A5 9A
     sta $47                                     ; 88DB 85 47
-    jsr R8772                                   ; 88DD 20 72 87
-    lda $9B                                     ; 88E0 A5 9B
+    jsr R8772_PILL_SPRITE                       ; 88DD 20 72 87
+    lda L9B_NEXT_COLOR_1                        ; 88E0 A5 9B
     sta $47                                     ; 88E2 85 47
-    jsr R8772                                   ; 88E4 20 72 87
-    lda $9C                                     ; 88E7 A5 9C
+    jsr R8772_PILL_SPRITE                       ; 88E4 20 72 87
+    lda L9C_NEXT_COLOR_2                        ; 88E7 A5 9C
     sta $47                                     ; 88E9 85 47
-    jsr R8772                                   ; 88EB 20 72 87
-    lda $9D                                     ; 88EE A5 9D
+    jsr R8772_PILL_SPRITE                       ; 88EB 20 72 87
+    lda L9D_NEXT_COLOR_3                        ; 88EE A5 9D
     sta $47                                     ; 88F0 85 47
-    jsr R8772                                   ; 88F2 20 72 87
+    jsr R8772_PILL_SPRITE                       ; 88F2 20 72 87
     rts                                         ; 88F5 60
 
 ; ----------------------------------------------------------------------------
@@ -2185,16 +2197,16 @@ R8D70:
         cmp $92                                 ; 8D90 C5 92
         bcs break                               ; 8D92 B0 2A
     L8D94:
-        dec $86                                 ; 8D94 C6 86
+        dec L86_PILL_ROW                        ; 8D94 C6 86
         lda #$00                                ; 8D96 A9 00
         sta $92                                 ; 8D98 85 92
-        jsr R90D3                               ; 8D9A 20 D3 90
+        jsr R90D3_COLLISION                     ; 8D9A 20 D3 90
         if_eq                                   ; 8D9D D0 06
-            lda $86                             ; 8D9F A5 86
+            lda L86_PILL_ROW                    ; 8D9F A5 86
             cmp #$FF                            ; 8DA1 C9 FF
             bne break                           ; 8DA3 D0 19
         end_if
-        inc $86                                 ; 8DA5 E6 86
+        inc L86_PILL_ROW                        ; 8DA5 E6 86
         lda #$07                                ; 8DA7 A9 07
         sta $06F1                               ; 8DA9 8D F1 06
         jsr R8F52                               ; 8DAC 20 52 8F
@@ -2242,15 +2254,15 @@ R8DBF_PILL_MOVE:
             and #$01                            ; 8DEB 29 01
             clc                                 ; 8DED 18
             adc #$06                            ; 8DEE 69 06
-            cmp L85_PILL_COL                    ; 8DF0 C5 85
+            cmp L85_PILL_COLUMN                 ; 8DF0 C5 85
             if_ne                               ; 8DF2 F0 15
-                inc L85_PILL_COL                ; 8DF4 E6 85
-                jsr R90D3                       ; 8DF6 20 D3 90
+                inc L85_PILL_COLUMN             ; 8DF4 E6 85
+                jsr R90D3_COLLISION             ; 8DF6 20 D3 90
                 if_eq                           ; 8DF9 D0 08
                     lda #$03                    ; 8DFB A9 03
                     sta $06F1                   ; 8DFD 8D F1 06
                 else                            ; 8E00 4C 09 8E
-                    dec L85_PILL_COL            ; 8E03 C6 85
+                    dec L85_PILL_COLUMN         ; 8E03 C6 85
                     lda #$0F                    ; 8E05 A9 0F
                     sta L93_REPEAT_TIMER        ; 8E07 85 93
                 end_if
@@ -2259,16 +2271,16 @@ R8DBF_PILL_MOVE:
         lda L5C_INPUT_OLD                       ; 8E09 A5 5C
         and #$02 ; "left"                       ; 8E0B 29 02
         if_ne                                   ; 8E0D F0 1B
-            lda L85_PILL_COL                    ; 8E0F A5 85
+            lda L85_PILL_COLUMN                 ; 8E0F A5 85
             cmp #$00                            ; 8E11 C9 00
             if_ne                               ; 8E13 F0 15
-                dec L85_PILL_COL                ; 8E15 C6 85
-                jsr R90D3                       ; 8E17 20 D3 90
+                dec L85_PILL_COLUMN             ; 8E15 C6 85
+                jsr R90D3_COLLISION             ; 8E17 20 D3 90
                 if_eq                           ; 8E1A D0 08
                     lda #$03                    ; 8E1C A9 03
                     sta $06F1                   ; 8E1E 8D F1 06
                 else                            ; 8E21 4C 2A 8E
-                    inc L85_PILL_COL            ; 8E24 E6 85
+                    inc L85_PILL_COLUMN         ; 8E24 E6 85
                     lda #$0F                    ; 8E26 A9 0F
                     sta L93_REPEAT_TIMER        ; 8E28 85 93
                 end_if
@@ -2282,7 +2294,7 @@ R8DBF_PILL_MOVE:
 R8E2B_PILL_ROTATE:
     lda LA5_PILL_DIR                            ; 8E2B A5 A5
     sta $4A                                     ; 8E2D 85 4A
-    lda L85_PILL_COL                            ; 8E2F A5 85
+    lda L85_PILL_COLUMN                         ; 8E2F A5 85
     sta $4B                                     ; 8E31 85 4B
     lda L5B_INPUT_NEW                           ; 8E33 A5 5B
     and #$80 ; "A"                              ; 8E35 29 80
@@ -2314,25 +2326,25 @@ R8E60:
         lda LA5_PILL_DIR                        ; 8E60 A5 A5
         and #$01                                ; 8E62 29 01
         if_eq                                   ; 8E64 D0 19
-            jsr R90D3                           ; 8E66 20 D3 90
+            jsr R90D3_COLLISION                 ; 8E66 20 D3 90
             if_eq                               ; 8E69 D0 12
                 lda L5C_INPUT_OLD               ; 8E6B A5 5C
                 and #$02 ; "left"               ; 8E6D 29 02
                 beq break                       ; 8E6F F0 1B
-                dec L85_PILL_COL                ; 8E71 C6 85
-                jsr R90D3                       ; 8E73 20 D3 90
+                dec L85_PILL_COLUMN             ; 8E71 C6 85
+                jsr R90D3_COLLISION             ; 8E73 20 D3 90
                 beq break                       ; 8E76 F0 14
-                inc L85_PILL_COL                ; 8E78 E6 85
+                inc L85_PILL_COLUMN             ; 8E78 E6 85
                 jmp break                       ; 8E7A 4C 8C 8E
             end_if
-            dec L85_PILL_COL                    ; 8E7D C6 85
+            dec L85_PILL_COLUMN                 ; 8E7D C6 85
         end_if
-        jsr R90D3                               ; 8E7F 20 D3 90
+        jsr R90D3_COLLISION                     ; 8E7F 20 D3 90
         if_ne                                   ; 8E82 F0 08
             lda $4A                             ; 8E84 A5 4A
             sta LA5_PILL_DIR                    ; 8E86 85 A5
             lda $4B                             ; 8E88 A5 4B
-            sta L85_PILL_COL                    ; 8E8A 85 85
+            sta L85_PILL_COLUMN                 ; 8E8A 85 85
         end_if
     end
     rts                                         ; 8E8C 60
@@ -2340,22 +2352,22 @@ R8E60:
 
 ; ----------------------------------------------------------------------------
 R8E8D:
-; $81 <- $9A
-; $82 <- $9B
-; $83 <- $9C
-; $84 <- $9D
+; L81_PILL_COLOR_0 <- L9A_NEXT_COLOR_0
+; L82_PILL_COLOR_1 <- L9B_NEXT_COLOR_1
+; L83_PILL_COLOR_2 <- L9C_NEXT_COLOR_2
+; L84_PILL_COLOR_3 <- L9D_NEXT_COLOR_3
 ; LA5_PILL_DIR <- #$00
-; $A6 <- $A3
+; LA6_PILL_SHAPE <- LA3_NEXT_SHAPE
 ; if $0741 > 0 then x <- LCF80,$A7 else x <- $0780,$A7
-; $9A <- LA7FD,x
-; $9B <- LA806,x
+; L9A_NEXT_COLOR_0 <- LA7FD,x
+; L9B_NEXT_COLOR_1 <- LA806,x
 ; inc $A7
 ; $A7 &= #$7F
 ; $7D <- #$00
-; $A2 <- #$00
-; $A3 <- #$02
-; L85_PILL_COL <- #$03
-; $86 <- #$0F
+; LA2_NEXT_DIR <- #$00
+; LA3_NEXT_SHAPE <- #$02
+; L85_PILL_COLUMN <- #$03
+; L86_PILL_ROW <- #$0F
 ; inc $90
 ; if $90 & #$0F >= #$0A then $90+=#$06
 ; if $90 & #$F0 >= #$A0 then $90+=#$60; $91++
@@ -2373,18 +2385,18 @@ R8E8D:
 ; $8F <- #$00
 ; L52_REDRAW_FLAGS |= #$01
 .scope
-        lda $9A                                 ; 8E8D A5 9A
-        sta $81                                 ; 8E8F 85 81
-        lda $9B                                 ; 8E91 A5 9B
-        sta $82                                 ; 8E93 85 82
-        lda $9C                                 ; 8E95 A5 9C
-        sta $83                                 ; 8E97 85 83
-        lda $9D                                 ; 8E99 A5 9D
-        sta $84                                 ; 8E9B 85 84
+        lda L9A_NEXT_COLOR_0                    ; 8E8D A5 9A
+        sta L81_PILL_COLOR_0                    ; 8E8F 85 81
+        lda L9B_NEXT_COLOR_1                    ; 8E91 A5 9B
+        sta L82_PILL_COLOR_1                    ; 8E93 85 82
+        lda L9C_NEXT_COLOR_2                    ; 8E95 A5 9C
+        sta L83_PILL_COLOR_2                    ; 8E97 85 83
+        lda L9D_NEXT_COLOR_3                    ; 8E99 A5 9D
+        sta L84_PILL_COLOR_3                    ; 8E9B 85 84
         lda #$00                                ; 8E9D A9 00
         sta LA5_PILL_DIR                        ; 8E9F 85 A5
-        lda $A3                                 ; 8EA1 A5 A3
-        sta $A6                                 ; 8EA3 85 A6
+        lda LA3_NEXT_SHAPE                      ; 8EA1 A5 A3
+        sta LA6_PILL_SHAPE                      ; 8EA3 85 A6
         lda $0741                               ; 8EA5 AD 41 07
         if_ne                                   ; 8EA8 F0 09
             ldx $A7                             ; 8EAA A6 A7
@@ -2396,22 +2408,22 @@ R8E8D:
             tax                                 ; 8EB8 AA
         end_if
         lda LA7FD,x                             ; 8EB9 BD FD A7
-        sta $9A                                 ; 8EBC 85 9A
+        sta L9A_NEXT_COLOR_0                    ; 8EBC 85 9A
         lda LA806,x                             ; 8EBE BD 06 A8
-        sta $9B                                 ; 8EC1 85 9B
+        sta L9B_NEXT_COLOR_1                    ; 8EC1 85 9B
         inc $A7                                 ; 8EC3 E6 A7
         lda $A7                                 ; 8EC5 A5 A7
         and #$7F                                ; 8EC7 29 7F
         sta $A7                                 ; 8EC9 85 A7
         lda #$00                                ; 8ECB A9 00
         sta $7D                                 ; 8ECD 85 7D
-        sta $A2                                 ; 8ECF 85 A2
+        sta LA2_NEXT_DIR                        ; 8ECF 85 A2
         lda #$02                                ; 8ED1 A9 02
-        sta $A3                                 ; 8ED3 85 A3
+        sta LA3_NEXT_SHAPE                      ; 8ED3 85 A3
         lda #$03                                ; 8ED5 A9 03
-        sta L85_PILL_COL                        ; 8ED7 85 85
+        sta L85_PILL_COLUMN                     ; 8ED7 85 85
         lda #$0F                                ; 8ED9 A9 0F
-        sta $86                                 ; 8EDB 85 86
+        sta L86_PILL_ROW                        ; 8EDB 85 86
         inc $90                                 ; 8EDD E6 90
         lda $90                                 ; 8EDF A5 90
         and #$0F                                ; 8EE1 29 0F
@@ -2486,13 +2498,13 @@ R8E8D:
 
 ; ----------------------------------------------------------------------------
 R8F52:
-    ldx $86                                     ; 8F52 A6 86
+    ldx L86_PILL_ROW                            ; 8F52 A6 86
     ; A = #$78 - 8*x
     lda LA474,x                                 ; 8F54 BD 74 A4
     clc                                         ; 8F57 18
-    adc L85_PILL_COL                            ; 8F58 65 85
+    adc L85_PILL_COLUMN                         ; 8F58 65 85
     sta $47                                     ; 8F5A 85 47
-    lda $A6                                     ; 8F5C A5 A6
+    lda LA6_PILL_SHAPE                          ; 8F5C A5 A6
     sec                                         ; 8F5E 38
     sbc #$02                                    ; 8F5F E9 02
     asl a                                       ; 8F61 0A
@@ -2521,7 +2533,7 @@ R8F52:
             clc                                 ; 8F86 18
             sta $4A                             ; 8F87 85 4A
             ldy $49                             ; 8F89 A4 49
-            lda $81,y                           ; 8F8B B9 81 00
+            lda L81_PILL_COLOR_0,y              ; 8F8B B9 81 00
             clc                                 ; 8F8E 18
             adc $4A                             ; 8F8F 65 4A
             ldy #$00                            ; 8F91 A0 00
@@ -2532,7 +2544,7 @@ R8F52:
         lda $49                                 ; 8F98 A5 49
         cmp #$04                                ; 8F9A C9 04
     while_ne                                    ; 8F9C D0 D5
-    lda $86                                     ; 8F9E A5 86
+    lda L86_PILL_ROW                            ; 8F9E A5 86
     eor #$0F                                    ; 8FA0 49 0F
     sta $80                                     ; 8FA2 85 80
     rts                                         ; 8FA4 60
@@ -2745,13 +2757,13 @@ R90C9_INIT_4_5:
 
 ; ----------------------------------------------------------------------------
 ; Pill collision detection.
-; READS L85_PILL_COL $86 LA5_PILL_DIR $a6 ($57),Y La455,X La458,X La45b,X La474,X La4c4,X
+; READS L85_PILL_COLUMN L86_PILL_ROW LA5_PILL_DIR LA6_PILL_SHAPE ($57),Y La455,X La458,X La45b,X La474,X La4c4,X
 ; WRITES $47 $48 $49 $57
 ; Returns A = 0, Z set for no collision.
 ; Returns A = FF, Z clear for collision.
-R90D3:
+R90D3_COLLISION:
 .scope
-    ldx $A6                                     ; 90D3 A6 A6
+    ldx LA6_PILL_SHAPE                          ; 90D3 A6 A6
     dex                                         ; 90D5 CA
     dex                                         ; 90D6 CA
     lda LA5_PILL_DIR                            ; 90D7 A5 A5
@@ -2759,31 +2771,31 @@ R90D3:
     if_eq                                       ; 90DB D0 13
         lda LA455,x ; $00,$FF,$FF               ; 90DD BD 55 A4
         clc                                     ; 90E0 18
-        adc L85_PILL_COL                        ; 90E1 65 85
+        adc L85_PILL_COLUMN                     ; 90E1 65 85
         bmi collision                           ; 90E3 30 4C
         lda LA458,x ; $F9,$F9,$FA               ; 90E5 BD 58 A4
         clc                                     ; 90E8 18
-        adc L85_PILL_COL                        ; 90E9 65 85
+        adc L85_PILL_COLUMN                     ; 90E9 65 85
         bpl collision                           ; 90EB 10 44
     else                                        ; 90ED 4C F8 90
         lda LA45B,x                             ; 90F0 BD 5B A4
         clc                                     ; 90F3 18
-        adc $86                                 ; 90F4 65 86
+        adc L86_PILL_ROW                        ; 90F4 65 86
         bmi collision                           ; 90F6 30 39
     end_if
     lda #$00                                    ; 90F8 A9 00
     sta $57                                     ; 90FA 85 57
-    ldx $86                                     ; 90FC A6 86
+    ldx L86_PILL_ROW                            ; 90FC A6 86
     lda LA474,x                                 ; 90FE BD 74 A4
     clc                                         ; 9101 18
-    adc L85_PILL_COL                            ; 9102 65 85
+    adc L85_PILL_COLUMN                         ; 9102 65 85
     sta $47                                     ; 9104 85 47
-    lda $A6                                     ; 9106 A5 A6
+    lda LA6_PILL_SHAPE                          ; 9106 A5 A6
     sec                                         ; 9108 38
     sbc #$02                                    ; 9109 E9 02
     asl a                                       ; 910B 0A
     sta $49                                     ; 910C 85 49
-    ; $49 = $A6 - 2
+    ; $49 = LA6_PILL_SHAPE - 2
     lda LA5_PILL_DIR                            ; 910E A5 A5
     and #$01                                    ; 9110 29 01
     clc                                         ; 9112 18
@@ -5087,22 +5099,22 @@ L9F87:
             lda $7D                             ; 9FBC A5 7D
             and #$01                            ; 9FBE 29 01
             bne L9FED                           ; 9FC0 D0 2B
-            dec $A2                             ; 9FC2 C6 A2
-            lda $A2                             ; 9FC4 A5 A2
+            dec LA2_NEXT_DIR                    ; 9FC2 C6 A2
+            lda LA2_NEXT_DIR                    ; 9FC4 A5 A2
             and #$03                            ; 9FC6 29 03
-            sta $A2                             ; 9FC8 85 A2
+            sta LA2_NEXT_DIR                    ; 9FC8 85 A2
             jmp L9FED                           ; 9FCA 4C ED 9F
         end_if
     end_if
 
     jsr R8E8D                                   ; 9FCD 20 8D 8E
     lda #$00                                    ; 9FD0 A9 00
-    sta $A2                                     ; 9FD2 85 A2
+    sta LA2_NEXT_DIR                            ; 9FD2 85 A2
     lda #$00                                    ; 9FD4 A9 00
     sta $7D                                     ; 9FD6 85 7D
     lda #$03                                    ; 9FD8 A9 03
     sta $97                                     ; 9FDA 85 97
-    jsr R90D3                                   ; 9FDC 20 D3 90
+    jsr R90D3_COLLISION                         ; 9FDC 20 D3 90
     if_ne                                       ; 9FDF F0 0C
         lda #$05                                ; 9FE1 A9 05
         sta $06F5                               ; 9FE3 8D F5 06
@@ -5434,41 +5446,41 @@ LA41B:  .byte $45,$00,$40,$36,$2E,$27,$00,$21,$1E,$1B,$19,$18,$18,$1A,$1C,$1F
         .byte $0F,$17,$02,$02,$02,$02,$02,$02,$02,$02,$03,$03,$03,$03,$03,$03
         .byte $03,$03,$04,$04,$04,$04,$04,$04,$04,$04
 ; ----------------------------------------------------------------------------
-; Used in R90D3, indexed by $A6-2.
+; Used in R90D3_COLLISION, indexed by LA6_PILL_SHAPE-2.
 LA455:  .byte $00,$FF,$FF                       ; A455 00 FF FF
 ; ----------------------------------------------------------------------------
-; Used in R90D3, indexed by $A6-2.
+; Used in R90D3_COLLISION, indexed by LA6_PILL_SHAPE-2.
 LA458:  .byte $F9,$F9,$FA                       ; A458 F9 F9 FA
 ; ----------------------------------------------------------------------------
-; Used in R90D3, indexed by $A6-2.
+; Used in R90D3_COLLISION, indexed by LA6_PILL_SHAPE-2.
 LA45B:  .byte $00,$FF,$FF,$60,$68,$70,$78,$80,$88,$90,$98,$C0,$C1,$C2,$B0,$B1
         .byte $B2,$08,$F8,$01,$FF,$50,$40,$70,$60
 ; ----------------------------------------------------------------------------
-; lookup table, 16 bytes, indexed by $86 or ...
+; lookup table, 16 bytes, indexed by L86_PILL_ROW or ...
 ; playfield offsets for rows
 LA474:  .byte $78,$70,$68,$60,$58,$50,$48,$40   ; A474 78 70 68 60 58 50 48 40
         .byte $38,$30,$28,$20,$18,$10,$08,$00   ; A47C 38 30 28 20 18 10 08 00
 ; ----------------------------------------------------------------------------
-; lookup table, used in R871F
+; Table of 16 sprite Y-coordinates, used in R871F, indexed by L86_PILL_ROW.
 LA484:  .byte $C8,$C0,$B8,$B0,$A8,$A0,$98,$90,$88,$80,$78,$70,$68,$60,$58,$50
 
 ; ----------------------------------------------------------------------------
 ; 12-byte lookup table
 ; used as offsets into table LA4A0.
-; indexed by 4×$A3+$A2
-; indexed by 4×$A6+LA5_PILL_DIR
+; indexed by 4×LA3_NEXT_SHAPE+LA2_NEXT_DIR
+; indexed by 4×LA6_PILL_SHAPE+LA5_PILL_DIR
 LA494:  .byte $00,$00,$00,$00
         .byte $00,$00,$00,$00
         .byte $00,$09,$12,$1B
 ; ----------------------------------------------------------------------------
-; lookup table, used in R8772
+; lookup table, used in R8772_PILL_SPRITE, indexed by values from LA494.
 ; Sprite data: Y-coord, tile index, flags, X-coord
 LA4A0:  .byte $00,$60,$02,$00,$00,$70,$02,$08,$FF ; Pill L-R, (0,0) and (+8,0)
         .byte $00,$50,$02,$00,$F8,$40,$02,$00,$FF ; Pill D-U, (0,0) and (0,-8)
         .byte $00,$70,$02,$08,$00,$60,$02,$00,$FF ; Pill R-L, (+8,0) and (0,0)
         .byte $F8,$40,$02,$00,$00,$50,$02,$00,$FF ; Pill U-D, (-8,0) and (0,0)
 ; ----------------------------------------------------------------------------
-; 20-byte lookup table, used in R90D3.
+; 20-byte lookup table, used in R90D3_COLLISION.
 LA4C4:  .byte $00,$01,$00,$00
         .byte $F8,$00,$00,$00
         .byte $FF,$00,$01,$00
@@ -5581,8 +5593,11 @@ LA6E7:  .byte $3F,$00,$10
         .byte $FF
 
 ; ----------------------------------------------------------------------------
-; lookup table, used in R871F
-LA6FB:  .byte $60,$60,$20,$A0,$C0,$F8,$6E,$82
+; Table of 4 sprite x-coordinates, used in R871F.
+; Left edges of playfields.
+; Indexed by 2(NUM_PLAYERS - 1) + ($58 - 4)
+LA6FB:  .byte $60,$60,$20,$A0
+        .byte $C0,$F8,$6E,$82
         .byte $00,$00,$30,$00,$00,$01,$00,$00
         .byte $00,$08,$00,$00,$00,$12,$00,$00
         .byte $00,$30,$00,$00
@@ -5642,11 +5657,11 @@ LA7ED:  .byte $00,$01,$02,$02,$01,$00,$00,$01
         .byte $02,$02,$01,$00,$00,$01,$02,$01
 
 ; ----------------------------------------------------------------------------
-; 9-byte lookup table, used by R8E8D. Copied to $9A.
+; 9-byte lookup table, used by R8E8D. Copied to L9A_NEXT_COLOR_0.
 LA7FD:  .byte $00,$00,$00,$01,$01,$01,$02,$02,$02
 
 ; ----------------------------------------------------------------------------
-; 9-byte lookup table, used by R8E8D. Copied to $9B.
+; 9-byte lookup table, used by R8E8D. Copied to L9B_NEXT_COLOR_1.
 LA806:  .byte $00,$01,$02,$00,$01,$02,$00,$01,$02
 
 ; ----------------------------------------------------------------------------
