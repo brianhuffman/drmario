@@ -29,6 +29,8 @@
 .define L46_TOP_STATE    $46
 .define L52_REDRAW_FLAGS $52
 .define L53_SPRITE_NUM   $53
+.define L59_TEMP         $59
+.define L5A_TEMP         $5A
 .define L5B_INPUT_NEW    $5B
 .define L5C_INPUT_OLD    $5C
 .define L66_PALETTE      $66
@@ -51,8 +53,10 @@
 .define L85_PILL_COLUMN  $85
 .define L86_PILL_ROW     $86
 .define L8B_SPEED        $8B
+.define L92_DROP_TIMER   $92
 .define L93_REPEAT_TIMER $93
 .define L96_LEVEL        $96
+.define L97_STATE        $97
 .define L9A_NEXT_COLOR_0 $9A
 .define L9B_NEXT_COLOR_1 $9B
 .define L9C_NEXT_COLOR_2 $9C
@@ -71,22 +75,25 @@
 .define LF7_P1_INPUT_OLD $F7
 .define LF8_P2_INPUT_OLD $F8
 
-
 L0101 := $0101
 L0120 := $0120
 L0202 := $0202
 
-L030B_P1_SPEED    := $030B
-L0316_P1_LEVEL    := $0316
-L031E_P1_WINS     := $031E
-L0324_P1_VIRUS    := $0324
-L0325_P1_PILL_DIR := $0325
+L0300_P1_UPDATE_ROW   := $0300
+L030B_P1_SPEED        := $030B
+L0316_P1_LEVEL        := $0316
+L031E_P1_WINS         := $031E
+L0324_P1_VIRUS        := $0324
+L0325_P1_PILL_DIR     := $0325
+L0328_P1_VIRUS_TO_ADD := $0328
 
-L038B_P2_SPEED    := $038B
-L0396_P2_LEVEL    := $0396
-L039E_P2_WINS     := $039E
-L03A4_P2_VIRUS    := $03A4
-L03A5_P2_PILL_DIR := $03A5
+L0380_P2_UPDATE_ROW   := $0380
+L038B_P2_SPEED        := $038B
+L0396_P2_LEVEL        := $0396
+L039E_P2_WINS         := $039E
+L03A4_P2_VIRUS        := $03A4
+L03A5_P2_PILL_DIR     := $03A5
+L03A8_P2_VIRUS_TO_ADD := $03A8
 
 L068D := $068D
 
@@ -98,6 +105,7 @@ L0702_TOP_SCORE_2 := $0702
 L0703_TOP_SCORE_3 := $0703
 L0704_TOP_SCORE_4 := $0704
 L0705_TOP_SCORE_5 := $0705
+L0725_MAX_WINS    := $0725
 L0727_NUM_PLAYERS := $0727
 L0729_SCORE_0 := $0729
 L072A_SCORE_1 := $072A
@@ -236,7 +244,7 @@ L808D:
     lda #$02                                    ; 80C7 A9 02
     sta $0722                                   ; 80C9 8D 22 07
     lda #$03                                    ; 80CC A9 03
-    sta $0725                                   ; 80CE 8D 25 07
+    sta L0725_MAX_WINS                          ; 80CE 8D 25 07
     ; Copy string from $9FEE-$9FF7 to $0710-$0719.
     ldx #$0A                                    ; 80D1 A2 0A
     loop
@@ -391,12 +399,12 @@ L816E_TOP_2:
 ; jump table vector 3
 L8206_TOP_3:
     lda #$00                                    ; 8206 A9 00
-    sta $92                                     ; 8208 85 92
+    sta L92_DROP_TIMER                          ; 8208 85 92
     sta $57                                     ; 820A 85 57
     sta $8F                                     ; 820C 85 8F
     sta $A1                                     ; 820E 85 A1
     sta $98                                     ; 8210 85 98
-    sta $97                                     ; 8212 85 97
+    sta L97_STATE                               ; 8212 85 97
     sta $87                                     ; 8214 85 87
     sta $88                                     ; 8216 85 88
     sta $89                                     ; 8218 85 89
@@ -420,7 +428,7 @@ L8206_TOP_3:
     sta $55                                     ; 823D 85 55
     sta L3E_VIRUS_CYCLE                         ; 823F 85 3E
     lda #$06                                    ; 8241 A9 06
-    sta $97                                     ; 8243 85 97
+    sta L97_STATE                               ; 8243 85 97
     lda #$04                                    ; 8245 A9 04
     sta $58                                     ; 8247 85 58
     lda #$FF                                    ; 8249 A9 FF
@@ -449,13 +457,13 @@ L8206_TOP_3:
     adc #$01                                    ; 827D 69 01
     asl a                                       ; 827F 0A
     asl a                                       ; 8280 0A
-    sta $0328                                   ; 8281 8D 28 03
+    sta L0328_P1_VIRUS_TO_ADD                   ; 8281 8D 28 03
     lda L0396_P2_LEVEL                          ; 8284 AD 96 03
     clc                                         ; 8287 18
     adc #$01                                    ; 8288 69 01
     asl a                                       ; 828A 0A
     asl a                                       ; 828B 0A
-    sta $03A8                                   ; 828C 8D A8 03
+    sta L03A8_P2_VIRUS_TO_ADD                   ; 828C 8D A8 03
     lda #$9F                                    ; 828F A9 9F
     sta L52_REDRAW_FLAGS                        ; 8291 85 52
     ldx $0731                                   ; 8293 AE 31 07
@@ -533,11 +541,11 @@ R82D1_PRINT_LEVEL:
 R82F7_PRINT_PLAYFIELD_ROWS:
     lda #$04                                    ; 82F7 A9 04
     sta $58                                     ; 82F9 85 58
-    lda $0300                                   ; 82FB AD 00 03
+    lda L0300_P1_UPDATE_ROW                     ; 82FB AD 00 03
     sta L80_UPDATE_ROW                          ; 82FE 85 80
     jsr R8321_PRINT_PLAYFIELD_ROW               ; 8300 20 21 83
     lda L80_UPDATE_ROW                          ; 8303 A5 80
-    sta $0300                                   ; 8305 8D 00 03
+    sta L0300_P1_UPDATE_ROW                     ; 8305 8D 00 03
     lda L0727_NUM_PLAYERS                       ; 8308 AD 27 07
     cmp #$02                                    ; 830B C9 02
     if_eq                                       ; 830D D0 11
@@ -1555,7 +1563,7 @@ R893B_BCD_SPRITE:
     sta L45_SPRITE_Y                            ; 897F 85 45
     lda #$6C                                    ; 8981 A9 6C
     sta L44_SPRITE_X                            ; 8983 85 44
-    lda $0725                                   ; 8985 AD 25 07
+    lda L0725_MAX_WINS                          ; 8985 AD 25 07
     sta L53_SPRITE_NUM                          ; 8988 85 53
     lda #$00                                    ; 898A A9 00
     sta $60                                     ; 898C 85 60
@@ -2017,12 +2025,12 @@ L8C6F:  jsr     R8C73                           ; 8C6F 20 73 8C
 R8C73:
     lda $87                                     ; 8C73 A5 87
     jsr RB8AC_JUMP_TABLE                        ; 8C75 20 AC B8
-    .word L8C8A
-    .word L8C91
-    .word L8C91
-    .word L8C94
-    .word L9413
-    .word L91FB
+    .word L8C8A ; 0: reset combo count, state 1
+    .word L8C91 ; 1: state 2
+    .word L8C91 ; 2: state 3
+    .word L8C94 ; 3: tiles fall (state 2 if tiles fell, state 4 if none fell)
+    .word L9413 ; 4: $94 = 0, state 5.
+    .word L91FB ; 5: kill viruses
     .word L9469
     .word L92DB
     .word L8D4F
@@ -2165,7 +2173,7 @@ L8C94:
 L8D4F:
     lda #$00                                    ; 8D4F A9 00
     sta $87                                     ; 8D51 85 87
-    inc $97                                     ; 8D53 E6 97
+    inc L97_STATE                               ; 8D53 E6 97
     rts                                         ; 8D55 60
 
 ; ----------------------------------------------------------------------------
@@ -2174,23 +2182,23 @@ L8D56:
 .scope
     lda LA8_VIRUS_TO_ADD                        ; 8D56 A5 A8
     if_ne                                       ; 8D58 F0 05
-        inc $97                                 ; 8D5A E6 97
+        inc L97_STATE                           ; 8D5A E6 97
     else                                        ; 8D5C 4C 6F 8D
         lda #$00                                ; 8D5F A9 00
         sta $A1                                 ; 8D61 85 A1
         jsr R871F                               ; 8D63 20 1F 87
-        jsr R8D70 ; may go to state 1.          ; 8D66 20 70 8D
+        jsr R8D70_DROP_PILL ; may go to state 1 ; 8D66 20 70 8D
         jsr R8DBF_PILL_MOVE                     ; 8D69 20 BF 8D
         jsr R8E2B_PILL_ROTATE                   ; 8D6C 20 2B 8E
     end_if
     rts                                         ; 8D6F 60
 
 ; ----------------------------------------------------------------------------
-; READS $43 $5c $85 $86 $8a $8b $92 $a5 $a6 ($57),Y $a38d,X $a455,X $a458,X $a45b,X $a474,X $a4c4,X $a795,X
-; WRITES $47 $48 $49 $4a $57 L80_UPDATE_ROW $86 $92 $97 $a0 $06f1 ($57),Y
+; READS $43 $5c $85 $86 $8a $8b L92_DROP_TIMER $a5 $a6 ($57),Y $a38d,X $a455,X $a458,X $a45b,X $a474,X $a4c4,X $a795,X
+; WRITES $47 $48 $49 $4a $57 L80_UPDATE_ROW $86 L92_DROP_TIMER L97_STATE $a0 $06f1 ($57),Y
 ; JSR $8f52 $90d3
 ; Called once, in L8D56.
-R8D70:
+R8D70_DROP_PILL:
     begin
         lda L43_CLOCK                           ; 8D70 A5 43
         and #$01                                ; 8D72 29 01
@@ -2200,21 +2208,21 @@ R8D70:
         cmp #$04 ; "down"                       ; 8D7A C9 04
         beq L8D94                               ; 8D7C F0 16
     L8D7E:
-        inc $92                                 ; 8D7E E6 92
+        inc L92_DROP_TIMER                      ; 8D7E E6 92
         lda $8A                                 ; 8D80 A5 8A
-        sta $A0                                 ; 8D82 85 A0
+        sta $A0 ; redundant copy                ; 8D82 85 A0
         ldx L8B_SPEED                           ; 8D84 A6 8B
         lda LA38D,x ; $0F,$19,$1F               ; 8D86 BD 8D A3
         clc                                     ; 8D89 18
         adc $A0                                 ; 8D8A 65 A0
         tax                                     ; 8D8C AA
-        lda LA795,x                             ; 8D8D BD 95 A7
-        cmp $92                                 ; 8D90 C5 92
+        lda LA795,x ; drop timer threshold      ; 8D8D BD 95 A7
+        cmp L92_DROP_TIMER                      ; 8D90 C5 92
         bcs break                               ; 8D92 B0 2A
     L8D94:
         dec L86_PILL_ROW                        ; 8D94 C6 86
         lda #$00                                ; 8D96 A9 00
-        sta $92                                 ; 8D98 85 92
+        sta L92_DROP_TIMER                      ; 8D98 85 92
         jsr R90D3_COLLISION                     ; 8D9A 20 D3 90
         if_eq                                   ; 8D9D D0 06
             lda L86_PILL_ROW                    ; 8D9F A5 86
@@ -2234,7 +2242,7 @@ R8D70:
             pha                                 ; 8DB7 48
             pha                                 ; 8DB8 48
         end_if
-        inc $97                                 ; 8DB9 E6 97
+        inc L97_STATE                           ; 8DB9 E6 97
         jmp break                               ; 8DBB 4C BE 8D
     end
     rts                                         ; 8DBE 60
@@ -2997,14 +3005,14 @@ L91FB:
     end_if
 
     lda #$00                                    ; 9208 A9 00
-    sta $59                                     ; 920A 85 59
+    sta L59_TEMP                                ; 920A 85 59
     loop
         loop
-            lda $59                             ; 920C A5 59
-            sta $5A                             ; 920E 85 5A
+            lda L59_TEMP                        ; 920C A5 59
+            sta L5A_TEMP                        ; 920E 85 5A
             lda #$00                            ; 9210 A9 00
             sta $47                             ; 9212 85 47
-            ldy $59                             ; 9214 A4 59
+            ldy L59_TEMP                        ; 9214 A4 59
             lda ($57),y                         ; 9216 B1 57
             sta $48                             ; 9218 85 48
             cmp #$F0                            ; 921A C9 F0
@@ -3017,11 +3025,11 @@ L91FB:
             and #$0F                            ; 9223 29 0F
             sta $48                             ; 9225 85 48
             loop
-                inc $5A                         ; 9227 E6 5A
-                lda $5A                         ; 9229 A5 5A
+                inc L5A_TEMP                    ; 9227 E6 5A
+                lda L5A_TEMP                    ; 9229 A5 5A
                 and #$07                        ; 922B 29 07
                 beq break                       ; 922D F0 0F
-                ldy $5A                         ; 922F A4 5A
+                ldy L5A_TEMP                    ; 922F A4 5A
                 lda ($57),y                     ; 9231 B1 57
                 and #$0F                        ; 9233 29 0F
                 cmp $48                         ; 9235 C5 48
@@ -3039,18 +3047,18 @@ L91FB:
                 adc $47                         ; 924E 65 47
                 sta $A1                         ; 9250 85 A1
                 inc $A1                         ; 9252 E6 A1
-                lda $59                         ; 9254 A5 59
+                lda L59_TEMP                    ; 9254 A5 59
                 and #$78                        ; 9256 29 78
                 lsr a                           ; 9258 4A
                 lsr a                           ; 9259 4A
                 lsr a                           ; 925A 4A
                 sta $95                         ; 925B 85 95
-                lda $5A                         ; 925D A5 5A
+                lda L5A_TEMP                    ; 925D A5 5A
                 sta $49                         ; 925F 85 49
-                lda $59                         ; 9261 A5 59
-                sta $5A                         ; 9263 85 5A
+                lda L59_TEMP                    ; 9261 A5 59
+                sta L5A_TEMP                    ; 9263 85 5A
                 loop
-                    ldy $5A                     ; 9265 A4 5A
+                    ldy L5A_TEMP                ; 9265 A4 5A
                     lda ($57),y                 ; 9267 B1 57
                     and #$F0                    ; 9269 29 F0
                     cmp #$80                    ; 926B C9 80
@@ -3078,39 +3086,39 @@ L91FB:
                     and #$0F                    ; 9292 29 0F
                     ora #$B0                    ; 9294 09 B0
                     sta ($57),y                 ; 9296 91 57
-                    inc $5A                     ; 9298 E6 5A
-                    ldy $5A                     ; 929A A4 5A
+                    inc L5A_TEMP                ; 9298 E6 5A
+                    ldy L5A_TEMP                ; 929A A4 5A
                     cpy $49                     ; 929C C4 49
                 while_ne                        ; 929E D0 C5
                 inc $94                         ; 92A0 E6 94
                 lda $49                         ; 92A2 A5 49
-                sta $5A                         ; 92A4 85 5A
+                sta L5A_TEMP                    ; 92A4 85 5A
             end_if
-            lda $5A                             ; 92A6 A5 5A
-            sta $59                             ; 92A8 85 59
+            lda L5A_TEMP                        ; 92A6 A5 5A
+            sta L59_TEMP                        ; 92A8 85 59
             jmp L92AF                           ; 92AA 4C AF 92
         L92AD:
-            inc $59                             ; 92AD E6 59
+            inc L59_TEMP                        ; 92AD E6 59
         L92AF:
-            lda $59                             ; 92AF A5 59
+            lda L59_TEMP                        ; 92AF A5 59
             and #$07                            ; 92B1 29 07
             beq break                           ; 92B3 F0 07
             cmp #$05                            ; 92B5 C9 05
             bpl break                           ; 92B7 10 03
         forever                                 ; 92B9 4C 0C 92
 
-        lda $59                                 ; 92BC A5 59
+        lda L59_TEMP                            ; 92BC A5 59
         cmp #$80                                ; 92BE C9 80
         beq break                               ; 92C0 F0 16
         and #$07                                ; 92C2 29 07
         if_ne                                   ; 92C4 F0 09
-            lda $59                             ; 92C6 A5 59
+            lda L59_TEMP                        ; 92C6 A5 59
             and #$78                            ; 92C8 29 78
             clc                                 ; 92CA 18
             adc #$08                            ; 92CB 69 08
-            sta $59                             ; 92CD 85 59
+            sta L59_TEMP                        ; 92CD 85 59
         end_if
-        lda $59                                 ; 92CF A5 59
+        lda L59_TEMP                            ; 92CF A5 59
         cmp #$80                                ; 92D1 C9 80
         beq break                               ; 92D3 F0 03
     forever                                     ; 92D5 4C 0C 92
@@ -3392,16 +3400,17 @@ R944B:
 L9469:
 .scope
     lda #$00                                    ; 9469 A9 00
-    sta $59                                     ; 946B 85 59
+    sta L59_TEMP                                ; 946B 85 59
 L946D:
-    lda $59                                     ; 946D A5 59
-    sta $5A                                     ; 946F 85 5A
+    lda L59_TEMP                                ; 946D A5 59
+    sta L5A_TEMP                                ; 946F 85 5A
     lda #$00                                    ; 9471 A9 00
     sta $47                                     ; 9473 85 47
-    ldy $59                                     ; 9475 A4 59
+    ldy L59_TEMP                                ; 9475 A4 59
     lda ($57),y                                 ; 9477 B1 57
     sta $48                                     ; 9479 85 48
     cmp #$F0                                    ; 947B C9 F0
+    ; TODO long-if-then-else
     if_cs                                       ; 947D 90 03
         jmp L9510                               ; 947F 4C 10 95
     end_if
@@ -3409,14 +3418,14 @@ L946D:
     and #$0F                                    ; 9484 29 0F
     sta $48                                     ; 9486 85 48
     loop
-        lda $5A                                 ; 9488 A5 5A
+        lda L5A_TEMP                            ; 9488 A5 5A
         clc                                     ; 948A 18
         adc #$08                                ; 948B 69 08
-        sta $5A                                 ; 948D 85 5A
-        lda $5A                                 ; 948F A5 5A
+        sta L5A_TEMP                            ; 948D 85 5A
+        lda L5A_TEMP                            ; 948F A5 5A
         and #$F8                                ; 9491 29 F8
         beq break                               ; 9493 F0 0F
-        ldy $5A                                 ; 9495 A4 5A
+        ldy L5A_TEMP                            ; 9495 A4 5A
         lda ($57),y                             ; 9497 B1 57
         and #$0F                                ; 9499 29 0F
         cmp $48                                 ; 949B C5 48
@@ -3435,20 +3444,20 @@ L946D:
         adc $47                                 ; 94B4 65 47
         sta $A1                                 ; 94B6 85 A1
         inc $A1                                 ; 94B8 E6 A1
-        lda $59                                 ; 94BA A5 59
+        lda L59_TEMP                            ; 94BA A5 59
         and #$78                                ; 94BC 29 78
         lsr a                                   ; 94BE 4A
         lsr a                                   ; 94BF 4A
         lsr a                                   ; 94C0 4A
         sta $95                                 ; 94C1 85 95
-        lda $5A                                 ; 94C3 A5 5A
+        lda L5A_TEMP                            ; 94C3 A5 5A
         sta $49                                 ; 94C5 85 49
-        lda $59                                 ; 94C7 A5 59
-        sta $5A                                 ; 94C9 85 5A
+        lda L59_TEMP                            ; 94C7 A5 59
+        sta L5A_TEMP                            ; 94C9 85 5A
         loop
             lda #$02                            ; 94CB A9 02
             sta $06F1                           ; 94CD 8D F1 06
-            ldy $5A                             ; 94D0 A4 5A
+            ldy L5A_TEMP                        ; 94D0 A4 5A
             lda ($57),y                         ; 94D2 B1 57
             and #$F0                            ; 94D4 29 F0
             cmp #$D0                            ; 94D6 C9 D0
@@ -3469,36 +3478,36 @@ L946D:
             and #$0F                            ; 94F0 29 0F
             ora #$B0                            ; 94F2 09 B0
             sta ($57),y                         ; 94F4 91 57
-            lda $5A                             ; 94F6 A5 5A
+            lda L5A_TEMP                        ; 94F6 A5 5A
             clc                                 ; 94F8 18
             adc #$08                            ; 94F9 69 08
-            sta $5A                             ; 94FB 85 5A
-            ldy $5A                             ; 94FD A4 5A
+            sta L5A_TEMP                        ; 94FB 85 5A
+            ldy L5A_TEMP                        ; 94FD A4 5A
             cpy $49                             ; 94FF C4 49
         while_ne                                ; 9501 D0 C8
         inc $94                                 ; 9503 E6 94
         lda $49                                 ; 9505 A5 49
-        sta $5A                                 ; 9507 85 5A
+        sta L5A_TEMP                            ; 9507 85 5A
     end_if
-    lda $5A                                     ; 9509 A5 5A
-    sta $59                                     ; 950B 85 59
+    lda L5A_TEMP                                ; 9509 A5 5A
+    sta L59_TEMP                                ; 950B 85 59
     jmp L9517                                   ; 950D 4C 17 95
 L9510:
-    lda $59                                     ; 9510 A5 59
+    lda L59_TEMP                                ; 9510 A5 59
     clc                                         ; 9512 18
     adc #$08                                    ; 9513 69 08
-    sta $59                                     ; 9515 85 59
+    sta L59_TEMP                                ; 9515 85 59
 L9517:
-    lda $59                                     ; 9517 A5 59
+    lda L59_TEMP                                ; 9517 A5 59
     cmp #$68                                    ; 9519 C9 68
     if_cc                                       ; 951B B0 03
         jmp L946D                               ; 951D 4C 6D 94
     end_if
-    inc $59                                     ; 9520 E6 59
-    lda $59                                     ; 9522 A5 59
+    inc L59_TEMP                                ; 9520 E6 59
+    lda L59_TEMP                                ; 9522 A5 59
     and #$07                                    ; 9524 29 07
-    sta $59                                     ; 9526 85 59
-    lda $59                                     ; 9528 A5 59
+    sta L59_TEMP                                ; 9526 85 59
+    lda L59_TEMP                                ; 9528 A5 59
     if_ne                                       ; 952A F0 03
         jmp L946D                               ; 952C 4C 6D 94
     end_if
@@ -3527,7 +3536,7 @@ L9532_TOP_5:
         sta $61                                 ; 9554 85 61
     end_if
     lda L80_UPDATE_ROW                          ; 9556 A5 80
-    sta $0300                                   ; 9558 8D 00 03
+    sta L0300_P1_UPDATE_ROW                     ; 9558 8D 00 03
     lda #$05                                    ; 955B A9 05
     sta $58                                     ; 955D 85 58
     lda $0389                                   ; 955F AD 89 03
@@ -3568,10 +3577,10 @@ L958A_TOP_7:
     cmp #$02                                    ; 9598 C9 02
     if_eq                                       ; 959A D0 2D
         lda L031E_P1_WINS                       ; 959C AD 1E 03
-        cmp $0725                               ; 959F CD 25 07
+        cmp L0725_MAX_WINS                      ; 959F CD 25 07
         if_ne                                   ; 95A2 F0 14
             lda L039E_P2_WINS                   ; 95A4 AD 9E 03
-            cmp $0725                           ; 95A7 CD 25 07
+            cmp L0725_MAX_WINS                  ; 95A7 CD 25 07
             if_ne                               ; 95AA F0 0C
                 ldx $0731                       ; 95AC AE 31 07
                 lda LA261,x                     ; 95AF BD 61 A2
@@ -3598,7 +3607,7 @@ L958A_TOP_7:
     sta $58                                     ; 95D9 85 58
     jsr R96D4_GAME_OVER                         ; 95DB 20 D4 96
     lda #$0F                                    ; 95DE A9 0F
-    sta $0300                                   ; 95E0 8D 00 03
+    sta L0300_P1_UPDATE_ROW                     ; 95E0 8D 00 03
     lda #$05                                    ; 95E3 A9 05
     sta $58                                     ; 95E5 85 58
     jsr R96D4_GAME_OVER                         ; 95E7 20 D4 96
@@ -3611,7 +3620,7 @@ L958A_TOP_7:
     lda #$01                                    ; 95F7 A9 01
     sta $55                                     ; 95F9 85 55
     lda L031E_P1_WINS                           ; 95FB AD 1E 03
-    cmp $0725                                   ; 95FE CD 25 07
+    cmp L0725_MAX_WINS                          ; 95FE CD 25 07
     if_ne                                       ; 9601 F0 04
         lda #$02                                ; 9603 A9 02
         sta $55                                 ; 9605 85 55
@@ -3652,7 +3661,7 @@ L958A_TOP_7:
     rts                                         ; 9645 60
 
 L9646:
-    jsr R96ED ; wait for $300 = #$FF            ; 9646 20 ED 96
+    jsr R96ED_WAIT_UPDATE_ALL_ROWS              ; 9646 20 ED 96
     loop
         lda L43_CLOCK                           ; 9649 A5 43
         and #$08                                ; 964B 29 08
@@ -3671,7 +3680,7 @@ L9646:
         cmp #$10 ; "start"                      ; 9667 C9 10
     while_ne                                    ; 9669 D0 DE
     jsr R90C9_INIT_4_5                          ; 966B 20 C9 90
-    jsr R96ED                                   ; 966E 20 ED 96
+    jsr R96ED_WAIT_UPDATE_ALL_ROWS              ; 966E 20 ED 96
     ; enter top-level state 3.
     lda #$03                                    ; 9671 A9 03
     sta L46_TOP_STATE                           ; 9673 85 46
@@ -3776,14 +3785,15 @@ R96D4_GAME_OVER:
     rts                                         ; 96EC 60
 
 ; ----------------------------------------------------------------------------
-; Wait for $0300 to be set to #$FF.
-R96ED:
+; Wait for entire playfield to be redrawn.
+; Wait for L0300_P1_UPDATE_ROW to be set to #$FF.
+R96ED_WAIT_UPDATE_ALL_ROWS:
     lda #$0F                                    ; 96ED A9 0F
-    sta $0300                                   ; 96EF 8D 00 03
+    sta L0300_P1_UPDATE_ROW                     ; 96EF 8D 00 03
     sta $0380                                   ; 96F2 8D 80 03
     loop
        jsr RB654_NEXT_FRAME                     ; 96F5 20 54 B6
-       lda $0300                                ; 96F8 AD 00 03
+       lda L0300_P1_UPDATE_ROW                  ; 96F8 AD 00 03
        cmp #$FF                                 ; 96FB C9 FF
     while_ne                                    ; 96FD D0 F6
     rts                                         ; 96FF 60
@@ -4140,7 +4150,7 @@ L9953_TOP_1:
     sta $65                                     ; 996E 85 65
     sta $0728                                   ; 9970 8D 28 07
     lda #$03                                    ; 9973 A9 03
-    sta $0725                                   ; 9975 8D 25 07
+    sta L0725_MAX_WINS                          ; 9975 8D 25 07
     lda #$FF                                    ; 9978 A9 FF
     sta L80_UPDATE_ROW                          ; 997A 85 80
     sta $0300                                   ; 997C 8D 00 03
@@ -4428,62 +4438,64 @@ R9B42:
 ; jump table vector 4
 L9B73_TOP_4:
 .scope
-        jsr R9075_LOAD_P1                       ; 9B73 20 75 90
-        jsr R9BB9                               ; 9B76 20 B9 9B
-        jsr R90AF_SAVE_P1                       ; 9B79 20 AF 90
-        lda L0727_NUM_PLAYERS                   ; 9B7C AD 27 07
-        cmp #$02                                ; 9B7F C9 02
-        bne L9B9A                               ; 9B81 D0 17
+    jsr R9075_LOAD_P1                           ; 9B73 20 75 90
+    jsr R9BB9                                   ; 9B76 20 B9 9B
+    jsr R90AF_SAVE_P1                           ; 9B79 20 AF 90
+    lda L0727_NUM_PLAYERS                       ; 9B7C AD 27 07
+    cmp #$02                                    ; 9B7F C9 02
+    bne L9B9A                                   ; 9B81 D0 17
 
-        lda L9E_WINS                            ; 9B83 A5 9E
-        cmp $0725                               ; 9B85 CD 25 07
-        beq L9BB4                               ; 9B88 F0 2A
+    lda L9E_WINS                                ; 9B83 A5 9E
+    cmp L0725_MAX_WINS                          ; 9B85 CD 25 07
+    beq L9BB4                                   ; 9B88 F0 2A
 
-        jsr R9092_LOAD_P2                       ; 9B8A 20 92 90
-        jsr R9BB9                               ; 9B8D 20 B9 9B
-        jsr R90BC_SAVE_P2                       ; 9B90 20 BC 90
-        lda L9E_WINS                            ; 9B93 A5 9E
-        cmp $0725                               ; 9B95 CD 25 07
-        beq L9BB4                               ; 9B98 F0 1A
+    jsr R9092_LOAD_P2                           ; 9B8A 20 92 90
+    jsr R9BB9                                   ; 9B8D 20 B9 9B
+    jsr R90BC_SAVE_P2                           ; 9B90 20 BC 90
+    lda L9E_WINS                                ; 9B93 A5 9E
+    cmp L0725_MAX_WINS                          ; 9B95 CD 25 07
+    beq L9BB4                                   ; 9B98 F0 1A
 
-L9B9A:  jsr RB24F_CHECK_WIN                     ; 9B9A 20 4F B2
-        lda $0389                               ; 9B9D AD 89 03
-        bne L9BA7                               ; 9BA0 D0 05
+L9B9A:
+    jsr RB24F_CHECK_WIN                         ; 9B9A 20 4F B2
+    lda $0389                                   ; 9B9D AD 89 03
+    bne L9BA7                                   ; 9BA0 D0 05
 
-        lda $0309                               ; 9BA2 AD 09 03
-        beq L9BB3                               ; 9BA5 F0 0C
+    lda $0309                                   ; 9BA2 AD 09 03
+    beq L9BB3                                   ; 9BA5 F0 0C
 
 L9BA7:
-        ; enter top-level state 5
-        lda #$05                                ; 9BA7 A9 05
-        sta L46_TOP_STATE                       ; 9BA9 85 46
-        lda #$04                                ; 9BAB A9 04
-        sta $0317                               ; 9BAD 8D 17 03
-        sta $0397                               ; 9BB0 8D 97 03
-L9BB3:  rts                                     ; 9BB3 60
+    ; enter top-level state 5
+    lda #$05                                    ; 9BA7 A9 05
+    sta L46_TOP_STATE                           ; 9BA9 85 46
+    lda #$04                                    ; 9BAB A9 04
+    sta $0317                                   ; 9BAD 8D 17 03
+    sta $0397                                   ; 9BB0 8D 97 03
+L9BB3:
+    rts                                         ; 9BB3 60
 
 L9BB4:
-        ; enter top-level state 7
-        lda #$07                                ; 9BB4 A9 07
-        sta L46_TOP_STATE                       ; 9BB6 85 46
-        rts                                     ; 9BB8 60
+    ; enter top-level state 7
+    lda #$07                                    ; 9BB4 A9 07
+    sta L46_TOP_STATE                           ; 9BB6 85 46
+    rts                                         ; 9BB8 60
 .endscope
 
 ; ----------------------------------------------------------------------------
-; Jump to one of 7 subroutines based on $97.
+; Jump to one of 7 subroutines based on L97_STATE.
 
 ; -X-----D--/AXY-CZ--VN
 ; RTS: 0->8->0
 ; READS $43 $53 $58 $5b $5c $8b $9c $9d $a8 L0723 L0724 L0727 L0740 L0741 L0081,Y
 ; WRITES $44 $45 $47 $48 $49 $4a $4b $4c $57 $59 $5a $7e $89 $8e $95 $a0 L06f1 L06f4 L06f5 $75,X $78,X $a9,X L0200,Y
-; MODIFIES $42 $52 $7d $80 $81 $82 $83 $84 $85 $86 $87 $8a $8f $90 $91 $92 $93 $94 $97 $98 $9a $9b $9e $a1 $a2 $a3 $a4 $a5 $a6 $a7 $ad L0729 L072a L072b L072c L072d L072e ($57),Y $72,X L0318,X
+; MODIFIES $42 $52 $7d $80 $81 $82 $83 $84 $85 $86 $87 $8a $8f $90 $91 $92 $93 $94 L97_STATE $98 $9a $9b $9e $a1 $a2 $a3 $a4 $a5 $a6 $a7 $ad L0729 L072a L072b L072c L072d L072e ($57),Y $72,X L0318,X
 ; JSR $871f $8c73 $8d70 $8dbf $8e2b $8e8d $8f52 $90d3 $9be9 $9c01 $b8ac
 
 R9BB9:
 .scope
-    lda $97                                     ; 9BB9 A5 97
+    lda L97_STATE                               ; 9BB9 A5 97
     jsr RB8AC_JUMP_TABLE                        ; 9BBB 20 AC B8
-    .word L8D56 ; 0: jsr R871F R8D70 R8DBF_PILL_MOVE R8E2B_PILL_ROTATE
+    .word L8D56 ; 0: jsr R871F R8D70_DROP_PILL R8DBF_PILL_MOVE R8E2B_PILL_ROTATE
     .word L8C6F ; 1: jsr R8C73
     .word L9BD4 ; 2: jsr R9BE9 R9C01
     .word L9BCF ; 3: to state 0
@@ -4495,14 +4507,14 @@ R9BB9:
 ; ----------------------------------------------------------------------------
 ; R9BB9 routine 5.
 L9BCC:
-    inc $97                                     ; 9BCC E6 97
+    inc L97_STATE                               ; 9BCC E6 97
     rts                                         ; 9BCE 60
 
 ; ----------------------------------------------------------------------------
 ; R9BB9 routine 3.
 L9BCF:
     lda #$00                                    ; 9BCF A9 00
-    sta $97                                     ; 9BD1 85 97
+    sta L97_STATE                               ; 9BD1 85 97
     rts                                         ; 9BD3 60
 
 ; ----------------------------------------------------------------------------
@@ -4516,7 +4528,7 @@ L9BD4:
         jsr R9C01                               ; 9BDE 20 01 9C
     else                                        ; 9BE1 4C E8 9B
         lda #$05                                ; 9BE4 A9 05
-        sta $97                                 ; 9BE6 85 97
+        sta L97_STATE                           ; 9BE6 85 97
     end_if
     rts                                         ; 9BE8 60
 
@@ -4613,10 +4625,10 @@ R9C01:
             lda #$00                            ; 9C80 A9 00
             sta $0318,x                         ; 9C82 9D 18 03
             lda #$01                            ; 9C85 A9 01
-            sta $97                             ; 9C87 85 97
+            sta L97_STATE                       ; 9C87 85 97
         else                                    ; 9C89 4C 90 9C
             lda #$05                            ; 9C8C A9 05
-            sta $97                             ; 9C8E 85 97
+            sta L97_STATE                       ; 9C8E 85 97
         end_if
         rts                                     ; 9C90 60
 .endscope
@@ -4625,59 +4637,60 @@ R9C01:
 ; R8157 jump table vector 8
 L9C91_TOP_8:
 .scope
-        lda L0741_DEMO_MODE                     ; 9C91 AD 41 07
-        bne L9CEA                               ; 9C94 D0 54
-        lda #$00                                ; 9C96 A9 00
-        sta L0324_P1_VIRUS                      ; 9C98 8D 24 03
-        sta L03A4_P2_VIRUS                      ; 9C9B 8D A4 03
+    lda L0741_DEMO_MODE                         ; 9C91 AD 41 07
+    bne L9CEA                                   ; 9C94 D0 54
+    lda #$00                                    ; 9C96 A9 00
+    sta L0324_P1_VIRUS                          ; 9C98 8D 24 03
+    sta L03A4_P2_VIRUS                          ; 9C9B 8D A4 03
+    loop
         loop
-            loop
-                jsr R8FA5_SAVE_STATS            ; 9C9E 20 A5 8F
-                jsr R9075_LOAD_P1               ; 9CA1 20 75 90
-                jsr R9CFF_ADD_VIRUS             ; 9CA4 20 FF 9C
-                jsr R90AF_SAVE_P1               ; 9CA7 20 AF 90
-                lda L0727_NUM_PLAYERS           ; 9CAA AD 27 07
-                cmp #$02                        ; 9CAD C9 02
-                if_eq                           ; 9CAF D0 0E
-                    lda L0316_P1_LEVEL          ; 9CB1 AD 16 03
-                    cmp L0396_P2_LEVEL          ; 9CB4 CD 96 03
-                    if_ne                       ; 9CB7 F0 06
-                        jsr R9092_LOAD_P2       ; 9CB9 20 92 90
-                        jsr R9CFF_ADD_VIRUS     ; 9CBC 20 FF 9C
-                    end_if
+            jsr R8FA5_SAVE_STATS                ; 9C9E 20 A5 8F
+            jsr R9075_LOAD_P1                   ; 9CA1 20 75 90
+            jsr R9CFF_ADD_VIRUS                 ; 9CA4 20 FF 9C
+            jsr R90AF_SAVE_P1                   ; 9CA7 20 AF 90
+            lda L0727_NUM_PLAYERS               ; 9CAA AD 27 07
+            cmp #$02                            ; 9CAD C9 02
+            if_eq                               ; 9CAF D0 0E
+                lda L0316_P1_LEVEL              ; 9CB1 AD 16 03
+                cmp L0396_P2_LEVEL              ; 9CB4 CD 96 03
+                if_ne                           ; 9CB7 F0 06
+                    jsr R9092_LOAD_P2           ; 9CB9 20 92 90
+                    jsr R9CFF_ADD_VIRUS         ; 9CBC 20 FF 9C
                 end_if
-                jsr R90BC_SAVE_P2               ; 9CBF 20 BC 90
-                jsr R8FCA_RESTORE_STATS         ; 9CC2 20 CA 8F
-                jsr RB654_NEXT_FRAME            ; 9CC5 20 54 B6
-                lda $0328                       ; 9CC8 AD 28 03
-            while_ne                            ; 9CCB D0 D1
-            lda $03A8                           ; 9CCD AD A8 03
-        while_ne                                ; 9CD0 D0 CC
-L9CD2:  lda #$04                                ; 9CD2 A9 04
-        sta $58                                 ; 9CD4 85 58
-        lda #$0F                                ; 9CD6 A9 0F
-        sta L80_UPDATE_ROW                      ; 9CD8 85 80
-        sta $0300                               ; 9CDA 8D 00 03
-        sta $0380                               ; 9CDD 8D 80 03
-        lda #$80                                ; 9CE0 A9 80
-        jsr R9701_SLEEP                         ; 9CE2 20 01 97
-        ; enter top-level state 4
-        lda #$04                                ; 9CE5 A9 04
-        sta L46_TOP_STATE                       ; 9CE7 85 46
-        rts                                     ; 9CE9 60
+            end_if
+            jsr R90BC_SAVE_P2                   ; 9CBF 20 BC 90
+            jsr R8FCA_RESTORE_STATS             ; 9CC2 20 CA 8F
+            jsr RB654_NEXT_FRAME                ; 9CC5 20 54 B6
+            lda L0328_P1_VIRUS_TO_ADD           ; 9CC8 AD 28 03
+        while_ne                                ; 9CCB D0 D1
+        lda L03A8_P2_VIRUS_TO_ADD               ; 9CCD AD A8 03
+    while_ne                                    ; 9CD0 D0 CC
+L9CD2:
+    lda #$04                                    ; 9CD2 A9 04
+    sta $58                                     ; 9CD4 85 58
+    lda #$0F                                    ; 9CD6 A9 0F
+    sta L80_UPDATE_ROW                          ; 9CD8 85 80
+    sta $0300                                   ; 9CDA 8D 00 03
+    sta $0380                                   ; 9CDD 8D 80 03
+    lda #$80                                    ; 9CE0 A9 80
+    jsr R9701_SLEEP                             ; 9CE2 20 01 97
+    ; enter top-level state 4
+    lda #$04                                    ; 9CE5 A9 04
+    sta L46_TOP_STATE                           ; 9CE7 85 46
+    rts                                         ; 9CE9 60
 
 L9CEA:
-        ; copy $CF00-$CF7F to $0400-$047F
-        ldx #$7F                                ; 9CEA A2 7F
-        loop
-            lda LCF00,x                         ; 9CEC BD 00 CF
-            sta $0400,x                         ; 9CEF 9D 00 04
-            dex                                 ; 9CF2 CA
-            cpx #$FF                            ; 9CF3 E0 FF
-        while_ne                                ; 9CF5 D0 F5
-        lda #$00                                ; 9CF7 A9 00
-        sta $0328                               ; 9CF9 8D 28 03
-        jmp L9CD2                               ; 9CFC 4C D2 9C
+    ; copy $CF00-$CF7F to $0400-$047F
+    ldx #$7F                                    ; 9CEA A2 7F
+    loop
+        lda LCF00,x                             ; 9CEC BD 00 CF
+        sta $0400,x                             ; 9CEF 9D 00 04
+        dex                                     ; 9CF2 CA
+        cpx #$FF                                ; 9CF3 E0 FF
+    while_ne                                    ; 9CF5 D0 F5
+    lda #$00                                    ; 9CF7 A9 00
+    sta L0328_P1_VIRUS_TO_ADD                   ; 9CF9 8D 28 03
+    jmp L9CD2                                   ; 9CFC 4C D2 9C
 .endscope
 
 ; ----------------------------------------------------------------------------
@@ -5134,7 +5147,7 @@ L9F87:
     lda #$00                                    ; 9FD4 A9 00
     sta $7D                                     ; 9FD6 85 7D
     lda #$03                                    ; 9FD8 A9 03
-    sta $97                                     ; 9FDA 85 97
+    sta L97_STATE                               ; 9FDA 85 97
     jsr R90D3_COLLISION                         ; 9FDC 20 D3 90
     if_ne                                       ; 9FDF F0 0C
         lda #$05                                ; 9FE1 A9 05
@@ -5420,7 +5433,7 @@ LA346:  .byte $23,$C0,$20
         .byte $FF
 
 ; ----------------------------------------------------------------------------
-; lookup table used in R8D70, indexed by L8B_SPEED
+; lookup table used in R8D70_DROP_PILL, indexed by L8B_SPEED
 LA38D:  .byte $0F,$19,$1F                       ; A38D 0F 19 1F
 ; ----------------------------------------------------------------------------
 ; lookup table used in R9CFF_ADD_VIRUS
@@ -5680,7 +5693,9 @@ LA777:  .byte $00,$01,$02,$03,$04,$05,$06,$07
         .byte $24,$25,$26,$27,$28,$29
 
 ; ----------------------------------------------------------------------------
-; lookup table, used by R8D70, indexed by LA38D,x + $A0
+; lookup table, used by R8D70_DROP_PILL, indexed by LA38D,$8B + $8A
+; Compared with L92_DROP_TIMER.
+; Pill drop speed (frames per row).
 LA795:  .byte $45,$43,$41,$3F,$3D,$3B,$39,$37
         .byte $35,$33,$31,$2F,$2D,$2B,$29,$27
         .byte $25,$23,$21,$1F,$1D,$1B,$19,$17
