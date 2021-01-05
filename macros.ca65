@@ -55,6 +55,66 @@
 .endmacro
 
 ; ----------------------------------------------------------------------------
+; Long conditionals
+
+.macro if_pl_jmp
+        .scope
+        bpl __then__
+        jmp __else__
+        __then__:
+.endmacro
+
+.macro if_mi_jmp
+        .scope
+        bmi __then__
+        jmp __else__
+        __then__:
+.endmacro
+
+.macro if_vc_jmp
+        .scope
+        bvc __then__
+        jmp __else__
+        __then__:
+.endmacro
+
+.macro if_vs_jmp
+        .scope
+        bvs __then__
+        jmp __else__
+        __then__:
+.endmacro
+
+.macro if_cc_jmp
+        .scope
+        bcc __then__
+        jmp __else__
+        __then__:
+.endmacro
+
+.macro if_cs_jmp
+        .scope
+        bcs __then__
+        jmp __else__
+        __then__:
+.endmacro
+
+.macro if_ne_jmp
+        .scope
+        bne __then__
+        jmp __else__
+        __then__:
+.endmacro
+
+.macro if_eq_jmp
+        .scope
+        beq __then__
+        jmp __else__
+        __then__:
+.endmacro
+
+
+; ----------------------------------------------------------------------------
 ; While loops
 
 .macro loop
