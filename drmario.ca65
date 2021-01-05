@@ -43,6 +43,7 @@
 .define L7A_V3_TIMER     $7A
 .define L7B_VIRUS_MARCH  $7B
 
+.define L80_UPDATE_ROW   $80
 .define L81_PILL_COLOR_0 $81
 .define L82_PILL_COLOR_1 $82
 .define L83_PILL_COLOR_2 $83
@@ -58,10 +59,10 @@
 .define L9D_NEXT_COLOR_3 $9D
 .define L9E_WINS         $9E
 .define LA2_NEXT_DIR     $A2
-.define LA3_NEXT_SHAPE   $A3
+.define LA3_NEXT_SIZE    $A3
 .define LA4_VIRUS_BCD    $A4
 .define LA5_PILL_DIR     $A5
-.define LA6_PILL_SHAPE   $A6
+.define LA6_PILL_SIZE    $A6
 .define LA8_VIRUS_TO_ADD $A8
 .define LAD_VIRUS_COMBO  $AD
 
@@ -104,6 +105,9 @@ L072B_SCORE_2 := $072B
 L072C_SCORE_3 := $072C
 L072D_SCORE_4 := $072D
 L072E_SCORE_5 := $072E
+
+L0740_CHECKSUM_FAIL := $0740
+L0741_DEMO_MODE     := $0741
 
 L2000_PPUCTRL   := $2000
 L2001_PPUMASK   := $2001
@@ -368,7 +372,7 @@ L816E_TOP_2:
     jsr RB695_ENABLE_NMI                        ; 81DC 20 95 B6
     jsr RB689_ENABLE_VIDEO                      ; 81DF 20 89 B6
     lda #$0F                                    ; 81E2 A9 0F
-    sta $80                                     ; 81E4 85 80
+    sta L80_UPDATE_ROW                          ; 81E4 85 80
     jsr R90C9_INIT_4_5                          ; 81E6 20 C9 90
     lda #$00                                    ; 81E9 A9 00
     sta L0729_SCORE_0                           ; 81EB 8D 29 07
@@ -396,7 +400,7 @@ L8206_TOP_3:
     sta $87                                     ; 8214 85 87
     sta $88                                     ; 8216 85 88
     sta $89                                     ; 8218 85 89
-    sta $80                                     ; 821A 85 80
+    sta L80_UPDATE_ROW                          ; 821A 85 80
     sta $90                                     ; 821C 85 90
     sta $91                                     ; 821E 85 91
     sta $7D                                     ; 8220 85 7D
@@ -530,9 +534,9 @@ R82F7_PRINT_PLAYFIELD_ROWS:
     lda #$04                                    ; 82F7 A9 04
     sta $58                                     ; 82F9 85 58
     lda $0300                                   ; 82FB AD 00 03
-    sta $80                                     ; 82FE 85 80
+    sta L80_UPDATE_ROW                          ; 82FE 85 80
     jsr R8321_PRINT_PLAYFIELD_ROW               ; 8300 20 21 83
-    lda $80                                     ; 8303 A5 80
+    lda L80_UPDATE_ROW                          ; 8303 A5 80
     sta $0300                                   ; 8305 8D 00 03
     lda L0727_NUM_PLAYERS                       ; 8308 AD 27 07
     cmp #$02                                    ; 830B C9 02
@@ -540,26 +544,26 @@ R82F7_PRINT_PLAYFIELD_ROWS:
         lda #$05                                ; 830F A9 05
         sta $58                                 ; 8311 85 58
         lda $0380                               ; 8313 AD 80 03
-        sta $80                                 ; 8316 85 80
+        sta L80_UPDATE_ROW                      ; 8316 85 80
         jsr R8321_PRINT_PLAYFIELD_ROW           ; 8318 20 21 83
-        lda $80                                 ; 831B A5 80
+        lda L80_UPDATE_ROW                      ; 831B A5 80
         sta $0380                               ; 831D 8D 80 03
     end_if
     rts                                         ; 8320 60
 
 ; ----------------------------------------------------------------------------
 ; Copy one row of playfield to display, and decrement row number.
-; Input/output: $80 is row number of playfield.
+; Input/output: L80_UPDATE_ROW is row number of playfield.
 ; Called from R82F7.
 R8321_PRINT_PLAYFIELD_ROW:
-    lda $80                                     ; 8321 A5 80
+    lda L80_UPDATE_ROW                          ; 8321 A5 80
     cmp #$FF                                    ; 8323 C9 FF
     if_ne                                       ; 8325 F0 6B
         lda L0727_NUM_PLAYERS                   ; 8327 AD 27 07
         cmp #$01                                ; 832A C9 01
         if_eq                                   ; 832C D0 13
             ; Rows 10-25, column 12
-            lda $80                             ; 832E A5 80
+            lda L80_UPDATE_ROW                  ; 832E A5 80
             asl a                               ; 8330 0A
             tay                                 ; 8331 A8
             lda LA717,y                         ; 8332 B9 17 A7
@@ -571,7 +575,7 @@ R8321_PRINT_PLAYFIELD_ROW:
             cmp #$04                            ; 8343 C9 04
             if_eq                               ; 8345 D0 13
                 ; Rows 10-25, column 4
-                lda $80                         ; 8347 A5 80
+                lda L80_UPDATE_ROW              ; 8347 A5 80
                 asl a                           ; 8349 0A
                 tay                             ; 834A A8
                 lda LA737,y                     ; 834B B9 37 A7
@@ -580,7 +584,7 @@ R8321_PRINT_PLAYFIELD_ROW:
                 sta L2006_PPUADDR               ; 8354 8D 06 20
             else                                ; 8357 4C 6A 83
                 ; Rows 10-25, column 20
-                lda $80                         ; 835A A5 80
+                lda L80_UPDATE_ROW              ; 835A A5 80
                 asl a                           ; 835C 0A
                 tay                             ; 835D A8
                 lda LA757,y                     ; 835E B9 57 A7
@@ -591,7 +595,7 @@ R8321_PRINT_PLAYFIELD_ROW:
         end_if
         lda #$00                                ; 836A A9 00
         sta $57                                 ; 836C 85 57
-        lda $80                                 ; 836E A5 80
+        lda L80_UPDATE_ROW                      ; 836E A5 80
         asl a                                   ; 8370 0A
         asl a                                   ; 8371 0A
         asl a                                   ; 8372 0A
@@ -612,7 +616,7 @@ R8321_PRINT_PLAYFIELD_ROW:
             iny                                 ; 838C C8
             dex                                 ; 838D CA
         while_ne                                ; 838E D0 E6
-        dec $80                                 ; 8390 C6 80
+        dec L80_UPDATE_ROW                      ; 8390 C6 80
     end_if
     rts                                         ; 8392 60
 
@@ -1194,7 +1198,7 @@ R871F:
     sta L45_SPRITE_Y                            ; 8745 85 45
 ; from this point, similar to R88CB
     ldy L42_OAM_OFFSET                          ; 8747 A4 42
-    lda LA6_PILL_SHAPE                          ; 8749 A5 A6
+    lda LA6_PILL_SIZE                           ; 8749 A5 A6
     asl a                                       ; 874B 0A
     asl a                                       ; 874C 0A
     clc                                         ; 874D 18
@@ -1420,11 +1424,11 @@ R88B1:
 ; Inputs:
 ; L44_SPRITE_X L45_SPRITE_Y
 ; L9A_NEXT_COLOR_0 L9B_NEXT_COLOR_1 L9C_NEXT_COLOR_2 L9D_NEXT_COLOR_3: 4 pill colors (0-2)
-; 4×LA3_NEXT_SHAPE+LA2_NEXT_DIR used as index to LA494.
+; 4×LA3_NEXT_SIZE+LA2_NEXT_DIR used as index to LA494.
 ; called from R87A2
 R88CB:
     ldy L42_OAM_OFFSET                          ; 88CB A4 42
-    lda LA3_NEXT_SHAPE                          ; 88CD A5 A3
+    lda LA3_NEXT_SIZE                           ; 88CD A5 A3
     asl a                                       ; 88CF 0A
     asl a                                       ; 88D0 0A
     clc                                         ; 88D1 18
@@ -2011,17 +2015,17 @@ L8C6F:  jsr     R8C73                           ; 8C6F 20 73 8C
 ; ----------------------------------------------------------------------------
 ; Jump to one of 9 subroutines based on $87.
 R8C73:
-        lda     $87                             ; 8C73 A5 87
-        jsr     RB8AC_JUMP_TABLE                ; 8C75 20 AC B8
-        .word   L8C8A
-        .word   L8C91
-        .word   L8C91
-        .word   L8C94
-        .word   L9413
-        .word   L91FB
-        .word   L9469
-        .word   L92DB
-        .word   L8D4F
+    lda $87                                     ; 8C73 A5 87
+    jsr RB8AC_JUMP_TABLE                        ; 8C75 20 AC B8
+    .word L8C8A
+    .word L8C91
+    .word L8C91
+    .word L8C94
+    .word L9413
+    .word L91FB
+    .word L9469
+    .word L92DB
+    .word L8D4F
 
 ; ----------------------------------------------------------------------------
 ; R8C73 routine 0.
@@ -2041,70 +2045,77 @@ L8C91:
 
 ; ----------------------------------------------------------------------------
 ; R8C73 routine 3.
+; Make tiles fall down.
+; TODO: What are $47 and $06F1 used for?
 L8C94:
-    lda $80                                     ; 8C94 A5 80
+    lda L80_UPDATE_ROW                          ; 8C94 A5 80
     cmp #$FF                                    ; 8C96 C9 FF
     if_ne                                       ; 8C98 F0 03
     else                                        ; 8C9A 4C 4E 8D
         lda #$00                                ; 8C9D A9 00
         sta $47                                 ; 8C9F 85 47
         sta $57                                 ; 8CA1 85 57
+        ; loop from 127 down to 0 (bottom to top)
         ldy #$7F                                ; 8CA3 A0 7F
         sty $49                                 ; 8CA5 84 49
         loop
             ldy $49                             ; 8CA7 A4 49
             lda ($57),y                         ; 8CA9 B1 57
             cmp #$F0                            ; 8CAB C9 F0
-            if_cc                               ; 8CAD B0 03
-                jmp L8D34                       ; 8CAF 4C 34 8D
+            if_cc ; if < #$F0                   ; 8CAD B0 03
+                jmp next                        ; 8CAF 4C 34 8D
             end_if
             lda #$FF                            ; 8CB2 A9 FF
             sta ($57),y                         ; 8CB4 91 57
             sta $48                             ; 8CB6 85 48
             lda $0724                           ; 8CB8 AD 24 07
-            bne L8D34                           ; 8CBB D0 77
-            sty $49                             ; 8CBD 84 49
+            bne next                            ; 8CBB D0 77
+            sty $49 ; redundant                 ; 8CBD 84 49
             tya                                 ; 8CBF 98
             sec                                 ; 8CC0 38
             sbc #$08                            ; 8CC1 E9 08
             tay                                 ; 8CC3 A8
+            ; consider tile 1 row above
             lda ($57),y                         ; 8CC4 B1 57
-            cmp #$A0                            ; 8CC6 C9 A0
-            bcs L8D34                           ; 8CC8 B0 6A
+            cmp #$A0 ; left-right tile (unused) ; 8CC6 C9 A0
+            bcs next ; doesn't fall             ; 8CC8 B0 6A
             and #$F0                            ; 8CCA 29 F0
-            cmp #$60                            ; 8CCC C9 60
-            beq L8D34                           ; 8CCE F0 64
-            cmp #$A0                            ; 8CD0 C9 A0
-            beq L8D34                           ; 8CD2 F0 60
-            cmp #$70                            ; 8CD4 C9 70
+            cmp #$60 ; open-right tile          ; 8CCC C9 60
+            beq next ; doesn't fall             ; 8CCE F0 64
+            cmp #$A0 ; left-right tile          ; 8CD0 C9 A0
+            beq next ; doesn't fall             ; 8CD2 F0 60
+            cmp #$70 ; open-left tile           ; 8CD4 C9 70
             if_eq                               ; 8CD6 D0 40
-                sty $4A                         ; 8CD8 84 4A
-                sty $4C                         ; 8CDA 84 4C
-                lda $49                         ; 8CDC A5 49
-                sta $4B                         ; 8CDE 85 4B
+                ; check whether entire left-right
+                ; pill is unsupported underneath
+                sty $4A ; row above             ; 8CD8 84 4A
+                sty $4C ; row above             ; 8CDA 84 4C
+                lda $49 ; this row              ; 8CDC A5 49
+                sta $4B ; this row              ; 8CDE 85 4B
                 loop
                     dec $4A                     ; 8CE0 C6 4A
                     dec $4B                     ; 8CE2 C6 4B
                     ldy $4B                     ; 8CE4 A4 4B
-                    lda ($57),y                 ; 8CE6 B1 57
+                    lda ($57),y ; this row      ; 8CE6 B1 57
                     cmp #$F0                    ; 8CE8 C9 F0
-                    bcc L8D34                   ; 8CEA 90 48
+                    bcc next                    ; 8CEA 90 48
                     ldy $4A                     ; 8CEC A4 4A
-                    lda ($57),y                 ; 8CEE B1 57
+                    lda ($57),y ; row above     ; 8CEE B1 57
                     and #$F0                    ; 8CF0 29 F0
-                    cmp #$60                    ; 8CF2 C9 60
+                    cmp #$60 ; open-right tile  ; 8CF2 C9 60
                 while_ne                        ; 8CF4 D0 EA
                 loop
+                    ; make entire pill fall
                     ldy $4C                     ; 8CF6 A4 4C
-                    lda ($57),y                 ; 8CF8 B1 57
+                    lda ($57),y ; row above     ; 8CF8 B1 57
                     ldy $49                     ; 8CFA A4 49
-                    sta ($57),y                 ; 8CFC 91 57
+                    sta ($57),y ; this row      ; 8CFC 91 57
                     lda #$FF                    ; 8CFE A9 FF
                     ldy $4C                     ; 8D00 A4 4C
-                    sta ($57),y                 ; 8D02 91 57
+                    sta ($57),y ; row above     ; 8D02 91 57
                     lda $49                     ; 8D04 A5 49
                     cmp $4B                     ; 8D06 C5 4B
-                    beq L8D34                   ; 8D08 F0 2A
+                    beq next                    ; 8D08 F0 2A
                     dec $49                     ; 8D0A C6 49
                     dec $4C                     ; 8D0C C6 4C
                     inc $47                     ; 8D0E E6 47
@@ -2112,12 +2123,13 @@ L8C94:
                     sta $06F1                   ; 8D12 8D F1 06
                 forever                         ; 8D15 4C F6 8C
             end_if
+            ; any other tile type should fall
             ldy $49                             ; 8D18 A4 49
             tya                                 ; 8D1A 98
             sec                                 ; 8D1B 38
-            sbc #$08                            ; 8D1C E9 08
+            sbc #$08 ; duplicated work          ; 8D1C E9 08
             tay                                 ; 8D1E A8
-            lda ($57),y                         ; 8D1F B1 57
+            lda ($57),y ; row above             ; 8D1F B1 57
             sta $48                             ; 8D21 85 48
             lda #$FF                            ; 8D23 A9 FF
             sta ($57),y                         ; 8D25 91 57
@@ -2127,18 +2139,21 @@ L8C94:
             inc $47                             ; 8D2D E6 47
             lda #$07                            ; 8D2F A9 07
             sta $06F1                           ; 8D31 8D F1 06
-        L8D34:
+        next:
             dec $49                             ; 8D34 C6 49
             ldy $49                             ; 8D36 A4 49
             cpy #$FF                            ; 8D38 C0 FF
             beq break                           ; 8D3A F0 03
         forever                                 ; 8D3C 4C A7 8C
         lda #$0F                                ; 8D3F A9 0F
-        sta $80                                 ; 8D41 85 80
+        sta L80_UPDATE_ROW                      ; 8D41 85 80
+        ; did anything fall?
         lda $47                                 ; 8D43 A5 47
         if_ne                                   ; 8D45 F0 05
+            ; if so, go to state 2
             dec $87                             ; 8D47 C6 87
         else                                    ; 8D49 4C 4E 8D
+            ; if not, go to state 4
             inc $87                             ; 8D4C E6 87
         end_if
     end_if
@@ -2172,7 +2187,7 @@ L8D56:
 
 ; ----------------------------------------------------------------------------
 ; READS $43 $5c $85 $86 $8a $8b $92 $a5 $a6 ($57),Y $a38d,X $a455,X $a458,X $a45b,X $a474,X $a4c4,X $a795,X
-; WRITES $47 $48 $49 $4a $57 $80 $86 $92 $97 $a0 $06f1 ($57),Y
+; WRITES $47 $48 $49 $4a $57 L80_UPDATE_ROW $86 $92 $97 $a0 $06f1 ($57),Y
 ; JSR $8f52 $90d3
 ; Called once, in L8D56.
 R8D70:
@@ -2209,10 +2224,10 @@ R8D70:
         inc L86_PILL_ROW                        ; 8DA5 E6 86
         lda #$07                                ; 8DA7 A9 07
         sta $06F1                               ; 8DA9 8D F1 06
-        jsr R8F52                               ; 8DAC 20 52 8F
+        jsr R8F52_PLACE_PILL                    ; 8DAC 20 52 8F
         ; make the program crash if $0740 is nonzero
         ; (which indicates a checksum failure)
-        lda $0740                               ; 8DAF AD 40 07
+        lda L0740_CHECKSUM_FAIL                 ; 8DAF AD 40 07
         if_ne                                   ; 8DB2 F0 05
             lda L53_SPRITE_NUM                  ; 8DB4 A5 53
             pha                                 ; 8DB6 48
@@ -2251,7 +2266,7 @@ R8DBF_PILL_MOVE:
         and #$01 ; "right"                      ; 8DE5 29 01
         if_ne                                   ; 8DE7 F0 20
             lda LA5_PILL_DIR                    ; 8DE9 A5 A5
-            and #$01                            ; 8DEB 29 01
+            and #$01 ; 1 = U/D, 0 = L/R         ; 8DEB 29 01
             clc                                 ; 8DED 18
             adc #$06                            ; 8DEE 69 06
             cmp L85_PILL_COLUMN                 ; 8DF0 C5 85
@@ -2305,7 +2320,7 @@ R8E2B_PILL_ROTATE:
         lda LA5_PILL_DIR                        ; 8E40 A5 A5
         and #$03                                ; 8E42 29 03
         sta LA5_PILL_DIR                        ; 8E44 85 A5
-        jsr R8E60                               ; 8E46 20 60 8E
+        jsr R8E60_CHECK_ROTATE                  ; 8E46 20 60 8E
     end_if
     lda L5B_INPUT_NEW                           ; 8E49 A5 5B
     and #$40 ; "B"                              ; 8E4B 29 40
@@ -2316,15 +2331,17 @@ R8E2B_PILL_ROTATE:
         lda LA5_PILL_DIR                        ; 8E56 A5 A5
         and #$03                                ; 8E58 29 03
         sta LA5_PILL_DIR                        ; 8E5A 85 A5
-        jsr R8E60                               ; 8E5C 20 60 8E
+        jsr R8E60_CHECK_ROTATE                  ; 8E5C 20 60 8E
     end_if
     rts                                         ; 8E5F 60
 
 ; ----------------------------------------------------------------------------
-R8E60:
+; Adjust or undo pill rotation if there are collisions.
+; Previous DIR and COLUMN values are passed in $4A/$4B.
+R8E60_CHECK_ROTATE:
     begin
         lda LA5_PILL_DIR                        ; 8E60 A5 A5
-        and #$01                                ; 8E62 29 01
+        and #$01 ; 1 = U/D, 0 = L/R             ; 8E62 29 01
         if_eq                                   ; 8E64 D0 19
             jsr R90D3_COLLISION                 ; 8E66 20 D3 90
             if_eq                               ; 8E69 D0 12
@@ -2340,15 +2357,15 @@ R8E60:
             dec L85_PILL_COLUMN                 ; 8E7D C6 85
         end_if
         jsr R90D3_COLLISION                     ; 8E7F 20 D3 90
-        if_ne                                   ; 8E82 F0 08
-            lda $4A                             ; 8E84 A5 4A
-            sta LA5_PILL_DIR                    ; 8E86 85 A5
-            lda $4B                             ; 8E88 A5 4B
-            sta L85_PILL_COLUMN                 ; 8E8A 85 85
-        end_if
+        beq break                               ; 8E82 F0 08
+
+        lda $4A                                 ; 8E84 A5 4A
+        sta LA5_PILL_DIR                        ; 8E86 85 A5
+        lda $4B                                 ; 8E88 A5 4B
+        sta L85_PILL_COLUMN                     ; 8E8A 85 85
     end
     rts                                         ; 8E8C 60
-.endscope
+.endscope ;L8D56
 
 ; ----------------------------------------------------------------------------
 R8E8D:
@@ -2357,8 +2374,8 @@ R8E8D:
 ; L83_PILL_COLOR_2 <- L9C_NEXT_COLOR_2
 ; L84_PILL_COLOR_3 <- L9D_NEXT_COLOR_3
 ; LA5_PILL_DIR <- #$00
-; LA6_PILL_SHAPE <- LA3_NEXT_SHAPE
-; if $0741 > 0 then x <- LCF80,$A7 else x <- $0780,$A7
+; LA6_PILL_SIZE <- LA3_NEXT_SHAPE
+; if L0741_DEMO_MODE > 0 then x <- LCF80,$A7 else x <- $0780,$A7
 ; L9A_NEXT_COLOR_0 <- LA7FD,x
 ; L9B_NEXT_COLOR_1 <- LA806,x
 ; inc $A7
@@ -2385,126 +2402,127 @@ R8E8D:
 ; $8F <- #$00
 ; L52_REDRAW_FLAGS |= #$01
 .scope
-        lda L9A_NEXT_COLOR_0                    ; 8E8D A5 9A
-        sta L81_PILL_COLOR_0                    ; 8E8F 85 81
-        lda L9B_NEXT_COLOR_1                    ; 8E91 A5 9B
-        sta L82_PILL_COLOR_1                    ; 8E93 85 82
-        lda L9C_NEXT_COLOR_2                    ; 8E95 A5 9C
-        sta L83_PILL_COLOR_2                    ; 8E97 85 83
-        lda L9D_NEXT_COLOR_3                    ; 8E99 A5 9D
-        sta L84_PILL_COLOR_3                    ; 8E9B 85 84
-        lda #$00                                ; 8E9D A9 00
-        sta LA5_PILL_DIR                        ; 8E9F 85 A5
-        lda LA3_NEXT_SHAPE                      ; 8EA1 A5 A3
-        sta LA6_PILL_SHAPE                      ; 8EA3 85 A6
-        lda $0741                               ; 8EA5 AD 41 07
-        if_ne                                   ; 8EA8 F0 09
-            ldx $A7                             ; 8EAA A6 A7
-            lda LCF80,x                         ; 8EAC BD 80 CF
-            tax                                 ; 8EAF AA
-        else                                    ; 8EB0 4C B9 8E
-            ldx $A7                             ; 8EB3 A6 A7
-            lda $0780,x                         ; 8EB5 BD 80 07
-            tax                                 ; 8EB8 AA
+    lda L9A_NEXT_COLOR_0                        ; 8E8D A5 9A
+    sta L81_PILL_COLOR_0                        ; 8E8F 85 81
+    lda L9B_NEXT_COLOR_1                        ; 8E91 A5 9B
+    sta L82_PILL_COLOR_1                        ; 8E93 85 82
+    lda L9C_NEXT_COLOR_2                        ; 8E95 A5 9C
+    sta L83_PILL_COLOR_2                        ; 8E97 85 83
+    lda L9D_NEXT_COLOR_3                        ; 8E99 A5 9D
+    sta L84_PILL_COLOR_3                        ; 8E9B 85 84
+    lda #$00                                    ; 8E9D A9 00
+    sta LA5_PILL_DIR                            ; 8E9F 85 A5
+    lda LA3_NEXT_SIZE                           ; 8EA1 A5 A3
+    sta LA6_PILL_SIZE                           ; 8EA3 85 A6
+    lda L0741_DEMO_MODE                         ; 8EA5 AD 41 07
+    if_ne                                       ; 8EA8 F0 09
+        ldx $A7                                 ; 8EAA A6 A7
+        lda LCF80,x                             ; 8EAC BD 80 CF
+        tax                                     ; 8EAF AA
+    else                                        ; 8EB0 4C B9 8E
+        ldx $A7                                 ; 8EB3 A6 A7
+        lda $0780,x                             ; 8EB5 BD 80 07
+        tax                                     ; 8EB8 AA
+    end_if
+    lda LA7FD,x                                 ; 8EB9 BD FD A7
+    sta L9A_NEXT_COLOR_0                        ; 8EBC 85 9A
+    lda LA806,x                                 ; 8EBE BD 06 A8
+    sta L9B_NEXT_COLOR_1                        ; 8EC1 85 9B
+    inc $A7                                     ; 8EC3 E6 A7
+    lda $A7                                     ; 8EC5 A5 A7
+    and #$7F                                    ; 8EC7 29 7F
+    sta $A7                                     ; 8EC9 85 A7
+    lda #$00                                    ; 8ECB A9 00
+    sta $7D                                     ; 8ECD 85 7D
+    sta LA2_NEXT_DIR                            ; 8ECF 85 A2
+    lda #$02                                    ; 8ED1 A9 02
+    sta LA3_NEXT_SIZE                           ; 8ED3 85 A3
+    lda #$03                                    ; 8ED5 A9 03
+    sta L85_PILL_COLUMN                         ; 8ED7 85 85
+    lda #$0F                                    ; 8ED9 A9 0F
+    sta L86_PILL_ROW                            ; 8EDB 85 86
+    inc $90                                     ; 8EDD E6 90
+    lda $90                                     ; 8EDF A5 90
+    and #$0F                                    ; 8EE1 29 0F
+    cmp #$0A                                    ; 8EE3 C9 0A
+    if_cs                                       ; 8EE5 90 07
+        lda $90                                 ; 8EE7 A5 90
+        clc                                     ; 8EE9 18
+        adc #$06                                ; 8EEA 69 06
+        sta $90                                 ; 8EEC 85 90
+    end_if
+    lda $90                                     ; 8EEE A5 90
+    and #$F0                                    ; 8EF0 29 F0
+    cmp #$A0                                    ; 8EF2 C9 A0
+    if_cs                                       ; 8EF4 90 09
+        lda $90                                 ; 8EF6 A5 90
+        clc                                     ; 8EF8 18
+        adc #$60                                ; 8EF9 69 60
+        sta $90                                 ; 8EFB 85 90
+        inc $91                                 ; 8EFD E6 91
+    end_if
+    lda $91                                     ; 8EFF A5 91
+    and #$0F                                    ; 8F01 29 0F
+    cmp #$0A                                    ; 8F03 C9 0A
+    if_cs                                       ; 8F05 90 07
+        lda $91                                 ; 8F07 A5 91
+        clc                                     ; 8F09 18
+        adc #$06                                ; 8F0A 69 06
+        sta $91                                 ; 8F0C 85 91
+    end_if
+    lda $91                                     ; 8F0E A5 91
+    and #$F0                                    ; 8F10 29 F0
+    cmp #$A0                                    ; 8F12 C9 A0
+    if_cs                                       ; 8F14 90 0B
+        lda $91                                 ; 8F16 A5 91
+        clc                                     ; 8F18 18
+        adc #$60                                ; 8F19 69 60
+        lda #$99                                ; 8F1B A9 99
+        sta $90                                 ; 8F1D 85 90
+        sta $91                                 ; 8F1F 85 91
+    end_if
+    lda $0723                                   ; 8F21 AD 23 07
+    if_eq                                       ; 8F24 D0 21
+        lda $90                                 ; 8F26 A5 90
+        cmp #$00                                ; 8F28 C9 00
+        beq L8F32                               ; 8F2A F0 06
+        and #$0F                                ; 8F2C 29 0F
+        cmp #$00                                ; 8F2E C9 00
+        bne L8F47                               ; 8F30 D0 15
+    L8F32:
+        lda $8A                                 ; 8F32 A5 8A
+        cmp #$31                                ; 8F34 C9 31
+        if_ne                                   ; 8F36 F0 0F
+            inc $8A                             ; 8F38 E6 8A
+            lda #$06                            ; 8F3A A9 06
+            sta $06F1                           ; 8F3C 8D F1 06
+            ; redraw level# and virus#
+            lda L52_REDRAW_FLAGS                ; 8F3F A5 52
+            ora #$12                            ; 8F41 09 12
+            ora #$02                            ; 8F43 09 02
+            sta L52_REDRAW_FLAGS                ; 8F45 85 52
         end_if
-        lda LA7FD,x                             ; 8EB9 BD FD A7
-        sta L9A_NEXT_COLOR_0                    ; 8EBC 85 9A
-        lda LA806,x                             ; 8EBE BD 06 A8
-        sta L9B_NEXT_COLOR_1                    ; 8EC1 85 9B
-        inc $A7                                 ; 8EC3 E6 A7
-        lda $A7                                 ; 8EC5 A5 A7
-        and #$7F                                ; 8EC7 29 7F
-        sta $A7                                 ; 8EC9 85 A7
-        lda #$00                                ; 8ECB A9 00
-        sta $7D                                 ; 8ECD 85 7D
-        sta LA2_NEXT_DIR                        ; 8ECF 85 A2
-        lda #$02                                ; 8ED1 A9 02
-        sta LA3_NEXT_SHAPE                      ; 8ED3 85 A3
-        lda #$03                                ; 8ED5 A9 03
-        sta L85_PILL_COLUMN                     ; 8ED7 85 85
-        lda #$0F                                ; 8ED9 A9 0F
-        sta L86_PILL_ROW                        ; 8EDB 85 86
-        inc $90                                 ; 8EDD E6 90
-        lda $90                                 ; 8EDF A5 90
-        and #$0F                                ; 8EE1 29 0F
-        cmp #$0A                                ; 8EE3 C9 0A
-        if_cs                                   ; 8EE5 90 07
-            lda $90                             ; 8EE7 A5 90
-            clc                                 ; 8EE9 18
-            adc #$06                            ; 8EEA 69 06
-            sta $90                             ; 8EEC 85 90
-        end_if
-        lda $90                                 ; 8EEE A5 90
-        and #$F0                                ; 8EF0 29 F0
-        cmp #$A0                                ; 8EF2 C9 A0
-        if_cs                                   ; 8EF4 90 09
-            lda $90                             ; 8EF6 A5 90
-            clc                                 ; 8EF8 18
-            adc #$60                            ; 8EF9 69 60
-            sta $90                             ; 8EFB 85 90
-            inc $91                             ; 8EFD E6 91
-        end_if
-        lda $91                                 ; 8EFF A5 91
-        and #$0F                                ; 8F01 29 0F
-        cmp #$0A                                ; 8F03 C9 0A
-        if_cs                                   ; 8F05 90 07
-            lda $91                             ; 8F07 A5 91
-            clc                                 ; 8F09 18
-            adc #$06                            ; 8F0A 69 06
-            sta $91                             ; 8F0C 85 91
-        end_if
-        lda $91                                 ; 8F0E A5 91
-        and #$F0                                ; 8F10 29 F0
-        cmp #$A0                                ; 8F12 C9 A0
-        if_cs                                   ; 8F14 90 0B
-            lda $91                             ; 8F16 A5 91
-            clc                                 ; 8F18 18
-            adc #$60                            ; 8F19 69 60
-            lda #$99                            ; 8F1B A9 99
-            sta $90                             ; 8F1D 85 90
-            sta $91                             ; 8F1F 85 91
-        end_if
-        lda $0723                               ; 8F21 AD 23 07
-        if_eq                                   ; 8F24 D0 21
-            lda $90                             ; 8F26 A5 90
-            cmp #$00                            ; 8F28 C9 00
-            beq L8F32                           ; 8F2A F0 06
-            and #$0F                            ; 8F2C 29 0F
-            cmp #$00                            ; 8F2E C9 00
-            bne L8F47                           ; 8F30 D0 15
-        L8F32:
-            lda $8A                             ; 8F32 A5 8A
-            cmp #$31                            ; 8F34 C9 31
-            if_ne                               ; 8F36 F0 0F
-                inc $8A                         ; 8F38 E6 8A
-                lda #$06                        ; 8F3A A9 06
-                sta $06F1                       ; 8F3C 8D F1 06
-                ; redraw level# and virus#
-                lda L52_REDRAW_FLAGS            ; 8F3F A5 52
-                ora #$12                        ; 8F41 09 12
-                ora #$02                        ; 8F43 09 02
-                sta L52_REDRAW_FLAGS            ; 8F45 85 52
-            end_if
-        L8F47:
-        end_if
-        lda #$00                                ; 8F47 A9 00
-        sta $8F                                 ; 8F49 85 8F
-        ; redraw ?
-        lda L52_REDRAW_FLAGS                    ; 8F4B A5 52
-        ora #$01                                ; 8F4D 09 01
-        sta L52_REDRAW_FLAGS                    ; 8F4F 85 52
-        rts                                     ; 8F51 60
+    L8F47:
+    end_if
+    lda #$00                                    ; 8F47 A9 00
+    sta $8F                                     ; 8F49 85 8F
+    ; redraw ?
+    lda L52_REDRAW_FLAGS                        ; 8F4B A5 52
+    ora #$01                                    ; 8F4D 09 01
+    sta L52_REDRAW_FLAGS                        ; 8F4F 85 52
+    rts                                         ; 8F51 60
 .endscope
 
 ; ----------------------------------------------------------------------------
-R8F52:
+; Place a pill into the playfield.
+R8F52_PLACE_PILL:
     ldx L86_PILL_ROW                            ; 8F52 A6 86
-    ; A = #$78 - 8*x
     lda LA474,x                                 ; 8F54 BD 74 A4
     clc                                         ; 8F57 18
     adc L85_PILL_COLUMN                         ; 8F58 65 85
     sta $47                                     ; 8F5A 85 47
-    lda LA6_PILL_SHAPE                          ; 8F5C A5 A6
+    ; $47 is playfield offset for pill
+    lda LA6_PILL_SIZE                           ; 8F5C A5 A6
     sec                                         ; 8F5E 38
     sbc #$02                                    ; 8F5F E9 02
     asl a                                       ; 8F61 0A
@@ -2512,6 +2530,7 @@ R8F52:
     asl a                                       ; 8F63 0A
     asl a                                       ; 8F64 0A
     sta $48                                     ; 8F65 85 48
+    ; shape is always 2, so $48 = 0.
     lda LA5_PILL_DIR                            ; 8F67 A5 A5
     asl a                                       ; 8F69 0A
     asl a                                       ; 8F6A 0A
@@ -2527,8 +2546,10 @@ R8F52:
         clc                                     ; 8F7A 18
         adc $47                                 ; 8F7B 65 47
         sta $57                                 ; 8F7D 85 57
+        ; check that we are within playfield
         cmp #$80                                ; 8F7F C9 80
         if_cc                                   ; 8F81 B0 12
+            ; get tile number
             lda LA50C,x                         ; 8F83 BD 0C A5
             clc                                 ; 8F86 18
             sta $4A                             ; 8F87 85 4A
@@ -2546,7 +2567,7 @@ R8F52:
     while_ne                                    ; 8F9C D0 D5
     lda L86_PILL_ROW                            ; 8F9E A5 86
     eor #$0F                                    ; 8FA0 49 0F
-    sta $80                                     ; 8FA2 85 80
+    sta L80_UPDATE_ROW                          ; 8FA2 85 80
     rts                                         ; 8FA4 60
 
 ; ----------------------------------------------------------------------------
@@ -2757,17 +2778,17 @@ R90C9_INIT_4_5:
 
 ; ----------------------------------------------------------------------------
 ; Pill collision detection.
-; READS L85_PILL_COLUMN L86_PILL_ROW LA5_PILL_DIR LA6_PILL_SHAPE ($57),Y La455,X La458,X La45b,X La474,X La4c4,X
+; READS L85_PILL_COLUMN L86_PILL_ROW LA5_PILL_DIR LA6_PILL_SIZE ($57),Y La455,X La458,X La45b,X La474,X La4c4,X
 ; WRITES $47 $48 $49 $57
 ; Returns A = 0, Z set for no collision.
 ; Returns A = FF, Z clear for collision.
 R90D3_COLLISION:
 .scope
-    ldx LA6_PILL_SHAPE                          ; 90D3 A6 A6
+    ldx LA6_PILL_SIZE                           ; 90D3 A6 A6
     dex                                         ; 90D5 CA
     dex                                         ; 90D6 CA
     lda LA5_PILL_DIR                            ; 90D7 A5 A5
-    and #$01                                    ; 90D9 29 01
+    and #$01 ; 1 = U/D, 0 = L/R                 ; 90D9 29 01
     if_eq                                       ; 90DB D0 13
         lda LA455,x ; $00,$FF,$FF               ; 90DD BD 55 A4
         clc                                     ; 90E0 18
@@ -2790,14 +2811,14 @@ R90D3_COLLISION:
     clc                                         ; 9101 18
     adc L85_PILL_COLUMN                         ; 9102 65 85
     sta $47                                     ; 9104 85 47
-    lda LA6_PILL_SHAPE                          ; 9106 A5 A6
+    lda LA6_PILL_SIZE                           ; 9106 A5 A6
     sec                                         ; 9108 38
     sbc #$02                                    ; 9109 E9 02
     asl a                                       ; 910B 0A
     sta $49                                     ; 910C 85 49
-    ; $49 = LA6_PILL_SHAPE - 2
+    ; $49 = LA6_PILL_SIZE - 2
     lda LA5_PILL_DIR                            ; 910E A5 A5
-    and #$01                                    ; 9110 29 01
+    and #$01 ; 1 = U/D, 0 = L/R                 ; 9110 29 01
     clc                                         ; 9112 18
     adc $49                                     ; 9113 65 49
     asl a                                       ; 9115 0A
@@ -2833,12 +2854,12 @@ collision:
 ; MODIFIES LF5_P1_INPUT_NEW LF6_P2_INPUT_NEW LF7_P1_INPUT_OLD LF5_P1_INPUT_NEW,X LF7_P1_INPUT_OLD,X
 R9134:
 .scope
-    lda $0741                                   ; 9134 AD 41 07
+    lda L0741_DEMO_MODE                         ; 9134 AD 41 07
     if_eq                                       ; 9137 D0 04
         jsr RB7C7_GET_INPUT                     ; 9139 20 C7 B7
         rts                                     ; 913C 60
     end_if
-    lda $0741                                   ; 913D AD 41 07
+    lda L0741_DEMO_MODE                         ; 913D AD 41 07
     cmp #$FF                                    ; 9140 C9 FF
     if_ne                                       ; 9142 F0 4C
         jsr RB7C7_GET_INPUT                     ; 9144 20 C7 B7
@@ -2933,7 +2954,7 @@ R91C2_INCREMENT_L36:
 
 ; ----------------------------------------------------------------------------
 ; Compute checksum of all bytes from $b900 to $bdff.
-; Set $0740 to #$ff if the sum is not #$C1, else #$00.
+; Set L0740_CHECKSUM_FAIL to #$ff if the sum is not #$C1, else #$00.
 ; Called once in L981C_TOP_0.
 R91D0_CHECKSUM:
     lda #$B9                                    ; 91D0 A9 B9
@@ -2941,7 +2962,7 @@ R91D0_CHECKSUM:
     ldy #$00                                    ; 91D4 A0 00
     sty $47                                     ; 91D6 84 47
     sty $49                                     ; 91D8 84 49
-    sty $0740                                   ; 91DA 8C 40 07
+    sty L0740_CHECKSUM_FAIL                     ; 91DA 8C 40 07
     loop
         loop
             lda ($47),y                         ; 91DD B1 47
@@ -2958,7 +2979,7 @@ R91D0_CHECKSUM:
     cmp #$C1                                    ; 91F1 C9 C1
     if_ne                                       ; 91F3 F0 05
         lda #$FF                                ; 91F5 A9 FF
-        sta $0740                               ; 91F7 8D 40 07
+        sta L0740_CHECKSUM_FAIL                 ; 91F7 8D 40 07
     end_if
     rts                                         ; 91FA 60
 
@@ -2968,7 +2989,7 @@ L91FB:
 .scope
     lda $94                                     ; 91FB A5 94
     if_ne                                       ; 91FD F0 09
-        lda $80                                 ; 91FF A5 80
+        lda L80_UPDATE_ROW                      ; 91FF A5 80
         cmp #$FF                                ; 9201 C9 FF
         if_ne                                   ; 9203 F0 03
             jmp L92DA ; rts                     ; 9205 4C DA 92
@@ -3280,10 +3301,10 @@ L93F9:  dec     $47                             ; 93F9 C6 47
         if_ne                                   ; 93FF F0 03
             jmp L92DF                           ; 9401 4C DF 92
         end_if
-        inc     $87                             ; 9404 E6 87
-        lda     #$0F                            ; 9406 A9 0F
-        sta     $80                             ; 9408 85 80
-        lda     $94                             ; 940A A5 94
+        inc $87                                 ; 9404 E6 87
+        lda #$0F                                ; 9406 A9 0F
+        sta L80_UPDATE_ROW                      ; 9408 85 80
+        lda $94                                 ; 940A A5 94
         if_ne                                   ; 940C F0 04
             lda #$01                            ; 940E A9 01
             sta $87                             ; 9410 85 87
@@ -3333,7 +3354,7 @@ R941A_KILL_VIRUS:
         end_if
     end_if
     lda #$0F                                    ; 9446 A9 0F
-    sta $80                                     ; 9448 85 80
+    sta L80_UPDATE_ROW                          ; 9448 85 80
     rts                                         ; 944A 60
 
 ; ----------------------------------------------------------------------------
@@ -3505,7 +3526,7 @@ L9532_TOP_5:
         lda #$01                                ; 9552 A9 01
         sta $61                                 ; 9554 85 61
     end_if
-    lda $80                                     ; 9556 A5 80
+    lda L80_UPDATE_ROW                          ; 9556 A5 80
     sta $0300                                   ; 9558 8D 00 03
     lda #$05                                    ; 955B A9 05
     sta $58                                     ; 955D 85 58
@@ -3524,7 +3545,7 @@ L9532_TOP_5:
             sta $61                             ; 957E 85 61
         end_if
     end_if
-    lda $80                                     ; 9580 A5 80
+    lda L80_UPDATE_ROW                          ; 9580 A5 80
     sta $0380                                   ; 9582 8D 80 03
 L9585:
     ; enter top-level state 7.
@@ -3584,7 +3605,7 @@ L958A_TOP_7:
     lda #$0F                                    ; 95EA A9 0F
     sta $0380                                   ; 95EC 8D 80 03
     lda #$0F                                    ; 95EF A9 0F
-    sta $80                                     ; 95F1 85 80
+    sta L80_UPDATE_ROW                          ; 95F1 85 80
     lda #$00                                    ; 95F3 A9 00
     sta $61                                     ; 95F5 85 61
     lda #$01                                    ; 95F7 A9 01
@@ -3665,7 +3686,7 @@ L9646:
 
 ; ----------------------------------------------------------------------------
 ; Copy "DRAW" message to both playfields at $0428 and $0528.
-; Also set $80 to #$0F.
+; Also set L80_UPDATE_ROW to #$0F.
 ; Called from RB24F_CHECK_WIN and L9532_TOP_5.
 R9682_DRAW_GAME:
     lda #$04                                    ; 9682 A9 04
@@ -3679,7 +3700,7 @@ R9682_DRAW_GAME:
 ; ----------------------------------------------------------------------------
 ; In page pointed to by $58 (#$04 or #$05),
 ; Copy 40-byte "DRAW" message from LA80F to offsets $28-$4F
-; Also set $80 to #$0F.
+; Also set L80_UPDATE_ROW to #$0F.
 R9691_DRAW_MESSAGE:
     lda #$00                                    ; 9691 A9 00
     sta $57                                     ; 9693 85 57
@@ -3695,30 +3716,31 @@ R9691_DRAW_MESSAGE:
         iny                                     ; 96A3 C8
     forever                                     ; 96A4 4C 97 96
     lda #$0F                                    ; 96A7 A9 0F
-    sta $80                                     ; 96A9 85 80
+    sta L80_UPDATE_ROW                          ; 96A9 85 80
     rts                                         ; 96AB 60
 
 ; ----------------------------------------------------------------------------
 ; unreachable?
 .scope
-        lda     #$00                            ; 96AC A9 00
-        sta     $57                             ; 96AE 85 57
-        ldy     #$7F                            ; 96B0 A0 7F
-        loop
-            lda #$FF                            ; 96B2 A9 FF
-            sta ($57),y                         ; 96B4 91 57
-            dey                                 ; 96B6 88
-            cpy #$FF                            ; 96B7 C0 FF
-        while_ne                                ; 96B9 D0 F7
-        lda     #$0F                            ; 96BB A9 0F
-        sta     $80                             ; 96BD 85 80
-        rts                                     ; 96BF 60
+    lda #$00                                    ; 96AC A9 00
+    sta $57                                     ; 96AE 85 57
+    ldy #$7F                                    ; 96B0 A0 7F
+    loop
+        lda #$FF                                ; 96B2 A9 FF
+        sta ($57),y                             ; 96B4 91 57
+        dey                                     ; 96B6 88
+        cpy #$FF                                ; 96B7 C0 FF
+    while_ne                                    ; 96B9 D0 F7
+    lda #$0F                                    ; 96BB A9 0F
+    sta L80_UPDATE_ROW                          ; 96BD 85 80
+    rts                                         ; 96BF 60
 .endscope
 
 ; ----------------------------------------------------------------------------
+; Clear bottom half of playfield.
 ; In page pointed to by $58 (#$04 or #$05)
 ; Fill offsets #$40 to #$7f with value #$ff.
-; Also set $80 to #$0F.
+; Also set L80_UPDATE_ROW to #$0F.
 R96C0:
     lda #$00                                    ; 96C0 A9 00
     sta $57                                     ; 96C2 85 57
@@ -3730,13 +3752,13 @@ R96C0:
         cpy #$80                                ; 96CB C0 80
     while_ne                                    ; 96CD D0 F7
     lda #$0F                                    ; 96CF A9 0F
-    sta $80                                     ; 96D1 85 80
+    sta L80_UPDATE_ROW                          ; 96D1 85 80
     rts                                         ; 96D3 60
 
 ; ----------------------------------------------------------------------------
 ; In page pointed to by $58 (#$04 or #$05)
 ; Copy "GAME OVER" message from LA838 to offsets $10-$41.
-; Also set $80 to #$0F.
+; Also set L80_UPDATE_ROW to #$0F.
 R96D4_GAME_OVER:
     lda #$00                                    ; 96D4 A9 00
     sta $57                                     ; 96D6 85 57
@@ -3750,7 +3772,7 @@ R96D4_GAME_OVER:
         iny                                     ; 96E4 C8
     forever                                     ; 96E5 4C DC 96
     lda #$0F                                    ; 96E8 A9 0F
-    sta $80                                     ; 96EA 85 80
+    sta L80_UPDATE_ROW                          ; 96EA 85 80
     rts                                         ; 96EC 60
 
 ; ----------------------------------------------------------------------------
@@ -3861,7 +3883,7 @@ L978D:
 ; Called once in main loop.
 R978E_PAUSE:
 .scope
-    lda $0741                                   ; 978E AD 41 07
+    lda L0741_DEMO_MODE                         ; 978E AD 41 07
     bne L97F7                                   ; 9791 D0 64
 
     begin
@@ -3945,7 +3967,7 @@ L97F7:
 ; Title screen
 L981C_TOP_0:
 .scope
-    lda $0741                                   ; 981C AD 41 07
+    lda L0741_DEMO_MODE                         ; 981C AD 41 07
     cmp #$FE                                    ; 981F C9 FE
     if_eq                                       ; 9821 D0 1E
         lda #$00                                ; 9823 A9 00
@@ -3968,10 +3990,10 @@ L981C_TOP_0:
     lda #$00                                    ; 984B A9 00
     sta $5D                                     ; 984D 85 5D
     sta L52_REDRAW_FLAGS                        ; 984F 85 52
-    sta $0741                                   ; 9851 8D 41 07
+    sta L0741_DEMO_MODE                         ; 9851 8D 41 07
     sta $51                                     ; 9854 85 51
     lda #$FF                                    ; 9856 A9 FF
-    sta $80                                     ; 9858 85 80
+    sta L80_UPDATE_ROW                          ; 9858 85 80
     sta $0300                                   ; 985A 8D 00 03
     sta $0380                                   ; 985D 8D 80 03
     lda #$00                                    ; 9860 A9 00
@@ -3990,7 +4012,7 @@ L981C_TOP_0:
     lda #$00                                    ; 9880 A9 00
     sta $54                                     ; 9882 85 54
     lda #$FF                                    ; 9884 A9 FF
-    sta $80                                     ; 9886 85 80
+    sta L80_UPDATE_ROW                          ; 9886 85 80
     loop
         ; Toggle CHR bank 1 between 3 and 4
         ; every 16 frames
@@ -4072,7 +4094,7 @@ L990F:
 
 L9912:
     lda #$FE                                    ; 9912 A9 FE
-    sta $0741                                   ; 9914 8D 41 07
+    sta L0741_DEMO_MODE                         ; 9914 8D 41 07
     lda L0316_P1_LEVEL                          ; 9917 AD 16 03
     sta $073C                                   ; 991A 8D 3C 07
     lda L030B_P1_SPEED                          ; 991D AD 0B 03
@@ -4103,7 +4125,7 @@ L9912:
 ; Settings screen
 L9953_TOP_1:
 .scope
-    lda $0741                                   ; 9953 AD 41 07
+    lda L0741_DEMO_MODE                         ; 9953 AD 41 07
     if_ne                                       ; 9956 F0 03
         jmp L9AC2                               ; 9958 4C C2 9A
     end_if
@@ -4120,7 +4142,7 @@ L9953_TOP_1:
     lda #$03                                    ; 9973 A9 03
     sta $0725                                   ; 9975 8D 25 07
     lda #$FF                                    ; 9978 A9 FF
-    sta $80                                     ; 997A 85 80
+    sta L80_UPDATE_ROW                          ; 997A 85 80
     sta $0300                                   ; 997C 8D 00 03
     sta $0380                                   ; 997F 8D 80 03
     lda L0316_P1_LEVEL                          ; 9982 AD 16 03
@@ -4453,7 +4475,6 @@ L9BB4:
 ; -X-----D--/AXY-CZ--VN
 ; RTS: 0->8->0
 ; READS $43 $53 $58 $5b $5c $8b $9c $9d $a8 L0723 L0724 L0727 L0740 L0741 L0081,Y
-; READS La6fb,Y L0329,X L032a,X L032b,X L032c,X L0780,X La21f,X La38d,X La401,X La455,X La458,X La45b,X La474,X La484,X La494,X La4a0,X La4c4,X La4dc,X La50c,X La545,X La795,X La7fd,X La806,X Lcf80,X
 ; WRITES $44 $45 $47 $48 $49 $4a $4b $4c $57 $59 $5a $7e $89 $8e $95 $a0 L06f1 L06f4 L06f5 $75,X $78,X $a9,X L0200,Y
 ; MODIFIES $42 $52 $7d $80 $81 $82 $83 $84 $85 $86 $87 $8a $8f $90 $91 $92 $93 $94 $97 $98 $9a $9b $9e $a1 $a2 $a3 $a4 $a5 $a6 $a7 $ad L0729 L072a L072b L072c L072d L072e ($57),Y $72,X L0318,X
 ; JSR $871f $8c73 $8d70 $8dbf $8e2b $8e8d $8f52 $90d3 $9be9 $9c01 $b8ac
@@ -4604,7 +4625,7 @@ R9C01:
 ; R8157 jump table vector 8
 L9C91_TOP_8:
 .scope
-        lda $0741                               ; 9C91 AD 41 07
+        lda L0741_DEMO_MODE                     ; 9C91 AD 41 07
         bne L9CEA                               ; 9C94 D0 54
         lda #$00                                ; 9C96 A9 00
         sta L0324_P1_VIRUS                      ; 9C98 8D 24 03
@@ -4635,7 +4656,7 @@ L9C91_TOP_8:
 L9CD2:  lda #$04                                ; 9CD2 A9 04
         sta $58                                 ; 9CD4 85 58
         lda #$0F                                ; 9CD6 A9 0F
-        sta $80                                 ; 9CD8 85 80
+        sta L80_UPDATE_ROW                      ; 9CD8 85 80
         sta $0300                               ; 9CDA 8D 00 03
         sta $0380                               ; 9CDD 8D 80 03
         lda #$80                                ; 9CE0 A9 80
@@ -4870,12 +4891,12 @@ L9D61:
         adc #$06                                ; 9E36 69 06
         sta LA4_VIRUS_BCD                       ; 9E38 85 A4
     end_if
-    ; put row number in $80.
+    ; put row number in L80_UPDATE_ROW.
     lda $57                                     ; 9E3A A5 57
     lsr a                                       ; 9E3C 4A
     lsr a                                       ; 9E3D 4A
     lsr a                                       ; 9E3E 4A
-    sta $80                                     ; 9E3F 85 80
+    sta L80_UPDATE_ROW                          ; 9E3F 85 80
     lda LA4_VIRUS_BCD                           ; 9E41 A5 A4
     ; set bit 4 (virus#)
     lda #$10                                    ; 9E43 A9 10
@@ -5118,7 +5139,7 @@ L9F87:
     if_ne                                       ; 9FDF F0 0C
         lda #$05                                ; 9FE1 A9 05
         sta $06F5                               ; 9FE3 8D F5 06
-        jsr R8F52                               ; 9FE6 20 52 8F
+        jsr R8F52_PLACE_PILL                    ; 9FE6 20 52 8F
         lda #$01                                ; 9FE9 A9 01
         sta $89                                 ; 9FEB 85 89
     end_if
@@ -5446,13 +5467,13 @@ LA41B:  .byte $45,$00,$40,$36,$2E,$27,$00,$21,$1E,$1B,$19,$18,$18,$1A,$1C,$1F
         .byte $0F,$17,$02,$02,$02,$02,$02,$02,$02,$02,$03,$03,$03,$03,$03,$03
         .byte $03,$03,$04,$04,$04,$04,$04,$04,$04,$04
 ; ----------------------------------------------------------------------------
-; Used in R90D3_COLLISION, indexed by LA6_PILL_SHAPE-2.
+; Used in R90D3_COLLISION, indexed by LA6_PILL_SIZE-2.
 LA455:  .byte $00,$FF,$FF                       ; A455 00 FF FF
 ; ----------------------------------------------------------------------------
-; Used in R90D3_COLLISION, indexed by LA6_PILL_SHAPE-2.
+; Used in R90D3_COLLISION, indexed by LA6_PILL_SIZE-2.
 LA458:  .byte $F9,$F9,$FA                       ; A458 F9 F9 FA
 ; ----------------------------------------------------------------------------
-; Used in R90D3_COLLISION, indexed by LA6_PILL_SHAPE-2.
+; Used in R90D3_COLLISION, indexed by LA6_PILL_SIZE-2.
 LA45B:  .byte $00,$FF,$FF,$60,$68,$70,$78,$80,$88,$90,$98,$C0,$C1,$C2,$B0,$B1
         .byte $B2,$08,$F8,$01,$FF,$50,$40,$70,$60
 ; ----------------------------------------------------------------------------
@@ -5467,8 +5488,8 @@ LA484:  .byte $C8,$C0,$B8,$B0,$A8,$A0,$98,$90,$88,$80,$78,$70,$68,$60,$58,$50
 ; ----------------------------------------------------------------------------
 ; 12-byte lookup table
 ; used as offsets into table LA4A0.
-; indexed by 4×LA3_NEXT_SHAPE+LA2_NEXT_DIR
-; indexed by 4×LA6_PILL_SHAPE+LA5_PILL_DIR
+; indexed by 4×LA3_NEXT_SIZE+LA2_NEXT_DIR
+; indexed by 4×LA6_PILL_SIZE+LA5_PILL_DIR
 LA494:  .byte $00,$00,$00,$00
         .byte $00,$00,$00,$00
         .byte $00,$09,$12,$1B
@@ -5489,15 +5510,36 @@ LA4C4:  .byte $00,$01,$00,$00
         .byte $F0,$F8,$00,$08
 
 ; ----------------------------------------------------------------------------
-; lookup table, used in R8F52
-LA4DC:  .byte $00,$01,$63,$63,$00,$F8,$63,$63,$01,$00,$63,$63,$F8,$00,$63,$63
-        .byte $FF,$00,$01,$63,$08,$00,$F8,$63,$01,$00,$FF,$63,$F8,$00,$08,$63
-        .byte $FF,$00,$01,$02,$08,$00,$F8,$F0,$02,$01,$00,$FF,$F0,$F8,$00,$08
+; Table of playfield offsets, used in R8F52_PLACE_PILL
+; Indexed by 16×(LA6_PILL_SIZE - 2) + 4×LA5_PILL_DIR
+LA4DC:  .byte $00,$01,$63,$63
+        .byte $00,$F8,$63,$63
+        .byte $01,$00,$63,$63
+        .byte $F8,$00,$63,$63
+        .byte $FF,$00,$01,$63
+        .byte $08,$00,$F8,$63
+        .byte $01,$00,$FF,$63
+        .byte $F8,$00,$08,$63
+        .byte $FF,$00,$01,$02
+        .byte $08,$00,$F8,$F0
+        .byte $02,$01,$00,$FF
+        .byte $F0,$F8,$00,$08
 
 ; ----------------------------------------------------------------------------
-LA50C:  .byte $60,$70,$00,$00,$50,$40,$00,$00,$70,$60,$00,$00,$40,$50,$00,$00
-        .byte $60,$A0,$70,$00,$50,$90,$40,$00,$70,$A0,$60,$00,$40,$90,$50,$00
-        .byte $60,$A0,$A0,$70,$50,$90,$90,$40,$70,$A0,$A0,$60,$40,$90,$90,$50
+; Table of tile numbers for pill shapes.
+; Indexed by 16×(LA6_PILL_SIZE - 2) + 4×LA5_PILL_DIR
+LA50C:  .byte $60,$70,$00,$00
+        .byte $50,$40,$00,$00
+        .byte $70,$60,$00,$00
+        .byte $40,$50,$00,$00
+        .byte $60,$A0,$70,$00
+        .byte $50,$90,$40,$00
+        .byte $70,$A0,$60,$00
+        .byte $40,$90,$50,$00
+        .byte $60,$A0,$A0,$70
+        .byte $50,$90,$90,$40
+        .byte $70,$A0,$A0,$60
+        .byte $40,$90,$90,$50
         .byte $47,$57,$67,$77,$87,$97,$A7,$01,$02
 
 ; ----------------------------------------------------------------------------
@@ -7868,15 +7910,24 @@ LCA5A:
 
 ; ----------------------------------------------------------------------------
 ; At L9CEA, these 128 bytes are copied to $0400.
+; Demo playfield
 LCF00:
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .byte $D2,$FF,$FF,$FF,$D2,$FF,$D1,$D0,$D2,$D1,$FF,$FF,$FF,$FF,$FF,$FF
-        .byte $D0,$FF,$D2,$FF,$D0,$D2,$D2,$FF,$FF,$FF,$D2,$D0,$FF,$FF,$FF,$FF
-        .byte $FF,$D2,$FF,$FF,$D1,$D0,$FF,$D1,$FF,$FF,$D1,$FF,$D2,$D1,$D1,$D2
-        .byte $D2,$D1,$D0,$D2,$D2,$FF,$D1,$D0,$D1,$FF,$FF,$FF,$FF,$D0,$D0,$D1
-        .byte $FF,$D2,$D2,$D0,$D0,$D1,$FF,$D2,$D2,$D1,$FF,$D0,$FF,$D1,$D1,$FF
+        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .byte $D2,$FF,$FF,$FF,$D2,$FF,$D1,$D0
+        .byte $D2,$D1,$FF,$FF,$FF,$FF,$FF,$FF
+        .byte $D0,$FF,$D2,$FF,$D0,$D2,$D2,$FF
+        .byte $FF,$FF,$D2,$D0,$FF,$FF,$FF,$FF
+        .byte $FF,$D2,$FF,$FF,$D1,$D0,$FF,$D1
+        .byte $FF,$FF,$D1,$FF,$D2,$D1,$D1,$D2
+        .byte $D2,$D1,$D0,$D2,$D2,$FF,$D1,$D0
+        .byte $D1,$FF,$FF,$FF,$FF,$D0,$D0,$D1
+        .byte $FF,$D2,$D2,$D0,$D0,$D1,$FF,$D2
+        .byte $D2,$D1,$FF,$D0,$FF,$D1,$D1,$FF
 
 ; ----------------------------------------------------------------------------
 ; 128 numbers from 0-8. Used in R8E8D, indexed by $A7.
