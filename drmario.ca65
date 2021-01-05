@@ -763,9 +763,7 @@ L846E:
     ; test bit 7 (victory marker)
     lda L52_REDRAW_FLAGS                        ; 8478 A5 52
     and #$80                                    ; 847A 29 80
-    ; TODO: long-if
-    if_eq                                       ; 847C D0 03
-    else                                        ; 847E 4C 07 85
+    if_ne_jmp                                   ; 847C D0 03 4C 07 85
         lda L031E_P1_WINS                       ; 8481 AD 1E 03
         if_ne                                   ; 8484 F0 3B
             ; look up PPU address from LA396
@@ -2058,8 +2056,7 @@ L8C91:
 L8C94:
     lda L80_UPDATE_ROW                          ; 8C94 A5 80
     cmp #$FF                                    ; 8C96 C9 FF
-    if_ne                                       ; 8C98 F0 03
-    else                                        ; 8C9A 4C 4E 8D
+    if_eq_jmp                                   ; 8C98 F0 03 4C 4E 8D
         lda #$00                                ; 8C9D A9 00
         sta $47                                 ; 8C9F 85 47
         sta $57                                 ; 8CA1 85 57
@@ -3016,90 +3013,85 @@ L91FB:
             lda ($57),y                         ; 9216 B1 57
             sta $48                             ; 9218 85 48
             cmp #$F0                            ; 921A C9 F0
-            ; TODO: long if-then-else
-            if_cs                               ; 921C 90 03
-                jmp L92AD                       ; 921E 4C AD 92
-            end_if
-
-            lda $48                             ; 9221 A5 48
-            and #$0F                            ; 9223 29 0F
-            sta $48                             ; 9225 85 48
-            loop
-                inc L5A_TEMP                    ; 9227 E6 5A
-                lda L5A_TEMP                    ; 9229 A5 5A
-                and #$07                        ; 922B 29 07
-                beq break                       ; 922D F0 0F
-                ldy L5A_TEMP                    ; 922F A4 5A
-                lda ($57),y                     ; 9231 B1 57
-                and #$0F                        ; 9233 29 0F
-                cmp $48                         ; 9235 C5 48
-                bne break                       ; 9237 D0 05
-                inc $47                         ; 9239 E6 47
-            forever                             ; 923B 4C 27 92
-            lda $47                             ; 923E A5 47
-            cmp #$03                            ; 9240 C9 03
-            if_pl                               ; 9242 30 62
-                inc $8F                         ; 9244 E6 8F
-                sta $8E                         ; 9246 85 8E
-                jsr R944B                       ; 9248 20 4B 94
-                lda $A1                         ; 924B A5 A1
-                clc                             ; 924D 18
-                adc $47                         ; 924E 65 47
-                sta $A1                         ; 9250 85 A1
-                inc $A1                         ; 9252 E6 A1
-                lda L59_TEMP                    ; 9254 A5 59
-                and #$78                        ; 9256 29 78
-                lsr a                           ; 9258 4A
-                lsr a                           ; 9259 4A
-                lsr a                           ; 925A 4A
-                sta $95                         ; 925B 85 95
-                lda L5A_TEMP                    ; 925D A5 5A
-                sta $49                         ; 925F 85 49
-                lda L59_TEMP                    ; 9261 A5 59
-                sta L5A_TEMP                    ; 9263 85 5A
+            if_cc_jmp                           ; 921C 90 03 4C AD 92
+                lda $48                         ; 9221 A5 48
+                and #$0F                        ; 9223 29 0F
+                sta $48                         ; 9225 85 48
                 loop
-                    ldy L5A_TEMP                ; 9265 A4 5A
-                    lda ($57),y                 ; 9267 B1 57
-                    and #$F0                    ; 9269 29 F0
-                    cmp #$80                    ; 926B C9 80
-                    if_eq                       ; 926D D0 00
-                    end_if
-                    lda #$02                    ; 926F A9 02
-                    sta $06F1                   ; 9271 8D F1 06
-                    lda ($57),y                 ; 9274 B1 57
-                    and #$F0                    ; 9276 29 F0
-                    cmp #$D0                    ; 9278 C9 D0
-                    if_eq                       ; 927A D0 14
-                        lda #$04                ; 927C A9 04
-                        sta $06F1               ; 927E 8D F1 06
-                        jsr R941A_KILL_VIRUS    ; 9281 20 1A 94
-                        ; set bit 4 (virus#)
-                        lda #$10                ; 9284 A9 10
-                        ora L52_REDRAW_FLAGS    ; 9286 05 52
-                        sta L52_REDRAW_FLAGS    ; 9288 85 52
-                        lda LA4_VIRUS_BCD       ; 928A A5 A4
-                        if_eq                   ; 928C D0 02
-                            inc L9E_WINS        ; 928E E6 9E
+                    inc L5A_TEMP                ; 9227 E6 5A
+                    lda L5A_TEMP                ; 9229 A5 5A
+                    and #$07                    ; 922B 29 07
+                    beq break                   ; 922D F0 0F
+                    ldy L5A_TEMP                ; 922F A4 5A
+                    lda ($57),y                 ; 9231 B1 57
+                    and #$0F                    ; 9233 29 0F
+                    cmp $48                     ; 9235 C5 48
+                    bne break                   ; 9237 D0 05
+                    inc $47                     ; 9239 E6 47
+                forever                         ; 923B 4C 27 92
+                lda $47                         ; 923E A5 47
+                cmp #$03                        ; 9240 C9 03
+                if_pl                           ; 9242 30 62
+                    inc $8F                     ; 9244 E6 8F
+                    sta $8E                     ; 9246 85 8E
+                    jsr R944B                   ; 9248 20 4B 94
+                    lda $A1                     ; 924B A5 A1
+                    clc                         ; 924D 18
+                    adc $47                     ; 924E 65 47
+                    sta $A1                     ; 9250 85 A1
+                    inc $A1                     ; 9252 E6 A1
+                    lda L59_TEMP                ; 9254 A5 59
+                    and #$78                    ; 9256 29 78
+                    lsr a                       ; 9258 4A
+                    lsr a                       ; 9259 4A
+                    lsr a                       ; 925A 4A
+                    sta $95                     ; 925B 85 95
+                    lda L5A_TEMP                ; 925D A5 5A
+                    sta $49                     ; 925F 85 49
+                    lda L59_TEMP                ; 9261 A5 59
+                    sta L5A_TEMP                ; 9263 85 5A
+                    loop
+                        ldy L5A_TEMP            ; 9265 A4 5A
+                        lda ($57),y             ; 9267 B1 57
+                        and #$F0                ; 9269 29 F0
+                        cmp #$80                ; 926B C9 80
+                        if_eq                   ; 926D D0 00
                         end_if
-                    end_if
-                    lda ($57),y                 ; 9290 B1 57
-                    and #$0F                    ; 9292 29 0F
-                    ora #$B0                    ; 9294 09 B0
-                    sta ($57),y                 ; 9296 91 57
-                    inc L5A_TEMP                ; 9298 E6 5A
-                    ldy L5A_TEMP                ; 929A A4 5A
-                    cpy $49                     ; 929C C4 49
-                while_ne                        ; 929E D0 C5
-                inc $94                         ; 92A0 E6 94
-                lda $49                         ; 92A2 A5 49
-                sta L5A_TEMP                    ; 92A4 85 5A
+                        lda #$02                ; 926F A9 02
+                        sta $06F1               ; 9271 8D F1 06
+                        lda ($57),y             ; 9274 B1 57
+                        and #$F0                ; 9276 29 F0
+                        cmp #$D0                ; 9278 C9 D0
+                        if_eq                   ; 927A D0 14
+                            lda #$04            ; 927C A9 04
+                            sta $06F1           ; 927E 8D F1 06
+                            jsr R941A_KILL_VIRUS; 9281 20 1A 94
+                            ; set bit 4 (virus#)
+                            lda #$10            ; 9284 A9 10
+                            ora L52_REDRAW_FLAGS; 9286 05 52
+                            sta L52_REDRAW_FLAGS; 9288 85 52
+                            lda LA4_VIRUS_BCD   ; 928A A5 A4
+                            if_eq               ; 928C D0 02
+                                inc L9E_WINS    ; 928E E6 9E
+                            end_if
+                        end_if
+                        lda ($57),y             ; 9290 B1 57
+                        and #$0F                ; 9292 29 0F
+                        ora #$B0                ; 9294 09 B0
+                        sta ($57),y             ; 9296 91 57
+                        inc L5A_TEMP            ; 9298 E6 5A
+                        ldy L5A_TEMP            ; 929A A4 5A
+                        cpy $49                 ; 929C C4 49
+                    while_ne                    ; 929E D0 C5
+                    inc $94                     ; 92A0 E6 94
+                    lda $49                     ; 92A2 A5 49
+                    sta L5A_TEMP                ; 92A4 85 5A
+                end_if
+                lda L5A_TEMP                    ; 92A6 A5 5A
+                sta L59_TEMP                    ; 92A8 85 59
+            else                                ; 92AA 4C AF 92
+                inc L59_TEMP                    ; 92AD E6 59
             end_if
-            lda L5A_TEMP                        ; 92A6 A5 5A
-            sta L59_TEMP                        ; 92A8 85 59
-            jmp L92AF                           ; 92AA 4C AF 92
-        L92AD:
-            inc L59_TEMP                        ; 92AD E6 59
-        L92AF:
             lda L59_TEMP                        ; 92AF A5 59
             and #$07                            ; 92B1 29 07
             beq break                           ; 92B3 F0 07
@@ -3410,94 +3402,90 @@ L946D:
     lda ($57),y                                 ; 9477 B1 57
     sta $48                                     ; 9479 85 48
     cmp #$F0                                    ; 947B C9 F0
-    ; TODO long-if-then-else
-    if_cs                                       ; 947D 90 03
-        jmp L9510                               ; 947F 4C 10 95
-    end_if
-    lda $48                                     ; 9482 A5 48
-    and #$0F                                    ; 9484 29 0F
-    sta $48                                     ; 9486 85 48
-    loop
-        lda L5A_TEMP                            ; 9488 A5 5A
-        clc                                     ; 948A 18
-        adc #$08                                ; 948B 69 08
-        sta L5A_TEMP                            ; 948D 85 5A
-        lda L5A_TEMP                            ; 948F A5 5A
-        and #$F8                                ; 9491 29 F8
-        beq break                               ; 9493 F0 0F
-        ldy L5A_TEMP                            ; 9495 A4 5A
-        lda ($57),y                             ; 9497 B1 57
-        and #$0F                                ; 9499 29 0F
-        cmp $48                                 ; 949B C5 48
-        bne break                               ; 949D D0 05
-        inc $47                                 ; 949F E6 47
-    forever
-
-    lda $47                                     ; 94A4 A5 47
-    cmp #$03                                    ; 94A6 C9 03
-    if_pl                                       ; 94A8 30 5F
-        inc $8F                                 ; 94AA E6 8F
-        sta $8E                                 ; 94AC 85 8E
-        jsr R944B                               ; 94AE 20 4B 94
-        lda $A1                                 ; 94B1 A5 A1
-        clc                                     ; 94B3 18
-        adc $47                                 ; 94B4 65 47
-        sta $A1                                 ; 94B6 85 A1
-        inc $A1                                 ; 94B8 E6 A1
-        lda L59_TEMP                            ; 94BA A5 59
-        and #$78                                ; 94BC 29 78
-        lsr a                                   ; 94BE 4A
-        lsr a                                   ; 94BF 4A
-        lsr a                                   ; 94C0 4A
-        sta $95                                 ; 94C1 85 95
-        lda L5A_TEMP                            ; 94C3 A5 5A
-        sta $49                                 ; 94C5 85 49
-        lda L59_TEMP                            ; 94C7 A5 59
-        sta L5A_TEMP                            ; 94C9 85 5A
+    if_cc_jmp                                   ; 947D 90 03 4C 10 95
+        lda $48                                 ; 9482 A5 48
+        and #$0F                                ; 9484 29 0F
+        sta $48                                 ; 9486 85 48
         loop
-            lda #$02                            ; 94CB A9 02
-            sta $06F1                           ; 94CD 8D F1 06
-            ldy L5A_TEMP                        ; 94D0 A4 5A
-            lda ($57),y                         ; 94D2 B1 57
-            and #$F0                            ; 94D4 29 F0
-            cmp #$D0                            ; 94D6 C9 D0
-            if_eq                               ; 94D8 D0 14
-                lda #$04                        ; 94DA A9 04
-                sta $06F1                       ; 94DC 8D F1 06
-                jsr R941A_KILL_VIRUS            ; 94DF 20 1A 94
-                ; set bit 4 (virus#)
-                lda #$10                        ; 94E2 A9 10
-                ora L52_REDRAW_FLAGS            ; 94E4 05 52
-                sta L52_REDRAW_FLAGS            ; 94E6 85 52
-                lda LA4_VIRUS_BCD               ; 94E8 A5 A4
-                if_eq                           ; 94EA D0 02
-                    inc L9E_WINS                ; 94EC E6 9E
+            lda L5A_TEMP                        ; 9488 A5 5A
+            clc                                 ; 948A 18
+            adc #$08                            ; 948B 69 08
+            sta L5A_TEMP                        ; 948D 85 5A
+            lda L5A_TEMP                        ; 948F A5 5A
+            and #$F8                            ; 9491 29 F8
+            beq break                           ; 9493 F0 0F
+            ldy L5A_TEMP                        ; 9495 A4 5A
+            lda ($57),y                         ; 9497 B1 57
+            and #$0F                            ; 9499 29 0F
+            cmp $48                             ; 949B C5 48
+            bne break                           ; 949D D0 05
+            inc $47                             ; 949F E6 47
+        forever
+
+        lda $47                                 ; 94A4 A5 47
+        cmp #$03                                ; 94A6 C9 03
+        if_pl                                   ; 94A8 30 5F
+            inc $8F                             ; 94AA E6 8F
+            sta $8E                             ; 94AC 85 8E
+            jsr R944B                           ; 94AE 20 4B 94
+            lda $A1                             ; 94B1 A5 A1
+            clc                                 ; 94B3 18
+            adc $47                             ; 94B4 65 47
+            sta $A1                             ; 94B6 85 A1
+            inc $A1                             ; 94B8 E6 A1
+            lda L59_TEMP                        ; 94BA A5 59
+            and #$78                            ; 94BC 29 78
+            lsr a                               ; 94BE 4A
+            lsr a                               ; 94BF 4A
+            lsr a                               ; 94C0 4A
+            sta $95                             ; 94C1 85 95
+            lda L5A_TEMP                        ; 94C3 A5 5A
+            sta $49                             ; 94C5 85 49
+            lda L59_TEMP                        ; 94C7 A5 59
+            sta L5A_TEMP                        ; 94C9 85 5A
+            loop
+                lda #$02                        ; 94CB A9 02
+                sta $06F1                       ; 94CD 8D F1 06
+                ldy L5A_TEMP                    ; 94D0 A4 5A
+                lda ($57),y                     ; 94D2 B1 57
+                and #$F0                        ; 94D4 29 F0
+                cmp #$D0                        ; 94D6 C9 D0
+                if_eq                           ; 94D8 D0 14
+                    lda #$04                    ; 94DA A9 04
+                    sta $06F1                   ; 94DC 8D F1 06
+                    jsr R941A_KILL_VIRUS        ; 94DF 20 1A 94
+                    ; set bit 4 (virus#)
+                    lda #$10                    ; 94E2 A9 10
+                    ora L52_REDRAW_FLAGS        ; 94E4 05 52
+                    sta L52_REDRAW_FLAGS        ; 94E6 85 52
+                    lda LA4_VIRUS_BCD           ; 94E8 A5 A4
+                    if_eq                       ; 94EA D0 02
+                        inc L9E_WINS            ; 94EC E6 9E
+                    end_if
                 end_if
-            end_if
-            lda ($57),y                         ; 94EE B1 57
-            and #$0F                            ; 94F0 29 0F
-            ora #$B0                            ; 94F2 09 B0
-            sta ($57),y                         ; 94F4 91 57
-            lda L5A_TEMP                        ; 94F6 A5 5A
-            clc                                 ; 94F8 18
-            adc #$08                            ; 94F9 69 08
-            sta L5A_TEMP                        ; 94FB 85 5A
-            ldy L5A_TEMP                        ; 94FD A4 5A
-            cpy $49                             ; 94FF C4 49
-        while_ne                                ; 9501 D0 C8
-        inc $94                                 ; 9503 E6 94
-        lda $49                                 ; 9505 A5 49
-        sta L5A_TEMP                            ; 9507 85 5A
+                lda ($57),y                     ; 94EE B1 57
+                and #$0F                        ; 94F0 29 0F
+                ora #$B0                        ; 94F2 09 B0
+                sta ($57),y                     ; 94F4 91 57
+                lda L5A_TEMP                    ; 94F6 A5 5A
+                clc                             ; 94F8 18
+                adc #$08                        ; 94F9 69 08
+                sta L5A_TEMP                    ; 94FB 85 5A
+                ldy L5A_TEMP                    ; 94FD A4 5A
+                cpy $49                         ; 94FF C4 49
+            while_ne                            ; 9501 D0 C8
+            inc $94                             ; 9503 E6 94
+            lda $49                             ; 9505 A5 49
+            sta L5A_TEMP                        ; 9507 85 5A
+        end_if
+        lda L5A_TEMP                            ; 9509 A5 5A
+        sta L59_TEMP                            ; 950B 85 59
+    else                                        ; 950D 4C 17 95
+        lda L59_TEMP                            ; 9510 A5 59
+        clc                                     ; 9512 18
+        adc #$08                                ; 9513 69 08
+        sta L59_TEMP                            ; 9515 85 59
     end_if
-    lda L5A_TEMP                                ; 9509 A5 5A
-    sta L59_TEMP                                ; 950B 85 59
-    jmp L9517                                   ; 950D 4C 17 95
-L9510:
-    lda L59_TEMP                                ; 9510 A5 59
-    clc                                         ; 9512 18
-    adc #$08                                    ; 9513 69 08
-    sta L59_TEMP                                ; 9515 85 59
-L9517:
     lda L59_TEMP                                ; 9517 A5 59
     cmp #$68                                    ; 9519 C9 68
     if_cc                                       ; 951B B0 03
@@ -5106,8 +5094,7 @@ L9F87:
 .scope
     lda L0727_NUM_PLAYERS                       ; 9F87 AD 27 07
     cmp #$01                                    ; 9F8A C9 01
-    if_ne                                       ; 9F8C F0 03
-    else                                        ; 9F8E 4C CD 9F
+    if_eq_jmp                                   ; 9F8C F0 03 4C CD 9F
         lda L8B_SPEED                           ; 9F91 A5 8B
         cmp #$02                                ; 9F93 C9 02
         beq L9FA1                               ; 9F95 F0 0A
