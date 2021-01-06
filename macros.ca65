@@ -1,4 +1,38 @@
 ; ----------------------------------------------------------------------------
+; Compound instructions
+
+; Add without carry
+.macro add u,v
+    .ifblank u v
+        .error "Missing parameter for add instruction"
+    .else
+    .ifblank v
+        clc
+        adc u
+    .else
+        clc
+        adc u,v
+    .endif
+    .endif
+.endmacro
+
+; Subtract without carry
+.macro sub u,v
+    .ifblank u v
+        .error "Missing parameter for sub instruction"
+    .else
+    .ifblank v
+        sec
+        sbc u
+    .else
+        sec
+        sbc u,v
+    .endif
+    .endif
+.endmacro
+
+
+; ----------------------------------------------------------------------------
 ; If-then-else
 
 .macro if_mi

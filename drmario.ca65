@@ -161,8 +161,7 @@ L8005_NMI_HANDLER:
                 jsr R82F7_PRINT_PLAYFIELD_ROWS  ; 8010 20 F7 82
                 jsr R8661                       ; 8013 20 61 86
                 lda L43_CLOCK                   ; 8016 A5 43
-                clc                             ; 8018 18
-                adc #$01                        ; 8019 69 01
+                add #$01                        ; 8018 18 69 01
                 sta L43_CLOCK                   ; 801B 85 43
                 lda #$00                        ; 801D A9 00
                 sta L2005_PPUSCROLL             ; 801F 8D 05 20
@@ -462,19 +461,16 @@ L8206_TOP_3:
     lda L0316_P1_LEVEL                          ; 826D AD 16 03
     cmp #$15                                    ; 8270 C9 15
     if_pl                                       ; 8272 30 08
-        sec                                     ; 8274 38
-        sbc #$14                                ; 8275 E9 14
+        sub #$14                                ; 8274 38 E9 14
         sta $0728                               ; 8277 8D 28 07
         lda #$14                                ; 827A A9 14
     end_if
-    clc                                         ; 827C 18
-    adc #$01                                    ; 827D 69 01
+    add #$01                                    ; 827C 18 69 01
     asl a                                       ; 827F 0A
     asl a                                       ; 8280 0A
     sta L0328_P1_VIRUS_TO_ADD                   ; 8281 8D 28 03
     lda L0396_P2_LEVEL                          ; 8284 AD 96 03
-    clc                                         ; 8287 18
-    adc #$01                                    ; 8288 69 01
+    add #$01                                    ; 8287 18 69 01
     asl a                                       ; 828A 0A
     asl a                                       ; 828B 0A
     sta L03A8_P2_VIRUS_TO_ADD                   ; 828C 8D A8 03
@@ -502,15 +498,13 @@ R82A0_INIT_780:
         dex                                     ; 82B1 CA
         lda $17                                 ; 82B2 A5 17
         and #$0F                                ; 82B4 29 0F
-        clc                                     ; 82B6 18
-        adc $48                                 ; 82B7 65 48
+        add $48                                 ; 82B6 18 65 48
         ; reduce modulo 9
         loop
             sta $48                             ; 82B9 85 48
             cmp #$09                            ; 82BB C9 09
             bcc break                           ; 82BD 90 06
-            sec                                 ; 82BF 38
-            sbc #$09                            ; 82C0 E9 09
+            sub #$09                            ; 82BF 38 E9 09
         forever                                 ; 82C2 4C B9 82
         sta $0780,x                             ; 82C5 9D 80 07
         dec L47_TEMP                            ; 82C8 C6 47
@@ -799,8 +793,7 @@ L846E:
             ; $47/$48 += #$0020
             ; set PPU address one row down
             lda $47                             ; 84A4 A5 47
-            clc                                 ; 84A6 18
-            adc #$20                            ; 84A7 69 20
+            add #$20                            ; 84A6 18 69 20
             sta $47                             ; 84A9 85 47
             lda #$00                            ; 84AB A9 00
             adc $48                             ; 84AD 65 48
@@ -833,8 +826,7 @@ L846E:
             ; $47/$48 += #$0020
             ; set PPU address one row down
             lda $47                             ; 84E4 A5 47
-            clc                                 ; 84E6 18
-            adc #$20                            ; 84E7 69 20
+            add #$20                            ; 84E6 18 69 20
             sta $47                             ; 84E9 85 47
             lda #$00                            ; 84EB A9 00
             adc $48                             ; 84ED 65 48
@@ -1194,15 +1186,12 @@ R8712:
 ; Add sprite for the current pill to the OAM.
 R871F_THIS_PILL_SPRITE:
     lda L0727_NUM_PLAYERS                       ; 871F AD 27 07
-    sec                                         ; 8722 38
-    sbc #$01                                    ; 8723 E9 01
+    sub #$01                                    ; 8722 38 E9 01
     asl a                                       ; 8725 0A
     sta L47_TEMP                                ; 8726 85 47
     lda $58                                     ; 8728 A5 58
-    sec                                         ; 872A 38
-    sbc #$04                                    ; 872B E9 04
-    clc                                         ; 872D 18
-    adc L47_TEMP                                ; 872E 65 47
+    sub #$04                                    ; 872A 38 E9 04
+    add L47_TEMP                                ; 872D 18 65 47
     tay                                         ; 8730 A8
     lda LA6FB,y                                 ; 8731 B9 FB A6
     ; a = coordinate of left edge of playfield
@@ -1211,8 +1200,7 @@ R871F_THIS_PILL_SPRITE:
     asl a                                       ; 8738 0A
     asl a                                       ; 8739 0A
     asl a                                       ; 873A 0A
-    clc                                         ; 873B 18
-    adc L47_TEMP                                ; 873C 65 47
+    add L47_TEMP                                ; 873B 18 65 47
     sta L44_SPRITE_X                            ; 873E 85 44
     ldx L86_PILL_ROW                            ; 8740 A6 86
     lda LA484,x                                 ; 8742 BD 84 A4
@@ -1222,8 +1210,7 @@ R871F_THIS_PILL_SPRITE:
     lda LA6_PILL_SIZE                           ; 8749 A5 A6
     asl a                                       ; 874B 0A
     asl a                                       ; 874C 0A
-    clc                                         ; 874D 18
-    adc LA5_PILL_DIR                            ; 874E 65 A5
+    add LA5_PILL_DIR                            ; 874D 18 65 A5
     tax                                         ; 8750 AA
     lda LA494,x                                 ; 8751 BD 94 A4
     tax                                         ; 8754 AA
@@ -1254,14 +1241,12 @@ R8772_PILL_SPRITE:
     lda LA4A0,x                                 ; 8772 BD A0 A4
     cmp #$FF                                    ; 8775 C9 FF
     if_ne                                       ; 8777 F0 28
-        clc                                     ; 8779 18
-        adc L45_SPRITE_Y                        ; 877A 65 45
+        add L45_SPRITE_Y                        ; 8779 18 65 45
         sta $0200,y                             ; 877C 99 00 02
         inx                                     ; 877F E8
         iny                                     ; 8780 C8
         lda LA4A0,x                             ; 8781 BD A0 A4
-        clc                                     ; 8784 18
-        adc $47                                 ; 8785 65 47
+        add $47                                 ; 8784 18 65 47
         sta $0200,y                             ; 8787 99 00 02
         inx                                     ; 878A E8
         iny                                     ; 878B C8
@@ -1270,8 +1255,7 @@ R8772_PILL_SPRITE:
         inx                                     ; 8792 E8
         iny                                     ; 8793 C8
         lda LA4A0,x                             ; 8794 BD A0 A4
-        clc                                     ; 8797 18
-        adc L44_SPRITE_X                        ; 8798 65 44
+        add L44_SPRITE_X                        ; 8797 18 65 44
         sta $0200,y                             ; 879A 99 00 02
         inx                                     ; 879D E8
         iny                                     ; 879E C8
@@ -1392,8 +1376,7 @@ R886C:
         lsr a                                   ; 887E 4A
         lsr a                                   ; 887F 4A
         lsr a                                   ; 8880 4A
-        clc                                     ; 8881 18
-        adc #$08                                ; 8882 69 08
+        add #$08                                ; 8881 18 69 08
         sta L53_SPRITE_NUM                      ; 8884 85 53
         jsr R88F6_SPRITE                        ; 8886 20 F6 88
         ; Open-mouth fist-pumping Mario
@@ -1434,12 +1417,10 @@ R88B1:
     sta L47_TEMP                                ; 88B7 85 47
     ldx $7D                                     ; 88B9 A6 7D
     lda LA401,x                                 ; 88BB BD 01 A4
-    clc                                         ; 88BE 18
-    adc L47_TEMP                                ; 88BF 65 47
+    add L47_TEMP                                ; 88BE 18 65 47
     sta L44_SPRITE_X                            ; 88C1 85 44
     lda LA41B,x                                 ; 88C3 BD 1B A4
-    clc                                         ; 88C6 18
-    adc L47_TEMP                                ; 88C7 65 47
+    add L47_TEMP                                ; 88C6 18 65 47
     sta L45_SPRITE_Y                            ; 88C9 85 45
 ; Adds 4 entries to the sprite attribute table.
 ; Inputs:
@@ -1452,8 +1433,7 @@ R88CB_NEXT_PILL_SPRITE:
     lda LA3_NEXT_SIZE                           ; 88CD A5 A3
     asl a                                       ; 88CF 0A
     asl a                                       ; 88D0 0A
-    clc                                         ; 88D1 18
-    adc LA2_NEXT_DIR                            ; 88D2 65 A2
+    add LA2_NEXT_DIR                            ; 88D1 18 65 A2
     tax                                         ; 88D4 AA
     lda LA494,x                                 ; 88D5 BD 94 A4
     tax                                         ; 88D8 AA
@@ -1505,8 +1485,7 @@ R88F6_SPRITE:
         lda ($47),y                             ; 890A B1 47
         cmp #$80                                ; 890C C9 80
         beq break                               ; 890E F0 2A
-        clc                                     ; 8910 18
-        adc L45_SPRITE_Y                        ; 8911 65 45
+        add L45_SPRITE_Y                        ; 8910 18 65 45
         sta $0200,x                             ; 8913 9D 00 02
         inx                                     ; 8916 E8
         iny                                     ; 8917 C8
@@ -1519,14 +1498,12 @@ R88F6_SPRITE:
         inx                                     ; 8924 E8
         iny                                     ; 8925 C8
         lda ($47),y                             ; 8926 B1 47
-        clc                                     ; 8928 18
-        adc L44_SPRITE_X                        ; 8929 65 44
+        add L44_SPRITE_X                        ; 8928 18 65 44
         sta $0200,x                             ; 892B 9D 00 02
         inx                                     ; 892E E8
         iny                                     ; 892F C8
         lda #$04                                ; 8930 A9 04
-        clc                                     ; 8932 18
-        adc L42_OAM_OFFSET                      ; 8933 65 42
+        add L42_OAM_OFFSET                      ; 8932 18 65 42
         sta L42_OAM_OFFSET                      ; 8935 85 42
     forever                                     ; 8937 4C 0A 89
     rts                                         ; 893A 60
@@ -1558,12 +1535,10 @@ R893B_BCD_SPRITE:
     lda $60                                     ; 8961 A5 60
     sta $0206,x                                 ; 8963 9D 06 02
     lda L44_SPRITE_X                            ; 8966 A5 44
-    clc                                         ; 8968 18
-    adc #$08                                    ; 8969 69 08
+    add #$08                                    ; 8968 18 69 08
     sta $0207,x                                 ; 896B 9D 07 02
     lda L42_OAM_OFFSET                          ; 896E A5 42
-    clc                                         ; 8970 18
-    adc #$08                                    ; 8971 69 08
+    add #$08                                    ; 8970 18 69 08
     sta L42_OAM_OFFSET                          ; 8973 85 42
     rts                                         ; 8975 60
 
@@ -1610,8 +1585,7 @@ R89B6_MARIO_SPRITE:
     lda #$4B                                    ; 89BA A9 4B
     sta L45_SPRITE_Y                            ; 89BC 85 45
     lda $7E                                     ; 89BE A5 7E
-    clc                                         ; 89C0 18
-    adc #$0A                                    ; 89C1 69 0A
+    add #$0A                                    ; 89C0 18 69 0A
     sta L53_SPRITE_NUM                          ; 89C3 85 53
     jsr R88F6_SPRITE                            ; 89C5 20 F6 88
     ; Mario sprite
@@ -1713,8 +1687,7 @@ R89D4_VIRUS_SPRITES:
             sta L53_SPRITE_NUM                  ; 8A5C 85 53
             ldx L78_V1_TIMER                    ; 8A5E A6 78
             lda LA231,x                         ; 8A60 BD 31 A2
-            clc                                 ; 8A63 18
-            adc L39_V1_Y                        ; 8A64 65 39
+            add L39_V1_Y                        ; 8A63 18 65 39
             sta L45_SPRITE_Y                    ; 8A66 85 45
             jsr R88F6_SPRITE                    ; 8A68 20 F6 88
             ; Yellow virus fussy
@@ -1751,8 +1724,7 @@ R89D4_VIRUS_SPRITES:
             and #$04                            ; 8AA2 29 04
             lsr a                               ; 8AA4 4A
             lsr a                               ; 8AA5 4A
-            clc                                 ; 8AA6 18
-            adc #$30                            ; 8AA7 69 30
+            add #$30                            ; 8AA6 18 69 30
             sta L53_SPRITE_NUM                  ; 8AA9 85 53
             jsr R88F6_SPRITE                    ; 8AAB 20 F6 88
             ; Yellow virus fussy animation
@@ -1799,8 +1771,7 @@ R89D4_VIRUS_SPRITES:
             sta L53_SPRITE_NUM                  ; 8AEB 85 53
             ldx L79_V2_TIMER                    ; 8AED A6 79
             lda LA231,x                         ; 8AEF BD 31 A2
-            clc                                 ; 8AF2 18
-            adc L3B_V2_Y                        ; 8AF3 65 3B
+            add L3B_V2_Y                        ; 8AF2 18 65 3B
             sta L45_SPRITE_Y                    ; 8AF5 85 45
             jsr R88F6_SPRITE                    ; 8AF7 20 F6 88
             ; Red virus fussy
@@ -1837,8 +1808,7 @@ R89D4_VIRUS_SPRITES:
             and #$04                            ; 8B31 29 04
             lsr a                               ; 8B33 4A
             lsr a                               ; 8B34 4A
-            clc                                 ; 8B35 18
-            adc #$2C                            ; 8B36 69 2C
+            add #$2C                            ; 8B35 18 69 2C
             sta L53_SPRITE_NUM                  ; 8B38 85 53
             jsr R88F6_SPRITE                    ; 8B3A 20 F6 88
             ; Red virus fussy animated
@@ -1884,8 +1854,7 @@ R89D4_VIRUS_SPRITES:
             sta L53_SPRITE_NUM                  ; 8B7A 85 53
             ldx L7A_V3_TIMER                    ; 8B7C A6 7A
             lda LA231,x                         ; 8B7E BD 31 A2
-            clc                                 ; 8B81 18
-            adc L3D_V3_Y                        ; 8B82 65 3D
+            add L3D_V3_Y                        ; 8B81 18 65 3D
             sta L45_SPRITE_Y                    ; 8B84 85 45
             jsr R88F6_SPRITE                    ; 8B86 20 F6 88
             ; Blue virus fussy
@@ -1922,8 +1891,7 @@ R89D4_VIRUS_SPRITES:
             and #$04                            ; 8BC0 29 04
             lsr a                               ; 8BC2 4A
             lsr a                               ; 8BC3 4A
-            clc                                 ; 8BC4 18
-            adc #$2E                            ; 8BC5 69 2E
+            add #$2E                            ; 8BC4 18 69 2E
             sta L53_SPRITE_NUM                  ; 8BC7 85 53
             jsr R88F6_SPRITE                    ; 8BC9 20 F6 88
             jmp break                           ; 8BCC 4C E4 8B
@@ -1979,8 +1947,7 @@ R8BE5_TITLE_SPRITES:
     jsr R88F6_SPRITE                            ; 8C18 20 F6 88
     lda L7B_VIRUS_MARCH                         ; 8C1B A5 7B
     and #$01                                    ; 8C1D 29 01
-    clc                                         ; 8C1F 18
-    adc #$49                                    ; 8C20 69 49
+    add #$49                                    ; 8C1F 18 69 49
     sta L53_SPRITE_NUM                          ; 8C22 85 53
     jsr R88F6_SPRITE                            ; 8C24 20 F6 88
     ; Tapping foot
@@ -2096,8 +2063,7 @@ L8C94_3_TILES_FALL:
             bne next                            ; 8CBB D0 77
             sty $49 ; redundant                 ; 8CBD 84 49
             tya                                 ; 8CBF 98
-            sec                                 ; 8CC0 38
-            sbc #$08                            ; 8CC1 E9 08
+            sub #$08                            ; 8CC0 38 E9 08
             tay                                 ; 8CC3 A8
             ; consider tile 1 row above
             lda ($57),y                         ; 8CC4 B1 57
@@ -2150,8 +2116,7 @@ L8C94_3_TILES_FALL:
             ; any other tile type should fall
             ldy $49                             ; 8D18 A4 49
             tya                                 ; 8D1A 98
-            sec                                 ; 8D1B 38
-            sbc #$08 ; duplicated work          ; 8D1C E9 08
+            sub #$08 ; duplicated work          ; 8D1B 38 E9 08
             tay                                 ; 8D1E A8
             lda ($57),y ; row above             ; 8D1F B1 57
             sta $48                             ; 8D21 85 48
@@ -2229,8 +2194,7 @@ R8D70_DROP_PILL:
         sta $A0 ; redundant copy                ; 8D82 85 A0
         ldx L8B_SPEED                           ; 8D84 A6 8B
         lda LA38D,x ; $0F,$19,$1F               ; 8D86 BD 8D A3
-        clc                                     ; 8D89 18
-        adc $A0                                 ; 8D8A 65 A0
+        add $A0                                 ; 8D89 18 65 A0
         tax                                     ; 8D8C AA
         lda LA795,x ; drop timer threshold      ; 8D8D BD 95 A7
         cmp L92_DROP_TIMER                      ; 8D90 C5 92
@@ -2291,8 +2255,7 @@ R8DBF_PILL_MOVE:
         if_ne                                   ; 8DE7 F0 20
             lda LA5_PILL_DIR                    ; 8DE9 A5 A5
             and #$01 ; 1 = U/D, 0 = L/R         ; 8DEB 29 01
-            clc                                 ; 8DED 18
-            adc #$06                            ; 8DEE 69 06
+            add #$06                            ; 8DED 18 69 06
             cmp L85_PILL_COLUMN                 ; 8DF0 C5 85
             if_ne                               ; 8DF2 F0 15
                 inc L85_PILL_COLUMN             ; 8DF4 E6 85
@@ -2471,8 +2434,7 @@ R8E8D_NEW_PILL:
     cmp #$0A                                    ; 8EE3 C9 0A
     if_cs                                       ; 8EE5 90 07
         lda L90_PILL_COUNT_0                    ; 8EE7 A5 90
-        clc                                     ; 8EE9 18
-        adc #$06                                ; 8EEA 69 06
+        add #$06                                ; 8EE9 18 69 06
         sta L90_PILL_COUNT_0                    ; 8EEC 85 90
     end_if
     lda L90_PILL_COUNT_0                        ; 8EEE A5 90
@@ -2480,8 +2442,7 @@ R8E8D_NEW_PILL:
     cmp #$A0                                    ; 8EF2 C9 A0
     if_cs                                       ; 8EF4 90 09
         lda L90_PILL_COUNT_0                    ; 8EF6 A5 90
-        clc                                     ; 8EF8 18
-        adc #$60                                ; 8EF9 69 60
+        add #$60                                ; 8EF8 18 69 60
         sta L90_PILL_COUNT_0                    ; 8EFB 85 90
         inc L91_PILL_COUNT_1                    ; 8EFD E6 91
     end_if
@@ -2490,8 +2451,7 @@ R8E8D_NEW_PILL:
     cmp #$0A                                    ; 8F03 C9 0A
     if_cs                                       ; 8F05 90 07
         lda L91_PILL_COUNT_1                    ; 8F07 A5 91
-        clc                                     ; 8F09 18
-        adc #$06                                ; 8F0A 69 06
+        add #$06                                ; 8F09 18 69 06
         sta L91_PILL_COUNT_1                    ; 8F0C 85 91
     end_if
     lda L91_PILL_COUNT_1                        ; 8F0E A5 91
@@ -2499,8 +2459,7 @@ R8E8D_NEW_PILL:
     cmp #$A0                                    ; 8F12 C9 A0
     if_cs                                       ; 8F14 90 0B
         lda L91_PILL_COUNT_1                    ; 8F16 A5 91
-        clc                                     ; 8F18 18
-        adc #$60                                ; 8F19 69 60
+        add #$60                                ; 8F18 18 69 60
         lda #$99                                ; 8F1B A9 99
         sta L90_PILL_COUNT_0                    ; 8F1D 85 90
         sta L91_PILL_COUNT_1                    ; 8F1F 85 91
@@ -2542,13 +2501,11 @@ R8E8D_NEW_PILL:
 R8F52_PLACE_PILL:
     ldx L86_PILL_ROW                            ; 8F52 A6 86
     lda LA474,x                                 ; 8F54 BD 74 A4
-    clc                                         ; 8F57 18
-    adc L85_PILL_COLUMN                         ; 8F58 65 85
+    add L85_PILL_COLUMN                         ; 8F57 18 65 85
     sta $47                                     ; 8F5A 85 47
     ; $47 is playfield offset for pill
     lda LA6_PILL_SIZE                           ; 8F5C A5 A6
-    sec                                         ; 8F5E 38
-    sbc #$02                                    ; 8F5F E9 02
+    sub #$02                                    ; 8F5E 38 E9 02
     asl a                                       ; 8F61 0A
     asl a                                       ; 8F62 0A
     asl a                                       ; 8F63 0A
@@ -2558,8 +2515,7 @@ R8F52_PLACE_PILL:
     lda LA5_PILL_DIR                            ; 8F67 A5 A5
     asl a                                       ; 8F69 0A
     asl a                                       ; 8F6A 0A
-    clc                                         ; 8F6B 18
-    adc $48                                     ; 8F6C 65 48
+    add $48                                     ; 8F6B 18 65 48
     tax                                         ; 8F6E AA
     lda #$00                                    ; 8F6F A9 00
     sta $49                                     ; 8F71 85 49
@@ -2567,8 +2523,7 @@ R8F52_PLACE_PILL:
         lda LA4DC,x                             ; 8F73 BD DC A4
         cmp #$63                                ; 8F76 C9 63
         beq break                               ; 8F78 F0 24
-        clc                                     ; 8F7A 18
-        adc $47                                 ; 8F7B 65 47
+        add $47                                 ; 8F7A 18 65 47
         sta $57                                 ; 8F7D 85 57
         ; check that we are within playfield
         cmp #$80                                ; 8F7F C9 80
@@ -2579,8 +2534,7 @@ R8F52_PLACE_PILL:
             sta $4A                             ; 8F87 85 4A
             ldy $49                             ; 8F89 A4 49
             lda L81_PILL_COLOR_0,y              ; 8F8B B9 81 00
-            clc                                 ; 8F8E 18
-            adc $4A                             ; 8F8F 65 4A
+            add $4A                             ; 8F8E 18 65 4A
             ldy #$00                            ; 8F91 A0 00
             sta ($57),y                         ; 8F93 91 57
         end_if
@@ -2653,8 +2607,7 @@ R8FF4_INCREMENT_SCORE:
         tax                                     ; 9000 AA
         loop
             lda L8B_SPEED                       ; 9001 A5 8B
-            clc                                 ; 9003 18
-            adc L072A_SCORE_1                   ; 9004 6D 2A 07
+            add L072A_SCORE_1                   ; 9003 18 6D 2A 07
             sta L072A_SCORE_1                   ; 9007 8D 2A 07
             inc L072A_SCORE_1                   ; 900A EE 2A 07
             jsr R901C_NORMALIZE_SCORE           ; 900D 20 1C 90
@@ -2674,24 +2627,21 @@ R901C_NORMALIZE_SCORE:
     lda L0729_SCORE_0                           ; 901C AD 29 07
     cmp #$0A                                    ; 901F C9 0A
     if_pl                                       ; 9021 30 09
-        sec                                     ; 9023 38
-        sbc #$0A                                ; 9024 E9 0A
+        sub #$0A                                ; 9023 38 E9 0A
         sta L0729_SCORE_0                       ; 9026 8D 29 07
         inc L072A_SCORE_1                       ; 9029 EE 2A 07
     end_if
     lda L072A_SCORE_1                           ; 902C AD 2A 07
     cmp #$0A                                    ; 902F C9 0A
     if_pl                                       ; 9031 30 09
-        sec                                     ; 9033 38
-        sbc #$0A                                ; 9034 E9 0A
+        sub #$0A                                ; 9033 38 E9 0A
         sta L072A_SCORE_1                       ; 9036 8D 2A 07
         inc L072B_SCORE_2                       ; 9039 EE 2B 07
     end_if
     lda L072B_SCORE_2                           ; 903C AD 2B 07
     cmp #$0A                                    ; 903F C9 0A
     if_pl                                       ; 9041 30 09
-        sec                                     ; 9043 38
-        sbc #$0A                                ; 9044 E9 0A
+        sub #$0A                                ; 9043 38 E9 0A
         sta L072B_SCORE_2                       ; 9046 8D 2B 07
         inc L072C_SCORE_3                       ; 9049 EE 2C 07
     end_if
@@ -2815,36 +2765,30 @@ R90D3_COLLISION:
     and #$01 ; 1 = U/D, 0 = L/R                 ; 90D9 29 01
     if_eq                                       ; 90DB D0 13
         lda LA455,x ; $00,$FF,$FF               ; 90DD BD 55 A4
-        clc                                     ; 90E0 18
-        adc L85_PILL_COLUMN                     ; 90E1 65 85
+        add L85_PILL_COLUMN                     ; 90E0 18 65 85
         bmi collision                           ; 90E3 30 4C
         lda LA458,x ; $F9,$F9,$FA               ; 90E5 BD 58 A4
-        clc                                     ; 90E8 18
-        adc L85_PILL_COLUMN                     ; 90E9 65 85
+        add L85_PILL_COLUMN                     ; 90E8 18 65 85
         bpl collision                           ; 90EB 10 44
     else                                        ; 90ED 4C F8 90
         lda LA45B,x                             ; 90F0 BD 5B A4
-        clc                                     ; 90F3 18
-        adc L86_PILL_ROW                        ; 90F4 65 86
+        add L86_PILL_ROW                        ; 90F3 18 65 86
         bmi collision                           ; 90F6 30 39
     end_if
     lda #$00                                    ; 90F8 A9 00
     sta $57                                     ; 90FA 85 57
     ldx L86_PILL_ROW                            ; 90FC A6 86
     lda LA474,x                                 ; 90FE BD 74 A4
-    clc                                         ; 9101 18
-    adc L85_PILL_COLUMN                         ; 9102 65 85
+    add L85_PILL_COLUMN                         ; 9101 18 65 85
     sta $47                                     ; 9104 85 47
     lda LA6_PILL_SIZE                           ; 9106 A5 A6
-    sec                                         ; 9108 38
-    sbc #$02                                    ; 9109 E9 02
+    sub #$02                                    ; 9108 38 E9 02
     asl a                                       ; 910B 0A
     sta $49                                     ; 910C 85 49
     ; $49 = LA6_PILL_SIZE - 2
     lda LA5_PILL_DIR                            ; 910E A5 A5
     and #$01 ; 1 = U/D, 0 = L/R                 ; 9110 29 01
-    clc                                         ; 9112 18
-    adc $49                                     ; 9113 65 49
+    add $49                                     ; 9112 18 65 49
     asl a                                       ; 9115 0A
     asl a                                       ; 9116 0A
     tax                                         ; 9117 AA
@@ -2853,8 +2797,7 @@ R90D3_COLLISION:
     sta $48                                     ; 911A 85 48
     loop
         lda LA4C4,x                             ; 911C BD C4 A4
-        clc                                     ; 911F 18
-        adc $47                                 ; 9120 65 47
+        add $47                                 ; 911F 18 65 47
         tay                                     ; 9122 A8
         lda ($57),y                             ; 9123 B1 57
         cmp #$FF                                ; 9125 C9 FF
@@ -2967,8 +2910,7 @@ L91BB:
 ; Increment 16-bit value in $36/$37.
 R91C2_INCREMENT_L36:
     lda $36                                     ; 91C2 A5 36
-    clc                                         ; 91C4 18
-    adc #$01                                    ; 91C5 69 01
+    add #$01                                    ; 91C4 18 69 01
     sta $36                                     ; 91C7 85 36
     lda #$00                                    ; 91C9 A9 00
     adc $37                                     ; 91CB 65 37
@@ -2990,8 +2932,7 @@ R91D0_CHECKSUM:
     loop
         loop
             lda ($47),y                         ; 91DD B1 47
-            clc                                 ; 91DF 18
-            adc L49_TEMP                        ; 91E0 65 49
+            add L49_TEMP                        ; 91DF 18 65 49
             sta L49_TEMP                        ; 91E2 85 49
             iny                                 ; 91E4 C8
         while_ne                                ; 91E5 D0 F6
@@ -3066,8 +3007,7 @@ L91FB_5_CHECK_HORIZONTAL_CLEAR:
                     sta $8E                     ; 9246 85 8E
                     jsr R944B                   ; 9248 20 4B 94
                     lda $A1                     ; 924B A5 A1
-                    clc                         ; 924D 18
-                    adc L47_TEMP                ; 924E 65 47
+                    add L47_TEMP                ; 924D 18 65 47
                     sta $A1                     ; 9250 85 A1
                     inc $A1                     ; 9252 E6 A1
                     lda L59_TEMP                ; 9254 A5 59
@@ -3136,8 +3076,7 @@ L91FB_5_CHECK_HORIZONTAL_CLEAR:
         if_ne                                   ; 92C4 F0 09
             lda L59_TEMP                        ; 92C6 A5 59
             and #$78                            ; 92C8 29 78
-            clc                                 ; 92CA 18
-            adc #$08                            ; 92CB 69 08
+            add #$08                            ; 92CA 18 69 08
             sta L59_TEMP                        ; 92CD 85 59
         end_if
         lda L59_TEMP                            ; 92CF A5 59
@@ -3175,8 +3114,7 @@ L92DB_7_FIX_SPLIT_PILLS:
             if_eq                               ; 92F4 D0 1F
                 ; consider tile below
                 lda L47_TEMP                    ; 92F6 A5 47
-                clc                             ; 92F8 18
-                adc #$08                        ; 92F9 69 08
+                add #$08                        ; 92F8 18 69 08
                 tay                             ; 92FB A8
                 lda ($57),y                     ; 92FC B1 57
                 and #$F0                        ; 92FE 29 F0
@@ -3197,8 +3135,7 @@ L92DB_7_FIX_SPLIT_PILLS:
             if_eq                               ; 9317 D0 1F
                 ; consider tile above
                 lda L47_TEMP                    ; 9319 A5 47
-                sec                             ; 931B 38
-                sbc #$08                        ; 931C E9 08
+                sub #$08                        ; 931B 38 E9 08
                 tay                             ; 931E A8
                 lda ($57),y                     ; 931F B1 57
                 and #$F0                        ; 9321 29 F0
@@ -3219,8 +3156,7 @@ L92DB_7_FIX_SPLIT_PILLS:
             if_eq                               ; 933A D0 1F
                 ; consider tile to right
                 lda L47_TEMP                    ; 933C A5 47
-                clc                             ; 933E 18
-                adc #$01                        ; 933F 69 01
+                add #$01                        ; 933E 18 69 01
                 tay                             ; 9341 A8
                 lda ($57),y                     ; 9342 B1 57
                 and #$F0                        ; 9344 29 F0
@@ -3241,8 +3177,7 @@ L92DB_7_FIX_SPLIT_PILLS:
             if_eq                               ; 935D D0 1F
                 ; consider tile to left
                 lda L47_TEMP                    ; 935F A5 47
-                sec                             ; 9361 38
-                sbc #$01                        ; 9362 E9 01
+                sub #$01                        ; 9361 38 E9 01
                 tay                             ; 9364 A8
                 lda ($57),y                     ; 9365 B1 57
                 and #$F0                        ; 9367 29 F0
@@ -3263,8 +3198,7 @@ L92DB_7_FIX_SPLIT_PILLS:
             if_eq                               ; 9380 D0 3B
                 ; consider tile above
                 lda L47_TEMP                    ; 9382 A5 47
-                sec                             ; 9384 38
-                sbc #$08                        ; 9385 E9 08
+                sub #$08                        ; 9384 38 E9 08
                 tay                             ; 9387 A8
                 lda ($57),y                     ; 9388 B1 57
                 and #$F0                        ; 938A 29 F0
@@ -3281,8 +3215,7 @@ L92DB_7_FIX_SPLIT_PILLS:
                 end_if
                 ; consider tile below
                 lda L47_TEMP                    ; 939E A5 47
-                clc                             ; 93A0 18
-                adc #$08                        ; 93A1 69 08
+                add #$08                        ; 93A0 18 69 08
                 tay                             ; 93A3 A8
                 lda ($57),y                     ; 93A4 B1 57
                 and #$F0                        ; 93A6 29 F0
@@ -3303,8 +3236,7 @@ L92DB_7_FIX_SPLIT_PILLS:
             if_eq                               ; 93BF D0 38
                 ; consider tile to left
                 lda L47_TEMP                    ; 93C1 A5 47
-                sec                             ; 93C3 38
-                sbc #$01                        ; 93C4 E9 01
+                sub #$01                        ; 93C3 38 E9 01
                 tay                             ; 93C6 A8
                 lda ($57),y                     ; 93C7 B1 57
                 and #$F0                        ; 93C9 29 F0
@@ -3321,8 +3253,7 @@ L92DB_7_FIX_SPLIT_PILLS:
                 end_if
                 ; consider tile to right
                 lda L47_TEMP                    ; 93DD A5 47
-                clc                             ; 93DF 18
-                adc #$01                        ; 93E0 69 01
+                add #$01                        ; 93DF 18 69 01
                 tay                             ; 93E2 A8
                 lda ($57),y                     ; 93E3 B1 57
                 and #$F0                        ; 93E5 29 F0
@@ -3379,8 +3310,7 @@ R941A_KILL_VIRUS:
     sta L78_V1_TIMER,x                          ; 9425 95 78
     ; decrement individual virus count
     lda L72_V1_COUNT,x                          ; 9427 B5 72
-    sec                                         ; 9429 38
-    sbc #$01                                    ; 942A E9 01
+    sub #$01                                    ; 9429 38 E9 01
     sta L72_V1_COUNT,x                          ; 942C 95 72
     jsr R8FF4_INCREMENT_SCORE                   ; 942E 20 F4 8F
     ; decrement total virus count
@@ -3392,8 +3322,7 @@ R941A_KILL_VIRUS:
         cmp #$0F                                ; 943B C9 0F
         if_eq                                   ; 943D D0 07
             lda LA4_VIRUS_BCD                   ; 943F A5 A4
-            sec                                 ; 9441 38
-            sbc #$06                            ; 9442 E9 06
+            sub #$06                            ; 9441 38 E9 06
             sta LA4_VIRUS_BCD                   ; 9444 85 A4
         end_if
     end_if
@@ -3427,8 +3356,7 @@ R944B:
     cmp #$02                                    ; 945C C9 02
     if_eq                                       ; 945E D0 08
         lda $58                                 ; 9460 A5 58
-        sec                                     ; 9462 38
-        sbc #$03                                ; 9463 E9 03
+        sub #$03                                ; 9462 38 E9 03
         sta $06F4                               ; 9465 8D F4 06
     end_if
     rts                                         ; 9468 60
@@ -3455,8 +3383,7 @@ L9469_6_CHECK_VERTICAL_CLEAR:
             sta L48_TEMP                        ; 9486 85 48
             loop
                 lda L5A_TEMP                    ; 9488 A5 5A
-                clc                             ; 948A 18
-                adc #$08                        ; 948B 69 08
+                add #$08                        ; 948A 18 69 08
                 sta L5A_TEMP                    ; 948D 85 5A
                 lda L5A_TEMP                    ; 948F A5 5A
                 and #$F8                        ; 9491 29 F8
@@ -3476,8 +3403,7 @@ L9469_6_CHECK_VERTICAL_CLEAR:
                 sta $8E                         ; 94AC 85 8E
                 jsr R944B                       ; 94AE 20 4B 94
                 lda $A1                         ; 94B1 A5 A1
-                clc                             ; 94B3 18
-                adc L47_TEMP                    ; 94B4 65 47
+                add L47_TEMP                    ; 94B3 18 65 47
                 sta $A1                         ; 94B6 85 A1
                 inc $A1                         ; 94B8 E6 A1
                 lda L59_TEMP                    ; 94BA A5 59
@@ -3515,8 +3441,7 @@ L9469_6_CHECK_VERTICAL_CLEAR:
                     ora #$B0 ; marked           ; 94F2 09 B0
                     sta ($57),y                 ; 94F4 91 57
                     lda L5A_TEMP                ; 94F6 A5 5A
-                    clc                         ; 94F8 18
-                    adc #$08                    ; 94F9 69 08
+                    add #$08                    ; 94F8 18 69 08
                     sta L5A_TEMP                ; 94FB 85 5A
                     ldy L5A_TEMP                ; 94FD A4 5A
                     cpy L49_TEMP                ; 94FF C4 49
@@ -3529,8 +3454,7 @@ L9469_6_CHECK_VERTICAL_CLEAR:
             sta L59_TEMP                        ; 950B 85 59
         else                                    ; 950D 4C 17 95
             lda L59_TEMP                        ; 9510 A5 59
-            clc                                 ; 9512 18
-            adc #$08                            ; 9513 69 08
+            add #$08                            ; 9512 18 69 08
             sta L59_TEMP                        ; 9515 85 59
         end_if
         lda L59_TEMP                            ; 9517 A5 59
@@ -3751,8 +3675,7 @@ R9691_DRAW_MESSAGE:
     ldy #$28                                    ; 9695 A0 28
     loop
         tya                                     ; 9697 98
-        sec                                     ; 9698 38
-        sbc #$28                                ; 9699 E9 28
+        sub #$28                                ; 9699 38 E9 28
         tax                                     ; 969B AA
         lda LA80F,x                             ; 969C BD 0F A8
         beq break                               ; 969F F0 06
@@ -4068,8 +3991,7 @@ L981C_TOP_0:
         lsr a                                   ; 988D 4A
         lsr a                                   ; 988E 4A
         lsr a                                   ; 988F 4A
-        clc                                     ; 9890 18
-        adc #$03                                ; 9891 69 03
+        add #$03                                ; 9890 18 69 03
         jsr RB8F4 ; Set mapper CHR bank 1.      ; 9893 20 F4 B8
         lda LF5_P1_INPUT_NEW                    ; 9896 A5 F5
         cmp #$08 ; "up"                         ; 9898 C9 08
@@ -4449,8 +4371,7 @@ R9B42:
     lda LA2A9,x ; 4:$53,5:$62                   ; 9B4B BD A9 A2
     sta L45_SPRITE_Y                            ; 9B4E 85 45
     lda $58                                     ; 9B50 A5 58
-    clc                                         ; 9B52 18
-    adc #$19                                    ; 9B53 69 19
+    add #$19                                    ; 9B52 18 69 19
     sta L53_SPRITE_NUM                          ; 9B55 85 53
     jsr R88F6_SPRITE                            ; 9B57 20 F6 88
     ; Sprite $1d or $1e
@@ -4462,8 +4383,7 @@ R9B42:
     lda LA2B2,x ; 4:$87,5:$96                   ; 9B63 BD B2 A2
     sta L45_SPRITE_Y                            ; 9B66 85 45
     lda $58                                     ; 9B68 A5 58
-    clc                                         ; 9B6A 18
-    adc #$FE                                    ; 9B6B 69 FE
+    add #$FE                                    ; 9B6A 18 69 FE
     sta L53_SPRITE_NUM                          ; 9B6D 85 53
     jsr R88F6_SPRITE                            ; 9B6F 20 F6 88
     ; Sprite $02 or $03
@@ -4575,12 +4495,10 @@ R9BE9:
     lda $8F                                     ; 9BE9 A5 8F
     cmp #$02                                    ; 9BEB C9 02
     if_cs                                       ; 9BED 90 0D
-        clc                                     ; 9BEF 18
-        adc $98                                 ; 9BF0 65 98
+        add $98                                 ; 9BEF 18 65 98
         sta $98                                 ; 9BF2 85 98
         lda $58                                 ; 9BF4 A5 58
-        sec                                     ; 9BF6 38
-        sbc #$03                                ; 9BF7 E9 03
+        sub #$03                                ; 9BF6 38 E9 03
         sta $06F4                               ; 9BF9 8D F4 06
     end_if
     lda #$00                                    ; 9BFC A9 00
@@ -4762,8 +4680,7 @@ R9CFF_ADD_VIRUS:
     ; Choose random 3-bit column
     lda $18                                     ; 9D24 A5 18
     and #$07                                    ; 9D26 29 07
-    clc                                         ; 9D28 18
-    adc L47_TEMP                                ; 9D29 65 47
+    add L47_TEMP                                ; 9D28 18 65 47
     ; Store cell offset in $57 and $49
     sta $57                                     ; 9D2B 85 57
     sta $49                                     ; 9D2D 85 49
@@ -4822,8 +4739,7 @@ L9D61:
     sta $57                                     ; 9D79 85 57
     ; y = cell offset - 16 (2 rows below)
     lda $49                                     ; 9D7B A5 49
-    sec                                         ; 9D7D 38
-    sbc $4A                                     ; 9D7E E5 4A
+    sub $4A                                     ; 9D7D 38 E5 4A
     tay                                         ; 9D80 A8
     lda ($57),y                                 ; 9D81 B1 57
     and #$03                                    ; 9D83 29 03
@@ -4836,8 +4752,7 @@ L9D61:
     sta $57                                     ; 9D8F 85 57
     ; y = cell offset + 16 (2 rows above)
     lda $49                                     ; 9D91 A5 49
-    clc                                         ; 9D93 18
-    adc $4A                                     ; 9D94 65 4A
+    add $4A                                     ; 9D93 18 65 4A
     tay                                         ; 9D96 A8
     lda ($57),y                                 ; 9D97 B1 57
     and #$03                                    ; 9D99 29 03
@@ -4854,8 +4769,7 @@ L9D61:
     if_cs                                       ; 9DAD 90 12
         ; y = cell offset - 2 (2 cols left)
         lda $49                                 ; 9DAF A5 49
-        sec                                     ; 9DB1 38
-        sbc $4B                                 ; 9DB2 E5 4B
+        sub $4B                                 ; 9DB1 38 E5 4B
         tay                                     ; 9DB4 A8
         lda ($57),y                             ; 9DB5 B1 57
         and #$03                                ; 9DB7 29 03
@@ -4873,8 +4787,7 @@ L9D61:
     if_cc                                       ; 9DCB B0 12
         ; y = cell offset + 2 (2 cols right)
         lda $49                                 ; 9DCD A5 49
-        clc                                     ; 9DCF 18
-        adc $4B                                 ; 9DD0 65 4B
+        add $4B                                 ; 9DCF 18 65 4B
         tay                                     ; 9DD2 A8
         lda ($57),y                             ; 9DD3 B1 57
         and #$03                                ; 9DD5 29 03
@@ -4918,8 +4831,7 @@ L9D61:
     and #$07                                    ; 9E0E 29 07
     tax                                         ; 9E10 AA
     lda L72_V1_COUNT,x                          ; 9E11 B5 72
-    clc                                         ; 9E13 18
-    adc #$01                                    ; 9E14 69 01
+    add #$01                                    ; 9E13 18 69 01
     sta L72_V1_COUNT,x                          ; 9E16 95 72
     lda L0316_P1_LEVEL                          ; 9E18 AD 16 03
     cmp L0396_P2_LEVEL                          ; 9E1B CD 96 03
@@ -4936,8 +4848,7 @@ L9D61:
     cmp #$0A                                    ; 9E2F C9 0A
     if_eq                                       ; 9E31 D0 07
         lda LA4_VIRUS_BCD                       ; 9E33 A5 A4
-        clc                                     ; 9E35 18
-        adc #$06                                ; 9E36 69 06
+        add #$06                                ; 9E35 18 69 06
         sta LA4_VIRUS_BCD                       ; 9E38 85 A4
     end_if
     ; put row number in L80_UPDATE_ROW.
@@ -4971,8 +4882,7 @@ R9E4C:
     asl a                                       ; 9E5B 0A
     asl a                                       ; 9E5C 0A
     asl a                                       ; 9E5D 0A
-    clc                                         ; 9E5E 18
-    adc L96_LEVEL                               ; 9E5F 65 96
+    add L96_LEVEL                               ; 9E5E 18 65 96
     tax                                         ; 9E61 AA
     lda L9FF8,x                                 ; 9E62 BD F8 9F
     beq next_level                              ; 9E65 F0 73
@@ -5073,8 +4983,7 @@ R9F18:
     asl a                                       ; 9F1C 0A
     asl a                                       ; 9F1D 0A
     asl a                                       ; 9F1E 0A
-    clc                                         ; 9F1F 18
-    adc L96_LEVEL                               ; 9F20 65 96
+    add L96_LEVEL                               ; 9F1F 18 65 96
     tax                                         ; 9F22 AA
     lda L9FF8,x                                 ; 9F23 BD F8 9F
     beq L9F6F ; rts                             ; 9F26 F0 47
@@ -5096,8 +5005,7 @@ R9F28:
             lda $49                             ; 9F42 A5 49
             tax                                 ; 9F44 AA
             lda $0761,x                         ; 9F45 BD 61 07
-            sec                                 ; 9F48 38
-            sbc #$01                            ; 9F49 E9 01
+            sub #$01                            ; 9F48 38 E9 01
             sta $0761,x                         ; 9F4B 9D 61 07
         end_if
         lda $4A                                 ; 9F4E A5 4A
@@ -5130,8 +5038,7 @@ R9F70:
     and #$08                                    ; 9F7A 29 08
     lsr a                                       ; 9F7C 4A
     lsr a                                       ; 9F7D 4A
-    clc                                         ; 9F7E 18
-    adc #$20                                    ; 9F7F 69 20
+    add #$20                                    ; 9F7E 18 69 20
     sta L53_SPRITE_NUM                          ; 9F81 85 53
     jsr R88F6_SPRITE                            ; 9F83 20 F6 88
     rts                                         ; 9F86 60
@@ -6375,8 +6282,7 @@ RB371:
             sta L47_TEMP                    ; B395 85 47
             lda L43_CLOCK                   ; B397 A5 43
             and #$01                        ; B399 29 01
-            clc                             ; B39B 18
-            adc L47_TEMP                    ; B39C 65 47
+            add L47_TEMP                    ; B39B 18 65 47
             and #$03                        ; B39E 29 03
             ora #$40                        ; B3A0 09 40
             sta $0580,x                     ; B3A2 9D 80 05
@@ -6695,8 +6601,7 @@ RB569:
         and #$04                                ; B57C 29 04
         lsr a                                   ; B57E 4A
         lsr a                                   ; B57F 4A
-        clc                                     ; B580 18
-        adc #$35                                ; B581 69 35
+        add #$35                                ; B580 18 69 35
         sta L53_SPRITE_NUM                      ; B583 85 53
         jsr R88F6_SPRITE                        ; B585 20 F6 88
     end_if
@@ -6707,8 +6612,7 @@ RB569:
 LB589:
     jsr RB5A7                                   ; B589 20 A7 B5
     lda L39_V1_Y                                ; B58C A5 39
-    sec                                         ; B58E 38
-    sbc #$24                                    ; B58F E9 24
+    sub #$24                                    ; B58E 38 E9 24
     cmp $50                                     ; B591 C5 50
     if_cc                                       ; B593 B0 09
         lda #$F8                                ; B595 A9 F8
@@ -6748,8 +6652,7 @@ RB5B8:
         asl a                                   ; B5BC 0A
         asl a                                   ; B5BD 0A
         asl a                                   ; B5BE 0A
-        clc                                     ; B5BF 18
-        adc L96_LEVEL                           ; B5C0 65 96
+        add L96_LEVEL                           ; B5BF 18 65 96
         tax                                     ; B5C2 AA
         lda L9FF8,x                             ; B5C3 BD F8 9F
         if_eq                                   ; B5C6 D0 03
@@ -6781,8 +6684,7 @@ RB5B8:
             asl a                               ; B5F3 0A
             asl a                               ; B5F4 0A
             asl a                               ; B5F5 0A
-            clc                                 ; B5F6 18
-            adc L96_LEVEL                       ; B5F7 65 96
+            add L96_LEVEL                       ; B5F6 18 65 96
             tax                                 ; B5F9 AA
             lda L9FF8,x                         ; B5FA BD F8 9F
             ; MED: 6 -> 7, 11 -> 5, 15 -> 6, 21 -> 8
@@ -6804,8 +6706,7 @@ RB5B8:
         and L47_TEMP                            ; B614 25 47
         if_eq                                   ; B616 D0 13
             lda LA07C,x                         ; B618 BD 7C A0
-            clc                                 ; B61B 18
-            adc L3B_V2_Y                        ; B61C 65 3B
+            add L3B_V2_Y                        ; B61B 18 65 3B
             sta L3B_V2_Y                        ; B61E 85 3B
             cmp #$F1                            ; B620 C9 F1
             if_cs                               ; B622 90 07
@@ -6830,8 +6731,7 @@ RB5B8:
         sta L45_SPRITE_Y                        ; B644 85 45
         ldx L3A_V2_X                            ; B646 A6 3A
         lda LA061,x                             ; B648 BD 61 A0
-        clc                                     ; B64B 18
-        adc L3E_VIRUS_CYCLE                     ; B64C 65 3E
+        add L3E_VIRUS_CYCLE                     ; B64B 18 65 3E
         sta L53_SPRITE_NUM                      ; B64E 85 53
         jsr R88F6_SPRITE                        ; B650 20 F6 88
         ; $38,$3A,$3C,$3E,$40,$42,$44,$46
