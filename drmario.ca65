@@ -14,7 +14,7 @@
 
 ; ----------------------------------------------------------------------------
 
-.define L33_NMI_SIGNAL   $33
+.define L33_NMI_SIGNAL   $33 ; 1 means NMI has run
 .define L38_V1_X         $38
 .define L39_V1_Y         $39
 .define L3A_V2_X         $3A
@@ -29,6 +29,7 @@
 .define L46_TOP_STATE    $46
 .define L52_REDRAW_FLAGS $52
 .define L53_SPRITE_NUM   $53
+.define L55_ROUND_WINNER $55
 .define L59_TEMP         $59
 .define L5A_TEMP         $5A
 .define L5B_INPUT_NEW    $5B
@@ -52,7 +53,10 @@
 .define L84_PILL_COLOR_3 $84
 .define L85_PILL_COLUMN  $85
 .define L86_PILL_ROW     $86
+.define L8A_EXTRA_SPEED  $8A
 .define L8B_SPEED        $8B
+.define L90_PILL_COUNT_0 $90
+.define L91_PILL_COUNT_1 $91
 .define L92_DROP_TIMER   $92
 .define L93_REPEAT_TIMER $93
 .define L96_LEVEL        $96
@@ -67,6 +71,7 @@
 .define LA4_VIRUS_BCD    $A4
 .define LA5_PILL_DIR     $A5
 .define LA6_PILL_SIZE    $A6
+.define LA7_PILL_INDEX   $A7
 .define LA8_VIRUS_TO_ADD $A8
 .define LAD_VIRUS_COMBO  $AD
 
@@ -78,6 +83,9 @@
 L0101 := $0101
 L0120 := $0120
 L0202 := $0202
+
+L0300_P1 := $0300
+L0380_P2 := $0380
 
 L0300_P1_UPDATE_ROW   := $0300
 L030B_P1_SPEED        := $030B
@@ -114,6 +122,7 @@ L072C_SCORE_3 := $072C
 L072D_SCORE_4 := $072D
 L072E_SCORE_5 := $072E
 
+L0731_MUSIC_CHOICE  := $0731
 L0740_CHECKSUM_FAIL := $0740
 L0741_DEMO_MODE     := $0741
 
@@ -235,7 +244,7 @@ L808D:
     sta $0728                                   ; 80AD 8D 28 07
     sta L0316_P1_LEVEL                          ; 80B0 8D 16 03
     sta L0396_P2_LEVEL                          ; 80B3 8D 96 03
-    sta $0731                                   ; 80B6 8D 31 07
+    sta L0731_MUSIC_CHOICE                      ; 80B6 8D 31 07
     lda #$01                                    ; 80B9 A9 01
     sta $0720                                   ; 80BB 8D 20 07
     sta L0727_NUM_PLAYERS                       ; 80BE 8D 27 07
@@ -409,10 +418,10 @@ L8206_TOP_3:
     sta $88                                     ; 8216 85 88
     sta $89                                     ; 8218 85 89
     sta L80_UPDATE_ROW                          ; 821A 85 80
-    sta $90                                     ; 821C 85 90
-    sta $91                                     ; 821E 85 91
+    sta L90_PILL_COUNT_0                        ; 821C 85 90
+    sta L91_PILL_COUNT_1                        ; 821E 85 91
     sta $7D                                     ; 8220 85 7D
-    sta $A7                                     ; 8222 85 A7
+    sta LA7_PILL_INDEX                          ; 8222 85 A7
     sta $0728                                   ; 8224 8D 28 07
     sta L75_V1_STATE                            ; 8227 85 75
     sta L76_V2_STATE                            ; 8229 85 76
@@ -425,7 +434,7 @@ L8206_TOP_3:
     sta L74_V3_COUNT                            ; 8237 85 74
     sta $7E                                     ; 8239 85 7E
     sta $61                                     ; 823B 85 61
-    sta $55                                     ; 823D 85 55
+    sta L55_ROUND_WINNER                        ; 823D 85 55
     sta L3E_VIRUS_CYCLE                         ; 823F 85 3E
     lda #$06                                    ; 8241 A9 06
     sta L97_STATE                               ; 8243 85 97
@@ -434,13 +443,13 @@ L8206_TOP_3:
     lda #$FF                                    ; 8249 A9 FF
     sta $54                                     ; 824B 85 54
     lda $0728                                   ; 824D AD 28 07
-    sta $8A                                     ; 8250 85 8A
+    sta L8A_EXTRA_SPEED                         ; 8250 85 8A
     sta $A0                                     ; 8252 85 A0
     jsr R82A0_INIT_780                          ; 8254 20 A0 82
     jsr R8E8D                                   ; 8257 20 8D 8E
     jsr R8E8D                                   ; 825A 20 8D 8E
     lda #$01                                    ; 825D A9 01
-    sta $90                                     ; 825F 85 90
+    sta L90_PILL_COUNT_0                        ; 825F 85 90
     jsr R8FA5_SAVE_STATS                        ; 8261 20 A5 8F
     jsr R90AF_SAVE_P1                           ; 8264 20 AF 90
     jsr R90BC_SAVE_P2                           ; 8267 20 BC 90
@@ -466,7 +475,7 @@ L8206_TOP_3:
     sta L03A8_P2_VIRUS_TO_ADD                   ; 828C 8D A8 03
     lda #$9F                                    ; 828F A9 9F
     sta L52_REDRAW_FLAGS                        ; 8291 85 52
-    ldx $0731                                   ; 8293 AE 31 07
+    ldx L0731_MUSIC_CHOICE                      ; 8293 AE 31 07
     lda LA264,x                                 ; 8296 BD 64 A2
     sta $06F5                                   ; 8299 8D F5 06
     jsr RB654_NEXT_FRAME                        ; 829C 20 54 B6
@@ -536,7 +545,7 @@ R82D1_PRINT_LEVEL:
 
 ; ----------------------------------------------------------------------------
 ; Copy rows of playfields for both players to screen.
-; Row $0300 for player 1, and $0380 for player 2.
+; Row L0300_P1_UPDATE_ROW for player 1, and L0380_P2_UPDATE_ROW for player 2.
 ; Called from NMI handler.
 R82F7_PRINT_PLAYFIELD_ROWS:
     lda #$04                                    ; 82F7 A9 04
@@ -551,11 +560,11 @@ R82F7_PRINT_PLAYFIELD_ROWS:
     if_eq                                       ; 830D D0 11
         lda #$05                                ; 830F A9 05
         sta $58                                 ; 8311 85 58
-        lda $0380                               ; 8313 AD 80 03
+        lda L0380_P2_UPDATE_ROW                 ; 8313 AD 80 03
         sta L80_UPDATE_ROW                      ; 8316 85 80
         jsr R8321_PRINT_PLAYFIELD_ROW           ; 8318 20 21 83
         lda L80_UPDATE_ROW                      ; 831B A5 80
-        sta $0380                               ; 831D 8D 80 03
+        sta L0380_P2_UPDATE_ROW                 ; 831D 8D 80 03
     end_if
     rts                                         ; 8320 60
 
@@ -1294,7 +1303,7 @@ R87A2_LEVEL_SPRITES:
 
         lda $61                                 ; 87D2 A5 61
         if_eq                                   ; 87D4 D0 4C
-            lda $55                             ; 87D6 A5 55
+            lda L55_ROUND_WINNER                ; 87D6 A5 55
             if_eq                               ; 87D8 D0 48
                 lda $031A                       ; 87DA AD 1A 03
                 sta L9A_NEXT_COLOR_0            ; 87DD 85 9A
@@ -1365,7 +1374,7 @@ R87A2_LEVEL_SPRITES:
 
 ; ----------------------------------------------------------------------------
 R886C:
-    lda $55                                     ; 886C A5 55
+    lda L55_ROUND_WINNER                        ; 886C A5 55
     if_ne                                       ; 886E F0 1C
         tax                                     ; 8870 AA
         lda LA10B,x ; $00,$34,$B4               ; 8871 BD 0B A1
@@ -2020,6 +2029,7 @@ L8C6F:  jsr     R8C73                           ; 8C6F 20 73 8C
 
 ; ----------------------------------------------------------------------------
 ; Jump to one of 9 subroutines based on $87.
+; This is the sequence of stuff that needs to get done once a pill is placed.
 R8C73:
     lda $87                                     ; 8C73 A5 87
     jsr RB8AC_JUMP_TABLE                        ; 8C75 20 AC B8
@@ -2206,7 +2216,7 @@ R8D70_DROP_PILL:
         beq L8D94                               ; 8D7C F0 16
     L8D7E:
         inc L92_DROP_TIMER                      ; 8D7E E6 92
-        lda $8A                                 ; 8D80 A5 8A
+        lda L8A_EXTRA_SPEED                     ; 8D80 A5 8A
         sta $A0 ; redundant copy                ; 8D82 85 A0
         ldx L8B_SPEED                           ; 8D84 A6 8B
         lda LA38D,x ; $0F,$19,$1F               ; 8D86 BD 8D A3
@@ -2379,26 +2389,26 @@ R8E8D:
 ; L83_PILL_COLOR_2 <- L9C_NEXT_COLOR_2
 ; L84_PILL_COLOR_3 <- L9D_NEXT_COLOR_3
 ; LA5_PILL_DIR <- #$00
-; LA6_PILL_SIZE <- LA3_NEXT_SHAPE
-; if L0741_DEMO_MODE > 0 then x <- LCF80,$A7 else x <- $0780,$A7
+; LA6_PILL_SIZE <- LA3_NEXT_SIZE
+; if L0741_DEMO_MODE > 0 then x <- LCF80,LA7_PILL_INDEX else x <- $0780,LA7_PILL_INDEX
 ; L9A_NEXT_COLOR_0 <- LA7FD,x
 ; L9B_NEXT_COLOR_1 <- LA806,x
-; inc $A7
-; $A7 &= #$7F
+; inc LA7_PILL_INDEX
+; LA7_PILL_INDEX &= #$7F
 ; $7D <- #$00
 ; LA2_NEXT_DIR <- #$00
 ; LA3_NEXT_SHAPE <- #$02
 ; L85_PILL_COLUMN <- #$03
 ; L86_PILL_ROW <- #$0F
-; inc $90
-; if $90 & #$0F >= #$0A then $90+=#$06
-; if $90 & #$F0 >= #$A0 then $90+=#$60; $91++
-; if $91 & #$0F >= #$0A then $91+=#$06
-; if $91 & #$F0 >= #$A0 then $91+=#$60; $90 <- #$99; $91 <- #$99
+; inc L90_PILL_COUNT_0
+; if L90_PILL_COUNT_0 & #$0F >= #$0A then L90_PILL_COUNT_0+=#$06
+; if L90_PILL_COUNT_0 & #$F0 >= #$A0 then L90_PILL_COUNT_0+=#$60; L91_PILL_COUNT_1++
+; if L91_PILL_COUNT_1 & #$0F >= #$0A then L91_PILL_COUNT_1+=#$06
+; if L91_PILL_COUNT_1 & #$F0 >= #$A0 then L91_PILL_COUNT_1+=#$60; L90_PILL_COUNT_0 <- #$99; L91_PILL_COUNT_1 <- #$99
 ; if ($0723 == 0) {
-;     if ($90 == 0 || $90 & #$0F == 0) {
-;         if ($8A != #$31) {
-;             inc $8A
+;     if (L90_PILL_COUNT_0 == 0 || L90_PILL_COUNT_0 & #$0F == 0) {
+;         if (L8A_EXTRA_SPEED != #$31) {
+;             inc L8A_EXTRA_SPEED
 ;             $06F1 <- #$06
 ;             L52_REDRAW_FLAGS |= #$12
 ;         }
@@ -2421,11 +2431,11 @@ R8E8D:
     sta LA6_PILL_SIZE                           ; 8EA3 85 A6
     lda L0741_DEMO_MODE                         ; 8EA5 AD 41 07
     if_ne                                       ; 8EA8 F0 09
-        ldx $A7                                 ; 8EAA A6 A7
+        ldx LA7_PILL_INDEX                      ; 8EAA A6 A7
         lda LCF80,x                             ; 8EAC BD 80 CF
         tax                                     ; 8EAF AA
     else                                        ; 8EB0 4C B9 8E
-        ldx $A7                                 ; 8EB3 A6 A7
+        ldx LA7_PILL_INDEX                      ; 8EB3 A6 A7
         lda $0780,x                             ; 8EB5 BD 80 07
         tax                                     ; 8EB8 AA
     end_if
@@ -2433,10 +2443,10 @@ R8E8D:
     sta L9A_NEXT_COLOR_0                        ; 8EBC 85 9A
     lda LA806,x                                 ; 8EBE BD 06 A8
     sta L9B_NEXT_COLOR_1                        ; 8EC1 85 9B
-    inc $A7                                     ; 8EC3 E6 A7
-    lda $A7                                     ; 8EC5 A5 A7
+    inc LA7_PILL_INDEX                          ; 8EC3 E6 A7
+    lda LA7_PILL_INDEX                          ; 8EC5 A5 A7
     and #$7F                                    ; 8EC7 29 7F
-    sta $A7                                     ; 8EC9 85 A7
+    sta LA7_PILL_INDEX                          ; 8EC9 85 A7
     lda #$00                                    ; 8ECB A9 00
     sta $7D                                     ; 8ECD 85 7D
     sta LA2_NEXT_DIR                            ; 8ECF 85 A2
@@ -2446,59 +2456,59 @@ R8E8D:
     sta L85_PILL_COLUMN                         ; 8ED7 85 85
     lda #$0F                                    ; 8ED9 A9 0F
     sta L86_PILL_ROW                            ; 8EDB 85 86
-    inc $90                                     ; 8EDD E6 90
-    lda $90                                     ; 8EDF A5 90
+    inc L90_PILL_COUNT_0                        ; 8EDD E6 90
+    lda L90_PILL_COUNT_0                        ; 8EDF A5 90
     and #$0F                                    ; 8EE1 29 0F
     cmp #$0A                                    ; 8EE3 C9 0A
     if_cs                                       ; 8EE5 90 07
-        lda $90                                 ; 8EE7 A5 90
+        lda L90_PILL_COUNT_0                    ; 8EE7 A5 90
         clc                                     ; 8EE9 18
         adc #$06                                ; 8EEA 69 06
-        sta $90                                 ; 8EEC 85 90
+        sta L90_PILL_COUNT_0                    ; 8EEC 85 90
     end_if
-    lda $90                                     ; 8EEE A5 90
+    lda L90_PILL_COUNT_0                        ; 8EEE A5 90
     and #$F0                                    ; 8EF0 29 F0
     cmp #$A0                                    ; 8EF2 C9 A0
     if_cs                                       ; 8EF4 90 09
-        lda $90                                 ; 8EF6 A5 90
+        lda L90_PILL_COUNT_0                    ; 8EF6 A5 90
         clc                                     ; 8EF8 18
         adc #$60                                ; 8EF9 69 60
-        sta $90                                 ; 8EFB 85 90
-        inc $91                                 ; 8EFD E6 91
+        sta L90_PILL_COUNT_0                    ; 8EFB 85 90
+        inc L91_PILL_COUNT_1                    ; 8EFD E6 91
     end_if
-    lda $91                                     ; 8EFF A5 91
+    lda L91_PILL_COUNT_1                        ; 8EFF A5 91
     and #$0F                                    ; 8F01 29 0F
     cmp #$0A                                    ; 8F03 C9 0A
     if_cs                                       ; 8F05 90 07
-        lda $91                                 ; 8F07 A5 91
+        lda L91_PILL_COUNT_1                    ; 8F07 A5 91
         clc                                     ; 8F09 18
         adc #$06                                ; 8F0A 69 06
-        sta $91                                 ; 8F0C 85 91
+        sta L91_PILL_COUNT_1                    ; 8F0C 85 91
     end_if
-    lda $91                                     ; 8F0E A5 91
+    lda L91_PILL_COUNT_1                        ; 8F0E A5 91
     and #$F0                                    ; 8F10 29 F0
     cmp #$A0                                    ; 8F12 C9 A0
     if_cs                                       ; 8F14 90 0B
-        lda $91                                 ; 8F16 A5 91
+        lda L91_PILL_COUNT_1                    ; 8F16 A5 91
         clc                                     ; 8F18 18
         adc #$60                                ; 8F19 69 60
         lda #$99                                ; 8F1B A9 99
-        sta $90                                 ; 8F1D 85 90
-        sta $91                                 ; 8F1F 85 91
+        sta L90_PILL_COUNT_0                    ; 8F1D 85 90
+        sta L91_PILL_COUNT_1                    ; 8F1F 85 91
     end_if
     lda $0723                                   ; 8F21 AD 23 07
     if_eq                                       ; 8F24 D0 21
-        lda $90                                 ; 8F26 A5 90
+        lda L90_PILL_COUNT_0                    ; 8F26 A5 90
         cmp #$00                                ; 8F28 C9 00
         beq L8F32                               ; 8F2A F0 06
         and #$0F                                ; 8F2C 29 0F
         cmp #$00                                ; 8F2E C9 00
         bne L8F47                               ; 8F30 D0 15
     L8F32:
-        lda $8A                                 ; 8F32 A5 8A
+        lda L8A_EXTRA_SPEED                     ; 8F32 A5 8A
         cmp #$31                                ; 8F34 C9 31
         if_ne                                   ; 8F36 F0 0F
-            inc $8A                             ; 8F38 E6 8A
+            inc L8A_EXTRA_SPEED                 ; 8F38 E6 8A
             lda #$06                            ; 8F3A A9 06
             sta $06F1                           ; 8F3C 8D F1 06
             ; redraw level# and virus#
@@ -2699,7 +2709,7 @@ R901C_NORMALIZE_SCORE:
 
 ; ----------------------------------------------------------------------------
 ; Load P1 state into zero page
-; Copy $0300-$032F to $80-$AF
+; Copy 48 bytes from L0300_P1 to $80-$AF
 ; LF5_P1_INPUT_NEW -> L5B_INPUT_NEW (controller 1 edge)
 ; LF7_P1_INPUT_OLD -> L5C_INPUT_OLD (controller 1 state)
 ; #$0400 -> $57/$58
@@ -2707,7 +2717,7 @@ R9075_LOAD_P1:
     ; copy $0300-$032F to $80-$AF
     ldx #$00                                    ; 9075 A2 00
     loop
-        lda $0300,x                             ; 9077 BD 00 03
+        lda L0300_P1,x                          ; 9077 BD 00 03
         sta $80,x                               ; 907A 95 80
         inx                                     ; 907C E8
         cpx #$30                                ; 907D E0 30
@@ -2724,14 +2734,14 @@ R9075_LOAD_P1:
 
 ; ----------------------------------------------------------------------------
 ; Load P2 state into zero page
-; Copy $0380-$038F to $80-$AF
+; Copy 48 bytes from L0380_P2 to $80-$AF
 ; LF6_P2_INPUT_NEW -> L5B_INPUT_NEW (controller 2 edge)
 ; LF8_P2_INPUT_OLD -> L5C_INPUT_OLD (controller 2 state)
 ; #$0500 -> $57/$58
 R9092_LOAD_P2:
     ldx #$00                                    ; 9092 A2 00
     loop
-        lda $0380,x                             ; 9094 BD 80 03
+        lda L0380_P2,x                          ; 9094 BD 80 03
         sta $80,x                               ; 9097 95 80
         inx                                     ; 9099 E8
         cpx #$30                                ; 909A E0 30
@@ -2748,12 +2758,12 @@ R9092_LOAD_P2:
 
 ; ----------------------------------------------------------------------------
 ; Save P1 state from zero page
-; Copy $80-$AF to $0300-$032F
+; Copy 48 bytes from $80-$AF to L0300_P1
 R90AF_SAVE_P1:
     ldx #$00                                    ; 90AF A2 00
     loop
         lda $80,x                               ; 90B1 B5 80
-        sta $0300,x                             ; 90B3 9D 00 03
+        sta L0300_P1,x                          ; 90B3 9D 00 03
         inx                                     ; 90B6 E8
         cpx #$30                                ; 90B7 E0 30
     while_ne                                    ; 90B9 D0 F6
@@ -2761,12 +2771,12 @@ R90AF_SAVE_P1:
 
 ; ----------------------------------------------------------------------------
 ; Save P2 state from zero page
-; Copy $80-$AF to $0380-$03AF
+; Copy 48 bytes from $80-$AF to L0380_P2
 R90BC_SAVE_P2:
     ldx #$00                                    ; 90BC A2 00
     loop
         lda $80,x                               ; 90BE B5 80
-        sta $0380,x                             ; 90C0 9D 80 03
+        sta L0380_P2,x                          ; 90C0 9D 80 03
         inx                                     ; 90C3 E8
         cpx #$30                                ; 90C4 E0 30
     while_ne                                    ; 90C6 D0 F6
@@ -3220,7 +3230,7 @@ L92DF:  ldy     $47                             ; 92DF A4 47
             end_if
             jmp L93F9                           ; 937B 4C F9 93
         end_if
-        cmp     #$90                            ; 937E C9 90
+        cmp #$90                                ; 937E C9 90
         if_eq                                   ; 9380 D0 3B
             lda $47                             ; 9382 A5 47
             sec                                 ; 9384 38
@@ -3543,7 +3553,7 @@ L9532_TOP_5:
         end_if
     end_if
     lda L80_UPDATE_ROW                          ; 9580 A5 80
-    sta $0380                                   ; 9582 8D 80 03
+    sta L0380_P2_UPDATE_ROW                     ; 9582 8D 80 03
 L9585:
     ; enter top-level state 7.
     lda #$07                                    ; 9585 A9 07
@@ -3570,7 +3580,7 @@ L958A_TOP_7:
             lda L039E_P2_WINS                   ; 95A4 AD 9E 03
             cmp L0725_MAX_WINS                  ; 95A7 CD 25 07
             if_ne                               ; 95AA F0 0C
-                ldx $0731                       ; 95AC AE 31 07
+                ldx L0731_MUSIC_CHOICE          ; 95AC AE 31 07
                 lda LA261,x                     ; 95AF BD 61 A2
                 sta $06F5                       ; 95B2 8D F5 06
                 jmp L9646                       ; 95B5 4C 46 96
@@ -3600,18 +3610,18 @@ L958A_TOP_7:
     sta $58                                     ; 95E5 85 58
     jsr R96D4_GAME_OVER                         ; 95E7 20 D4 96
     lda #$0F                                    ; 95EA A9 0F
-    sta $0380                                   ; 95EC 8D 80 03
+    sta L0380_P2_UPDATE_ROW                     ; 95EC 8D 80 03
     lda #$0F                                    ; 95EF A9 0F
     sta L80_UPDATE_ROW                          ; 95F1 85 80
     lda #$00                                    ; 95F3 A9 00
     sta $61                                     ; 95F5 85 61
     lda #$01                                    ; 95F7 A9 01
-    sta $55                                     ; 95F9 85 55
+    sta L55_ROUND_WINNER                        ; 95F9 85 55
     lda L031E_P1_WINS                           ; 95FB AD 1E 03
     cmp L0725_MAX_WINS                          ; 95FE CD 25 07
     if_ne                                       ; 9601 F0 04
         lda #$02                                ; 9603 A9 02
-        sta $55                                 ; 9605 85 55
+        sta L55_ROUND_WINNER                    ; 9605 85 55
     end_if
     loop
         lda L43_CLOCK                           ; 9607 A5 43
@@ -3778,7 +3788,7 @@ R96D4_GAME_OVER:
 R96ED_WAIT_UPDATE_ALL_ROWS:
     lda #$0F                                    ; 96ED A9 0F
     sta L0300_P1_UPDATE_ROW                     ; 96EF 8D 00 03
-    sta $0380                                   ; 96F2 8D 80 03
+    sta L0380_P2_UPDATE_ROW                     ; 96F2 8D 80 03
     loop
        jsr RB654_NEXT_FRAME                     ; 96F5 20 54 B6
        lda L0300_P1_UPDATE_ROW                  ; 96F8 AD 00 03
@@ -3955,7 +3965,7 @@ L97F7:
         lda $073E                               ; 980F AD 3E 07
         sta L0727_NUM_PLAYERS                   ; 9812 8D 27 07
         lda $073F                               ; 9815 AD 3F 07
-        sta $0731                               ; 9818 8D 31 07
+        sta L0731_MUSIC_CHOICE                  ; 9818 8D 31 07
     end_if
     rts                                         ; 981B 60
 .endscope
@@ -3979,7 +3989,7 @@ L981C_TOP_0:
         lda $073E                               ; 9835 AD 3E 07
         sta L0727_NUM_PLAYERS                   ; 9838 8D 27 07
         lda $073F                               ; 983B AD 3F 07
-        sta $0731                               ; 983E 8D 31 07
+        sta L0731_MUSIC_CHOICE                  ; 983E 8D 31 07
     end_if
     lda #$06                                    ; 9841 A9 06
     sta $06F5                                   ; 9843 8D F5 06
@@ -3992,8 +4002,8 @@ L981C_TOP_0:
     sta $51                                     ; 9854 85 51
     lda #$FF                                    ; 9856 A9 FF
     sta L80_UPDATE_ROW                          ; 9858 85 80
-    sta $0300                                   ; 985A 8D 00 03
-    sta $0380                                   ; 985D 8D 80 03
+    sta L0300_P1_UPDATE_ROW                     ; 985A 8D 00 03
+    sta L0380_P2_UPDATE_ROW                     ; 985D 8D 80 03
     lda #$00                                    ; 9860 A9 00
     sta $36                                     ; 9862 85 36
     lda #$D0                                    ; 9864 A9 D0
@@ -4099,7 +4109,7 @@ L9912:
     sta $073D                                   ; 9920 8D 3D 07
     lda L0727_NUM_PLAYERS                       ; 9923 AD 27 07
     sta $073E                                   ; 9926 8D 3E 07
-    lda $0731                                   ; 9929 AD 31 07
+    lda L0731_MUSIC_CHOICE                      ; 9929 AD 31 07
     sta $073F                                   ; 992C 8D 3F 07
     lda #$00                                    ; 992F A9 00
     sta $70                                     ; 9931 85 70
@@ -4109,7 +4119,7 @@ L9912:
     sta L030B_P1_SPEED                          ; 9939 8D 0B 03
     sta L0727_NUM_PLAYERS                       ; 993C 8D 27 07
     lda #$03                                    ; 993F A9 03
-    sta $0731                                   ; 9941 8D 31 07
+    sta L0731_MUSIC_CHOICE                      ; 9941 8D 31 07
     lda #$44                                    ; 9944 A9 44
     sta LA4_VIRUS_BCD                           ; 9946 85 A4
     sta L0324_P1_VIRUS                          ; 9948 8D 24 03
@@ -4141,8 +4151,8 @@ L9953_TOP_1:
     sta L0725_MAX_WINS                          ; 9975 8D 25 07
     lda #$FF                                    ; 9978 A9 FF
     sta L80_UPDATE_ROW                          ; 997A 85 80
-    sta $0300                                   ; 997C 8D 00 03
-    sta $0380                                   ; 997F 8D 80 03
+    sta L0300_P1_UPDATE_ROW                     ; 997C 8D 00 03
+    sta L0380_P2_UPDATE_ROW                     ; 997F 8D 80 03
     lda L0316_P1_LEVEL                          ; 9982 AD 16 03
     cmp #$15                                    ; 9985 C9 15
     if_pl                                       ; 9987 30 05
@@ -4179,7 +4189,7 @@ L9953_TOP_1:
     lda #$00                                    ; 99CA A9 00
     sta $54                                     ; 99CC 85 54
     lda #$FF                                    ; 99CE A9 FF
-    sta $0300                                   ; 99D0 8D 00 03
+    sta L0300_P1_UPDATE_ROW                     ; 99D0 8D 00 03
     lda #$07                                    ; 99D3 A9 07
     sta $06F5                                   ; 99D5 8D F5 06
     loop
@@ -4230,24 +4240,24 @@ L9953_TOP_1:
         cmp #$02                                ; 9A33 C9 02
         if_eq                                   ; 9A35 D0 28
             lda LF5_P1_INPUT_NEW                ; 9A37 A5 F5
-            and #$01                            ; 9A39 29 01
+            and #$01 ; "right"                  ; 9A39 29 01
             if_ne                               ; 9A3B F0 0F
-                lda $0731                       ; 9A3D AD 31 07
+                lda L0731_MUSIC_CHOICE          ; 9A3D AD 31 07
                 cmp #$02                        ; 9A40 C9 02
                 if_ne                           ; 9A42 F0 08
                     lda #$03                    ; 9A44 A9 03
                     sta $06F1                   ; 9A46 8D F1 06
-                    inc $0731                   ; 9A49 EE 31 07
+                    inc L0731_MUSIC_CHOICE      ; 9A49 EE 31 07
                 end_if
             end_if
             lda LF5_P1_INPUT_NEW                ; 9A4C A5 F5
-            and #$02                            ; 9A4E 29 02
+            and #$02 ; "left"                   ; 9A4E 29 02
             if_ne                               ; 9A50 F0 0D
-                lda $0731                       ; 9A52 AD 31 07
+                lda L0731_MUSIC_CHOICE          ; 9A52 AD 31 07
                 if_ne                           ; 9A55 F0 08
                     lda #$03                    ; 9A57 A9 03
                     sta $06F1                   ; 9A59 8D F1 06
-                    dec $0731                   ; 9A5C CE 31 07
+                    dec L0731_MUSIC_CHOICE      ; 9A5C CE 31 07
                 end_if
             end_if
         end_if
@@ -4288,7 +4298,7 @@ L9953_TOP_1:
             jsr R9B42 ; Slider sprites          ; 9AA2 20 42 9B
             jsr R90BC_SAVE_P2                   ; 9AA5 20 BC 90
         end_if
-        ldx $0731                               ; 9AA8 AE 31 07
+        ldx L0731_MUSIC_CHOICE                  ; 9AA8 AE 31 07
         lda LA117,x                             ; 9AAB BD 17 A1
         sta L44_SPRITE_X                        ; 9AAE 85 44
         lda #$B7                                ; 9AB0 A9 B7
@@ -4658,8 +4668,8 @@ L9CD2:
     sta $58                                     ; 9CD4 85 58
     lda #$0F                                    ; 9CD6 A9 0F
     sta L80_UPDATE_ROW                          ; 9CD8 85 80
-    sta $0300                                   ; 9CDA 8D 00 03
-    sta $0380                                   ; 9CDD 8D 80 03
+    sta L0300_P1_UPDATE_ROW                     ; 9CDA 8D 00 03
+    sta L0380_P2_UPDATE_ROW                     ; 9CDD 8D 80 03
     lda #$80                                    ; 9CE0 A9 80
     jsr R9701_SLEEP                             ; 9CE2 20 01 97
     ; enter top-level state 4
@@ -4944,8 +4954,8 @@ cutscene:
     sta $5D                                     ; 9E85 85 5D
     sta $5E                                     ; 9E87 85 5E
     lda #$FF                                    ; 9E89 A9 FF
-    sta $0300                                   ; 9E8B 8D 00 03
-    sta $0380                                   ; 9E8E 8D 80 03
+    sta L0300_P1_UPDATE_ROW                     ; 9E8B 8D 00 03
+    sta L0380_P2_UPDATE_ROW                     ; 9E8E 8D 80 03
     jsr RB695_ENABLE_NMI                        ; 9E91 20 95 B6
     jsr RB689_ENABLE_VIDEO                      ; 9E94 20 89 B6
     ldx L8B_SPEED                               ; 9E97 A6 8B
@@ -5254,7 +5264,7 @@ LA105:  .byte $00,$C3,$D3                       ; A105 00 C3 D3
 ; Table used in R886C, indexed by $61, copied to L44_SPRITE_X.
 LA108:  .byte $00,$34,$B4                       ; A108 00 34 B4
 ; ----------------------------------------------------------------------------
-; Table used in R886C, indexed by $55, copied to L44_SPRITE_X.
+; Table used in R886C, indexed by L55_ROUND_WINNER, copied to L44_SPRITE_X.
 LA10B:  .byte $00,$34,$B4                       ; A10B 00 34 B4
 ; ----------------------------------------------------------------------------
 ; Table used in R886C, indexed by $43 bit 2, copied to L53_SPRITE_NUM.
@@ -5262,10 +5272,11 @@ LA10E:  .byte $06,$11                           ; A10E 06 11
         .byte $00,$40,$C0                       ; A110 00 40 C0
 
 ; ----------------------------------------------------------------------------
-; Table of sprite numbers, used in L9953_TOP_1, indexed by $0731.
+; Table of sprite numbers, used in L9953_TOP_1, indexed by L0731_MUSIC_CHOICE.
+; 7x3 or 5x3 box sprite (for outlining music choice)
 LA113:  .byte $04,$04,$05,$00                   ; A113 04 04 05 00
 ; ----------------------------------------------------------------------------
-; Table of sprite X-coordinates, used in L9953_TOP_1, indexed by $0731.
+; Table of sprite X-coordinates, used in L9953_TOP_1, indexed by L0731_MUSIC_CHOICE.
 LA117:  .byte $38,$70,$A7                       ; A117 38 70 A7
 
 ; ----------------------------------------------------------------------------
@@ -5339,7 +5350,7 @@ LA259:  .byte $26,$27,$26,$28
 ; Yellow virus marching animation
 LA25D:  .byte $29,$2A,$29,$2B
 ; ----------------------------------------------------------------------------
-; lookup table, used by ?, indexed by $0731.
+; lookup table, used by ?, indexed by L0731_MUSIC_CHOICE.
 ; copied to $06F5.
 LA261:  .byte $09,$0A,$09
 ; ----------------------------------------------------------------------------
@@ -5680,7 +5691,8 @@ LA777:  .byte $00,$01,$02,$03,$04,$05,$06,$07
         .byte $24,$25,$26,$27,$28,$29
 
 ; ----------------------------------------------------------------------------
-; lookup table, used by R8D70_DROP_PILL, indexed by LA38D,$8B + $8A
+; 80-byte lookup table, used by R8D70_DROP_PILL.
+; Indexed by LA38D,L8B_SPEED + L8A_EXTRA_SPEED
 ; Compared with L92_DROP_TIMER.
 ; Pill drop speed (frames per row).
 LA795:  .byte $45,$43,$41,$3F,$3D,$3B,$39,$37
@@ -5693,6 +5705,7 @@ LA795:  .byte $45,$43,$41,$3F,$3D,$3B,$39,$37
         .byte $04,$04,$04,$04,$03,$03,$03,$03
         .byte $03,$02,$02,$02,$02,$02,$01,$01
         .byte $01,$01,$01,$01,$01,$01,$01,$01
+
         .byte $00,$01,$02,$03,$04,$05,$06,$03
 
 ; ----------------------------------------------------------------------------
@@ -6144,8 +6157,8 @@ RB24F_CHECK_WIN:
         end_if
     end_if
     lda #$0F                                    ; B25C A9 0F
-    sta $0300                                   ; B25E 8D 00 03
-    sta $0380                                   ; B261 8D 80 03
+    sta L0300_P1_UPDATE_ROW                     ; B25E 8D 00 03
+    sta L0380_P2_UPDATE_ROW                     ; B261 8D 80 03
     lda #$40                                    ; B264 A9 40
     jsr R9701_SLEEP                             ; B266 20 01 97
     lda L0324_P1_VIRUS                          ; B269 AD 24 03
@@ -6163,7 +6176,7 @@ RB24F_CHECK_WIN:
         jsr RB337_STAGE_CLEAR                   ; B283 20 37 B3
         jsr R90AF_SAVE_P1                       ; B286 20 AF 90
         lda #$01                                ; B289 A9 01
-        sta $55                                 ; B28B 85 55
+        sta L55_ROUND_WINNER                    ; B28B 85 55
         jmp LB2A2                               ; B28D 4C A2 B2
     end_if
     lda L03A4_P2_VIRUS                          ; B290 AD A4 03
@@ -6172,15 +6185,15 @@ RB24F_CHECK_WIN:
         jsr RB337_STAGE_CLEAR                   ; B298 20 37 B3
         jsr R90BC_SAVE_P2                       ; B29B 20 BC 90
         lda #$02                                ; B29E A9 02
-        sta $55                                 ; B2A0 85 55
+        sta L55_ROUND_WINNER                    ; B2A0 85 55
     end_if
 LB2A2:
     lda #$0F                                    ; B2A2 A9 0F
-    sta $0300                                   ; B2A4 8D 00 03
-    sta $0380                                   ; B2A7 8D 80 03
+    sta L0300_P1_UPDATE_ROW                     ; B2A4 8D 00 03
+    sta L0380_P2_UPDATE_ROW                     ; B2A7 8D 80 03
     lda #$10                                    ; B2AA A9 10
     jsr R9701_SLEEP                             ; B2AC 20 01 97
-    ldx $0731                                   ; B2AF AE 31 07
+    ldx L0731_MUSIC_CHOICE                      ; B2AF AE 31 07
     lda LA261,x                                 ; B2B2 BD 61 A2
     sta $06F5                                   ; B2B5 8D F5 06
     lda L0727_NUM_PLAYERS                       ; B2B8 AD 27 07
@@ -6197,13 +6210,13 @@ LB2A2:
     ora L52_REDRAW_FLAGS                        ; B2CB 05 52
     sta L52_REDRAW_FLAGS                        ; B2CD 85 52
     lda #$0F                                    ; B2CF A9 0F
-    sta $0300                                   ; B2D1 8D 00 03
-    sta $0380                                   ; B2D4 8D 80 03
+    sta L0300_P1_UPDATE_ROW                     ; B2D1 8D 00 03
+    sta L0380_P2_UPDATE_ROW                     ; B2D4 8D 80 03
     lda #$10                                    ; B2D7 A9 10
     jsr R9701_SLEEP                             ; B2D9 20 01 97
     lda #$0F                                    ; B2DC A9 0F
-    sta $0300                                   ; B2DE 8D 00 03
-    sta $0380                                   ; B2E1 8D 80 03
+    sta L0300_P1_UPDATE_ROW                     ; B2DE 8D 00 03
+    sta L0380_P2_UPDATE_ROW                     ; B2E1 8D 80 03
     loop
         lda L43_CLOCK                           ; B2E4 A5 43
         and #$08                                ; B2E6 29 08
@@ -6236,8 +6249,8 @@ LB2A2:
         ldy #$05                                ; B31D A0 05
         jsr RB894_FILL_PAGES ; page 4-5 with FF ; B31F 20 94 B8
         lda #$0F                                ; B322 A9 0F
-        sta $0300                               ; B324 8D 00 03
-        sta $0380                               ; B327 8D 80 03
+        sta L0300_P1_UPDATE_ROW                 ; B324 8D 00 03
+        sta L0380_P2_UPDATE_ROW                 ; B327 8D 80 03
         lda #$10                                ; B32A A9 10
         jsr R9701_SLEEP                         ; B32C 20 01 97
         ; enter top-level state 3
@@ -6498,14 +6511,14 @@ LB4C1:
 ; ----------------------------------------------------------------------------
 ; RB43F routine 13.
 LB4CF:
-        lda L43_CLOCK                           ; B4CF A5 43
-        cmp #$C0                                ; B4D1 C9 C0
-        bcc LB4EF                               ; B4D3 90 1A
-        and #$0F                                ; B4D5 29 0F
-        tax                                     ; B4D7 AA
-        lda LA085,x                             ; B4D8 BD 85 A0
-        sta L66_PALETTE                         ; B4DB 85 66
-        jmp LB4EF                               ; B4DD 4C EF B4
+    lda L43_CLOCK                               ; B4CF A5 43
+    cmp #$C0                                    ; B4D1 C9 C0
+    bcc LB4EF                                   ; B4D3 90 1A
+    and #$0F                                    ; B4D5 29 0F
+    tax                                         ; B4D7 AA
+    lda LA085,x                                 ; B4D8 BD 85 A0
+    sta L66_PALETTE                             ; B4DB 85 66
+    jmp LB4EF                                   ; B4DD 4C EF B4
 
 ; ----------------------------------------------------------------------------
 ; RB43F routine 18.
@@ -6733,7 +6746,7 @@ RB5B8:
             tax                                 ; B5F9 AA
             lda L9FF8,x                         ; B5FA BD F8 9F
             ; MED: 6 -> 7, 11 -> 5, 15 -> 6, 21 -> 8
-            ; HI: 6 -> 2, 11 -> 1, 4 -> 4
+            ; HI: 6 -> 2, 11 -> 1, 15 -> 4
             ; 1-8
             sta L3A_V2_X                        ; B5FD 85 3A
             lda L3A_V2_X                        ; B5FF A5 3A
@@ -7932,7 +7945,7 @@ LCF00:
         .byte $D2,$D1,$FF,$D0,$FF,$D1,$D1,$FF
 
 ; ----------------------------------------------------------------------------
-; 128 numbers from 0-8. Used in R8E8D, indexed by $A7.
+; 128 numbers from 0-8. Used in R8E8D, indexed by LA7_PILL_INDEX.
 ; Used to index LA7FD and LA806.
 LCF80:
         .byte $00,$00,$07,$02,$01,$05,$03,$05,$00,$06,$06,$03,$05,$00,$05,$03 ; CF80
