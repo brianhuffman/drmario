@@ -27,6 +27,9 @@
 .define L44_SPRITE_X     $44
 .define L45_SPRITE_Y     $45
 .define L46_TOP_STATE    $46
+.define L47_TEMP         $47
+.define L48_TEMP         $48
+.define L49_TEMP         $49
 .define L52_REDRAW_FLAGS $52
 .define L53_SPRITE_NUM   $53
 .define L55_ROUND_WINNER $55
@@ -35,6 +38,8 @@
 .define L5B_INPUT_NEW    $5B
 .define L5C_INPUT_OLD    $5C
 .define L66_PALETTE      $66
+.define L69_DEMO_DELAY   $69
+.define L70_DEMO_INPUT   $70
 .define L72_V1_COUNT     $72
 .define L73_V2_COUNT     $73
 .define L74_V3_COUNT     $74
@@ -219,9 +224,9 @@ L8036:
     ldx #$0A                                    ; 8079 A2 0A
 L807B:
     lda $070F,x                                 ; 807B BD 0F 07
-    sta $47                                     ; 807E 85 47
+    sta L47_TEMP                                ; 807E 85 47
     lda L9FEE-1,x                               ; 8080 BD ED 9F
-    cmp $47                                     ; 8083 C5 47
+    cmp L47_TEMP                                ; 8083 C5 47
     bne L808D                                   ; 8085 D0 06
     dex                                         ; 8087 CA
     bne L807B                                   ; 8088 D0 F1
@@ -446,8 +451,8 @@ L8206_TOP_3:
     sta L8A_EXTRA_SPEED                         ; 8250 85 8A
     sta $A0                                     ; 8252 85 A0
     jsr R82A0_INIT_780                          ; 8254 20 A0 82
-    jsr R8E8D                                   ; 8257 20 8D 8E
-    jsr R8E8D                                   ; 825A 20 8D 8E
+    jsr R8E8D_NEW_PILL                          ; 8257 20 8D 8E
+    jsr R8E8D_NEW_PILL                          ; 825A 20 8D 8E
     lda #$01                                    ; 825D A9 01
     sta L90_PILL_COUNT_0                        ; 825F 85 90
     jsr R8FA5_SAVE_STATS                        ; 8261 20 A5 8F
@@ -486,14 +491,14 @@ L8206_TOP_3:
 ; Called once in L8206_TOP_3.
 R82A0_INIT_780:
     lda #$80                                    ; 82A0 A9 80
-    sta $47                                     ; 82A2 85 47
+    sta L47_TEMP                                ; 82A2 85 47
     lda #$00                                    ; 82A4 A9 00
     sta $48                                     ; 82A6 85 48
     loop
         ldx #$17                                ; 82A8 A2 17
         ldy #$02                                ; 82AA A0 02
         jsr RB771_STEP_LFSR                     ; 82AC 20 71 B7
-        ldx $47                                 ; 82AF A6 47
+        ldx L47_TEMP                            ; 82AF A6 47
         dex                                     ; 82B1 CA
         lda $17                                 ; 82B2 A5 17
         and #$0F                                ; 82B4 29 0F
@@ -508,7 +513,7 @@ R82A0_INIT_780:
             sbc #$09                            ; 82C0 E9 09
         forever                                 ; 82C2 4C B9 82
         sta $0780,x                             ; 82C5 9D 80 07
-        dec $47                                 ; 82C8 C6 47
+        dec L47_TEMP                            ; 82C8 C6 47
     while_ne                                    ; 82CA D0 DC
     ; enter top-level state 8
     lda #$08                                    ; 82CC A9 08
@@ -621,7 +626,7 @@ R8321_PRINT_PLAYFIELD_ROW:
         loop
             lda ($57),y                         ; 8376 B1 57
             and #$F0                            ; 8378 29 F0
-            cmp #$B0                            ; 837A C9 B0
+            cmp #$B0 ; marked                   ; 837A C9 B0
             if_eq                               ; 837C D0 09
                 lda ($57),y                     ; 837E B1 57
                 and #$0F                        ; 8380 29 0F
@@ -1186,32 +1191,33 @@ R8712:
     rts                                         ; 871E 60
 
 ; ----------------------------------------------------------------------------
-R871F:
+; Add sprite for the current pill to the OAM.
+R871F_THIS_PILL_SPRITE:
     lda L0727_NUM_PLAYERS                       ; 871F AD 27 07
     sec                                         ; 8722 38
     sbc #$01                                    ; 8723 E9 01
     asl a                                       ; 8725 0A
-    sta $47                                     ; 8726 85 47
+    sta L47_TEMP                                ; 8726 85 47
     lda $58                                     ; 8728 A5 58
     sec                                         ; 872A 38
     sbc #$04                                    ; 872B E9 04
     clc                                         ; 872D 18
-    adc $47                                     ; 872E 65 47
+    adc L47_TEMP                                ; 872E 65 47
     tay                                         ; 8730 A8
     lda LA6FB,y                                 ; 8731 B9 FB A6
-    ; y = coordinate of left edge of playfield
-    sta $47                                     ; 8734 85 47
+    ; a = coordinate of left edge of playfield
+    sta L47_TEMP                                ; 8734 85 47
     lda L85_PILL_COLUMN                         ; 8736 A5 85
     asl a                                       ; 8738 0A
     asl a                                       ; 8739 0A
     asl a                                       ; 873A 0A
     clc                                         ; 873B 18
-    adc $47                                     ; 873C 65 47
+    adc L47_TEMP                                ; 873C 65 47
     sta L44_SPRITE_X                            ; 873E 85 44
     ldx L86_PILL_ROW                            ; 8740 A6 86
     lda LA484,x                                 ; 8742 BD 84 A4
     sta L45_SPRITE_Y                            ; 8745 85 45
-; from this point, similar to R88CB
+; from this point, similar to R88CB_NEXT_PILL_SPRITE
     ldy L42_OAM_OFFSET                          ; 8747 A4 42
     lda LA6_PILL_SIZE                           ; 8749 A5 A6
     asl a                                       ; 874B 0A
@@ -1222,16 +1228,16 @@ R871F:
     lda LA494,x                                 ; 8751 BD 94 A4
     tax                                         ; 8754 AA
     lda L81_PILL_COLOR_0                        ; 8755 A5 81
-    sta $47                                     ; 8757 85 47
+    sta L47_TEMP                                ; 8757 85 47
     jsr R8772_PILL_SPRITE                       ; 8759 20 72 87
     lda L82_PILL_COLOR_1                        ; 875C A5 82
-    sta $47                                     ; 875E 85 47
+    sta L47_TEMP                                ; 875E 85 47
     jsr R8772_PILL_SPRITE                       ; 8760 20 72 87
     lda L83_PILL_COLOR_2                        ; 8763 A5 83
-    sta $47                                     ; 8765 85 47
+    sta L47_TEMP                                ; 8765 85 47
     jsr R8772_PILL_SPRITE                       ; 8767 20 72 87
     lda L84_PILL_COLOR_3                        ; 876A A5 84
-    sta $47                                     ; 876C 85 47
+    sta L47_TEMP                                ; 876C 85 47
     jsr R8772_PILL_SPRITE                       ; 876E 20 72 87
     rts                                         ; 8771 60
 
@@ -1296,7 +1302,7 @@ R87A2_LEVEL_SPRITES:
                 jmp break                       ; 87C3 4C 6B 88
             end_if
             jsr R9075_LOAD_P1                   ; 87C6 20 75 90
-            jsr R89B6 ; Mario sprite            ; 87C9 20 B6 89
+            jsr R89B6_MARIO_SPRITE              ; 87C9 20 B6 89
             jsr R88B1                           ; 87CC 20 B1 88
             jmp break                           ; 87CF 4C 6B 88
         end_if
@@ -1319,7 +1325,7 @@ R87A2_LEVEL_SPRITES:
                 sta L44_SPRITE_X                ; 87F5 85 44
                 lda #$33                        ; 87F7 A9 33
                 sta L45_SPRITE_Y                ; 87F9 85 45
-                jsr R88CB                       ; 87FB 20 CB 88
+                jsr R88CB_NEXT_PILL_SPRITE      ; 87FB 20 CB 88
 
                 lda $039A                       ; 87FE AD 9A 03
                 sta L9A_NEXT_COLOR_0            ; 8801 85 9A
@@ -1335,7 +1341,7 @@ R87A2_LEVEL_SPRITES:
                 sta L44_SPRITE_X                ; 8819 85 44
                 lda #$33                        ; 881B A9 33
                 sta L45_SPRITE_Y                ; 881D 85 45
-                jsr R88CB                       ; 881F 20 CB 88
+                jsr R88CB_NEXT_PILL_SPRITE      ; 881F 20 CB 88
             end_if
         end_if
         lda #$2B                                ; 8822 A9 2B
@@ -1425,15 +1431,15 @@ R88B1:
     and #$01                                    ; 88B3 29 01
     asl a                                       ; 88B5 0A
     asl a                                       ; 88B6 0A
-    sta $47                                     ; 88B7 85 47
+    sta L47_TEMP                                ; 88B7 85 47
     ldx $7D                                     ; 88B9 A6 7D
     lda LA401,x                                 ; 88BB BD 01 A4
     clc                                         ; 88BE 18
-    adc $47                                     ; 88BF 65 47
+    adc L47_TEMP                                ; 88BF 65 47
     sta L44_SPRITE_X                            ; 88C1 85 44
     lda LA41B,x                                 ; 88C3 BD 1B A4
     clc                                         ; 88C6 18
-    adc $47                                     ; 88C7 65 47
+    adc L47_TEMP                                ; 88C7 65 47
     sta L45_SPRITE_Y                            ; 88C9 85 45
 ; Adds 4 entries to the sprite attribute table.
 ; Inputs:
@@ -1441,7 +1447,7 @@ R88B1:
 ; L9A_NEXT_COLOR_0 L9B_NEXT_COLOR_1 L9C_NEXT_COLOR_2 L9D_NEXT_COLOR_3: 4 pill colors (0-2)
 ; 4×LA3_NEXT_SIZE+LA2_NEXT_DIR used as index to LA494.
 ; called from R87A2
-R88CB:
+R88CB_NEXT_PILL_SPRITE:
     ldy L42_OAM_OFFSET                          ; 88CB A4 42
     lda LA3_NEXT_SIZE                           ; 88CD A5 A3
     asl a                                       ; 88CF 0A
@@ -1598,7 +1604,7 @@ L89B5:
 ; Load sprite number $7E + #10 at (192,75)
 ; Pill-tossing mario sprites
 ; Called once in R87A2.
-R89B6:
+R89B6_MARIO_SPRITE:
     lda #$C0                                    ; 89B6 A9 C0
     sta L44_SPRITE_X                            ; 89B8 85 44
     lda #$4B                                    ; 89BA A9 4B
@@ -2024,8 +2030,9 @@ L8C28:
 
 ; ----------------------------------------------------------------------------
 ; R9BB9 routine 1.
-L8C6F:  jsr     R8C73                           ; 8C6F 20 73 8C
-        rts                                     ; 8C72 60
+L8C6F:
+    jsr R8C73                                   ; 8C6F 20 73 8C
+    rts                                         ; 8C72 60
 
 ; ----------------------------------------------------------------------------
 ; Jump to one of 9 subroutines based on $87.
@@ -2033,20 +2040,21 @@ L8C6F:  jsr     R8C73                           ; 8C6F 20 73 8C
 R8C73:
     lda $87                                     ; 8C73 A5 87
     jsr RB8AC_JUMP_TABLE                        ; 8C75 20 AC B8
-    .word L8C8A ; 0: reset combo count, state 1
-    .word L8C91 ; 1: state 2
-    .word L8C91 ; 2: state 3
-    .word L8C94 ; 3: tiles fall (state 2 if tiles fell, state 4 if none fell)
-    .word L9413 ; 4: $94 = 0, state 5.
-    .word L91FB ; 5: kill viruses
-    .word L9469
-    .word L92DB
+    .word L8C8A_0 ; 0: reset combo count, state 1
+    .word L8C91_1 ; 1: state 2
+    .word L8C91_2 ; 2: state 3
+    .word L8C94_3_TILES_FALL ; to state 2 if tiles fell, state 4 if none fell
+    .word L9413_4 ; $94 = 0, state 5.
+    .word L91FB_5_CHECK_HORIZONTAL_CLEAR
+    .word L9469_6_CHECK_VERTICAL_CLEAR ; to state 7
+    .word L92DB_7_FIX_SPLIT_PILLS ; to state 8 if $94 = 0, else state 1.
+
     .word L8D4F
 
 ; ----------------------------------------------------------------------------
 ; R8C73 routine 0.
 ; Go to state 1.
-L8C8A:
+L8C8A_0:
     lda #$00
     sta LAD_VIRUS_COMBO                         ; 8C8C 85 AD
     inc $87                                     ; 8C8E E6 87
@@ -2055,7 +2063,8 @@ L8C8A:
 ; ----------------------------------------------------------------------------
 ; R8C73 routine 1 and 2.
 ; Go to state 2 and 3 (respectively).
-L8C91:
+L8C91_1:
+L8C91_2:
     inc $87                                     ; 8C91 E6 87
     rts                                         ; 8C93 60
 
@@ -2063,7 +2072,7 @@ L8C91:
 ; R8C73 routine 3.
 ; Make tiles fall down.
 ; TODO: What are $47 and $06F1 used for?
-L8C94:
+L8C94_3_TILES_FALL:
     lda L80_UPDATE_ROW                          ; 8C94 A5 80
     cmp #$FF                                    ; 8C96 C9 FF
     if_eq_jmp                                   ; 8C98 F0 03 4C 4E 8D
@@ -2193,7 +2202,7 @@ L8D56:
     else                                        ; 8D5C 4C 6F 8D
         lda #$00                                ; 8D5F A9 00
         sta $A1                                 ; 8D61 85 A1
-        jsr R871F                               ; 8D63 20 1F 87
+        jsr R871F_THIS_PILL_SPRITE              ; 8D63 20 1F 87
         jsr R8D70_DROP_PILL ; may go to state 1 ; 8D66 20 70 8D
         jsr R8DBF_PILL_MOVE                     ; 8D69 20 BF 8D
         jsr R8E2B_PILL_ROTATE                   ; 8D6C 20 2B 8E
@@ -2383,7 +2392,7 @@ R8E60_CHECK_ROTATE:
 .endscope ;L8D56
 
 ; ----------------------------------------------------------------------------
-R8E8D:
+R8E8D_NEW_PILL:
 ; L81_PILL_COLOR_0 <- L9A_NEXT_COLOR_0
 ; L82_PILL_COLOR_1 <- L9B_NEXT_COLOR_1
 ; L83_PILL_COLOR_2 <- L9C_NEXT_COLOR_2
@@ -2397,7 +2406,7 @@ R8E8D:
 ; LA7_PILL_INDEX &= #$7F
 ; $7D <- #$00
 ; LA2_NEXT_DIR <- #$00
-; LA3_NEXT_SHAPE <- #$02
+; LA3_NEXT_SIZE <- #$02
 ; L85_PILL_COLUMN <- #$03
 ; L86_PILL_ROW <- #$0F
 ; inc L90_PILL_COUNT_0
@@ -2521,7 +2530,7 @@ R8E8D:
     end_if
     lda #$00                                    ; 8F47 A9 00
     sta $8F                                     ; 8F49 85 8F
-    ; redraw ?
+    ; bit 0: redraw pill count (unused)
     lda L52_REDRAW_FLAGS                        ; 8F4B A5 52
     ora #$01                                    ; 8F4D 09 01
     sta L52_REDRAW_FLAGS                        ; 8F4F 85 52
@@ -2881,33 +2890,33 @@ R9134:
         lda LF5_P1_INPUT_NEW                    ; 9147 A5 F5
         cmp #$10 ; "start"                      ; 9149 C9 10
         if_ne                                   ; 914B F0 3E
-            lda $69                             ; 914D A5 69
+            lda L69_DEMO_DELAY                  ; 914D A5 69
             if_ne                               ; 914F F0 05
-                dec $69                         ; 9151 C6 69
+                dec L69_DEMO_DELAY              ; 9151 C6 69
             else                                ; 9153 4C 7D 91
                 ldx #$00                        ; 9156 A2 00
                 lda ($36,x)                     ; 9158 A1 36
-                sta $47                         ; 915A 85 47
+                sta L47_TEMP                    ; 915A 85 47
                 jsr R91C2_INCREMENT_L36         ; 915C 20 C2 91
-                lda $70                         ; 915F A5 70
-                eor $47                         ; 9161 45 47
-                and $47                         ; 9163 25 47
+                lda L70_DEMO_INPUT              ; 915F A5 70
+                eor L47_TEMP                    ; 9161 45 47
+                and L47_TEMP                    ; 9163 25 47
                 sta LF5_P1_INPUT_NEW            ; 9165 85 F5
-                lda $47                         ; 9167 A5 47
-                sta $70                         ; 9169 85 70
+                lda L47_TEMP                    ; 9167 A5 47
+                sta L70_DEMO_INPUT              ; 9169 85 70
                 ldx #$00                        ; 916B A2 00
                 lda ($36,x)                     ; 916D A1 36
-                sta $69                         ; 916F 85 69
+                sta L69_DEMO_DELAY              ; 916F 85 69
                 jsr R91C2_INCREMENT_L36         ; 9171 20 C2 91
                 lda $37                         ; 9174 A5 37
-                cmp #$D2                        ; 9176 C9 D2
+                cmp #>$D200                     ; 9176 C9 D2
                 beq L9186                       ; 9178 F0 0C
                 jmp L9181                       ; 917A 4C 81 91
             end_if
             lda #$00                            ; 917D A9 00
             sta LF5_P1_INPUT_NEW                ; 917F 85 F5
         L9181:
-            lda $70                             ; 9181 A5 70
+            lda L70_DEMO_INPUT                  ; 9181 A5 70
             sta LF7_P1_INPUT_OLD                ; 9183 85 F7
             rts                                 ; 9185 60
 
@@ -2917,7 +2926,7 @@ R9134:
             sta L46_TOP_STATE                   ; 9188 85 46
             rts                                 ; 918A 60
         end_if
-        lda #$D0                                ; 918B A9 D0
+        lda #>LD000                             ; 918B A9 D0
         sta $37                                 ; 918D 85 37
         rts                                     ; 918F 60
     end_if
@@ -2925,25 +2934,25 @@ R9134:
 .scope
     jsr RB7C7_GET_INPUT                         ; 9190 20 C7 B7
     lda LF7_P1_INPUT_OLD                        ; 9193 A5 F7
-    cmp $70                                     ; 9195 C5 70
+    cmp L70_DEMO_INPUT                          ; 9195 C5 70
     beq L91B8                                   ; 9197 F0 1F
     ldx #$00                                    ; 9199 A2 00
-    lda $70                                     ; 919B A5 70
+    lda L70_DEMO_INPUT                          ; 919B A5 70
     sta ($36,x)                                 ; 919D 81 36
     jsr R91C2_INCREMENT_L36                     ; 919F 20 C2 91
-    lda $69                                     ; 91A2 A5 69
+    lda L69_DEMO_DELAY                          ; 91A2 A5 69
     sta ($36,x)                                 ; 91A4 81 36
     jsr R91C2_INCREMENT_L36                     ; 91A6 20 C2 91
     lda $37                                     ; 91A9 A5 37
     cmp #$D2                                    ; 91AB C9 D2
     beq L91BB                                   ; 91AD F0 0C
     lda LF7_P1_INPUT_OLD                        ; 91AF A5 F7
-    sta $70                                     ; 91B1 85 70
+    sta L70_DEMO_INPUT                          ; 91B1 85 70
     lda #$00                                    ; 91B3 A9 00
-    sta $69                                     ; 91B5 85 69
+    sta L69_DEMO_DELAY                          ; 91B5 85 69
     rts                                         ; 91B7 60
 L91B8:
-    inc $69                                     ; 91B8 E6 69
+    inc L69_DEMO_DELAY                          ; 91B8 E6 69
     rts                                         ; 91BA 60
 L91BB:
     lda #$00                                    ; 91BB A9 00
@@ -2976,21 +2985,21 @@ R91D0_CHECKSUM:
     sta $48                                     ; 91D2 85 48
     ldy #$00                                    ; 91D4 A0 00
     sty $47                                     ; 91D6 84 47
-    sty $49                                     ; 91D8 84 49
+    sty L49_TEMP                                ; 91D8 84 49
     sty L0740_CHECKSUM_FAIL                     ; 91DA 8C 40 07
     loop
         loop
             lda ($47),y                         ; 91DD B1 47
             clc                                 ; 91DF 18
-            adc $49                             ; 91E0 65 49
-            sta $49                             ; 91E2 85 49
+            adc L49_TEMP                        ; 91E0 65 49
+            sta L49_TEMP                        ; 91E2 85 49
             iny                                 ; 91E4 C8
         while_ne                                ; 91E5 D0 F6
         inc $48                                 ; 91E7 E6 48
         lda $48                                 ; 91E9 A5 48
         cmp #$BE                                ; 91EB C9 BE
     while_ne                                    ; 91ED D0 EE
-    lda $49                                     ; 91EF A5 49
+    lda L49_TEMP                                ; 91EF A5 49
     cmp #$C1                                    ; 91F1 C9 C1
     if_ne                                       ; 91F3 F0 05
         lda #$FF                                ; 91F5 A9 FF
@@ -3000,7 +3009,11 @@ R91D0_CHECKSUM:
 
 ; ----------------------------------------------------------------------------
 ; R8C73 routine 5.
-L91FB:
+; This routine is very similar to L9469_6.
+; Check for horizontal clears.
+; Return immediately if $94 is nonzero and rows are still being updated.
+; Otherwise, go to state 6 when done.
+L91FB_5_CHECK_HORIZONTAL_CLEAR:
 .scope
     lda $94                                     ; 91FB A5 94
     if_ne                                       ; 91FD F0 09
@@ -3011,6 +3024,12 @@ L91FB:
         end_if
     end_if
 
+    ; local variables:
+    ; L59_TEMP = Board position (0 to 127, top to bottom, left to right)
+    ; L5A_TEMP = Advance position (to the right)
+    ; L47_TEMP = Length of consecutive run - 1
+    ; L48_TEMP = Color to match
+    ; L48_TEMP is also input to R944B.
     lda #$00                                    ; 9208 A9 00
     sta L59_TEMP                                ; 920A 85 59
     loop
@@ -3018,36 +3037,37 @@ L91FB:
             lda L59_TEMP                        ; 920C A5 59
             sta L5A_TEMP                        ; 920E 85 5A
             lda #$00                            ; 9210 A9 00
-            sta $47                             ; 9212 85 47
+            sta L47_TEMP                        ; 9212 85 47
             ldy L59_TEMP                        ; 9214 A4 59
             lda ($57),y                         ; 9216 B1 57
-            sta $48                             ; 9218 85 48
+            sta L48_TEMP                        ; 9218 85 48
             cmp #$F0                            ; 921A C9 F0
             if_cc_jmp                           ; 921C 90 03 4C AD 92
-                lda $48                         ; 9221 A5 48
+                lda L48_TEMP                    ; 9221 A5 48
                 and #$0F                        ; 9223 29 0F
-                sta $48                         ; 9225 85 48
+                sta L48_TEMP                    ; 9225 85 48
                 loop
                     inc L5A_TEMP                ; 9227 E6 5A
                     lda L5A_TEMP                ; 9229 A5 5A
                     and #$07                    ; 922B 29 07
-                    beq break                   ; 922D F0 0F
+                    beq break ; end of row      ; 922D F0 0F
                     ldy L5A_TEMP                ; 922F A4 5A
                     lda ($57),y                 ; 9231 B1 57
-                    and #$0F                    ; 9233 29 0F
-                    cmp $48                     ; 9235 C5 48
-                    bne break                   ; 9237 D0 05
-                    inc $47                     ; 9239 E6 47
+                    and #$0F ; ignore shape     ; 9233 29 0F
+                    cmp L48_TEMP                ; 9235 C5 48
+                    bne break ; wrong color     ; 9237 D0 05
+                    inc L47_TEMP                ; 9239 E6 47
                 forever                         ; 923B 4C 27 92
-                lda $47                         ; 923E A5 47
+                lda L47_TEMP                    ; 923E A5 47
                 cmp #$03                        ; 9240 C9 03
-                if_pl                           ; 9242 30 62
+                if_pl ; at least 4-in-a-row     ; 9242 30 62
+                    ; record cleared color
                     inc $8F                     ; 9244 E6 8F
                     sta $8E                     ; 9246 85 8E
                     jsr R944B                   ; 9248 20 4B 94
                     lda $A1                     ; 924B A5 A1
                     clc                         ; 924D 18
-                    adc $47                     ; 924E 65 47
+                    adc L47_TEMP                ; 924E 65 47
                     sta $A1                     ; 9250 85 A1
                     inc $A1                     ; 9252 E6 A1
                     lda L59_TEMP                ; 9254 A5 59
@@ -3057,7 +3077,7 @@ L91FB:
                     lsr a                       ; 925A 4A
                     sta $95                     ; 925B 85 95
                     lda L5A_TEMP                ; 925D A5 5A
-                    sta $49                     ; 925F 85 49
+                    sta L49_TEMP                ; 925F 85 49
                     lda L59_TEMP                ; 9261 A5 59
                     sta L5A_TEMP                ; 9263 85 5A
                     loop
@@ -3087,14 +3107,14 @@ L91FB:
                         end_if
                         lda ($57),y             ; 9290 B1 57
                         and #$0F                ; 9292 29 0F
-                        ora #$B0                ; 9294 09 B0
+                        ora #$B0 ; marked       ; 9294 09 B0
                         sta ($57),y             ; 9296 91 57
                         inc L5A_TEMP            ; 9298 E6 5A
                         ldy L5A_TEMP            ; 929A A4 5A
-                        cpy $49                 ; 929C C4 49
+                        cpy L49_TEMP            ; 929C C4 49
                     while_ne                    ; 929E D0 C5
                     inc $94                     ; 92A0 E6 94
-                    lda $49                     ; 92A2 A5 49
+                    lda L49_TEMP                ; 92A2 A5 49
                     sta L5A_TEMP                ; 92A4 85 5A
                 end_if
                 lda L5A_TEMP                    ; 92A6 A5 5A
@@ -3132,203 +3152,217 @@ L92DA:
 
 ; ----------------------------------------------------------------------------
 ; R8C73 routine 7.
-L92DB:
-.scope
-        ldy     #$7F                            ; 92DB A0 7F
-        sty     $47                             ; 92DD 84 47
-L92DF:  ldy     $47                             ; 92DF A4 47
-        lda     ($57),y                         ; 92E1 B1 57
-        and     #$F0                            ; 92E3 29 F0
-        cmp     #$B0                            ; 92E5 C9 B0
-        if_eq                                   ; 92E7 D0 09
-            lda ($57),y                         ; 92E9 B1 57
-            ora #$F0                            ; 92EB 09 F0
-            sta ($57),y                         ; 92ED 91 57
-            jmp L93F9                           ; 92EF 4C F9 93
-        end_if
-        cmp #$40                                ; 92F2 C9 40
-        if_eq                                   ; 92F4 D0 1F
-            lda $47                             ; 92F6 A5 47
-            clc                                 ; 92F8 18
-            adc #$08                            ; 92F9 69 08
-            tay                                 ; 92FB A8
-            lda ($57),y                         ; 92FC B1 57
-            and #$F0                            ; 92FE 29 F0
-            cmp #$90                            ; 9300 C9 90
-            if_ne                                   ; 9302 F0 0E
-                cmp #$50                        ; 9304 C9 50
-                if_ne                           ; 9306 F0 0A
-                    ldy $47                     ; 9308 A4 47
-                    lda ($57),y                 ; 930A B1 57
-                    and #$0F                    ; 930C 29 0F
-                    ora #$80                    ; 930E 09 80
-                    sta ($57),y                 ; 9310 91 57
+; Loop over playfield from bottom to top, right to left.
+; If any pill is disconnected from its neighbor,
+; replace it with a more rounded pill shape.
+; If $94 = 0 then state 8, else state 1.
+L92DB_7_FIX_SPLIT_PILLS:
+    ldy #$7F                                    ; 92DB A0 7F
+    sty L47_TEMP                                ; 92DD 84 47
+    loop
+        begin
+            ldy L47_TEMP                        ; 92DF A4 47
+            lda ($57),y                         ; 92E1 B1 57
+            and #$F0 ; ignore color             ; 92E3 29 F0
+            cmp #$B0 ; marked                   ; 92E5 C9 B0
+            if_eq                               ; 92E7 D0 09
+                lda ($57),y                     ; 92E9 B1 57
+                ora #$F0 ; empty pill           ; 92EB 09 F0
+                sta ($57),y                     ; 92ED 91 57
+                jmp break                       ; 92EF 4C F9 93
+            end_if
+            cmp #$40 ; top half                 ; 92F2 C9 40
+            if_eq                               ; 92F4 D0 1F
+                ; consider tile below
+                lda L47_TEMP                    ; 92F6 A5 47
+                clc                             ; 92F8 18
+                adc #$08                        ; 92F9 69 08
+                tay                             ; 92FB A8
+                lda ($57),y                     ; 92FC B1 57
+                and #$F0                        ; 92FE 29 F0
+                cmp #$90 ; mid-vertical         ; 9300 C9 90
+                if_ne                           ; 9302 F0 0E
+                    cmp #$50 ; bottom half      ; 9304 C9 50
+                    if_ne                       ; 9306 F0 0A
+                        ldy L47_TEMP            ; 9308 A4 47
+                        lda ($57),y             ; 930A B1 57
+                        and #$0F                ; 930C 29 0F
+                        ora #$80 ; small round  ; 930E 09 80
+                        sta ($57),y             ; 9310 91 57
+                    end_if
+                end_if
+                jmp break                       ; 9312 4C F9 93
+            end_if
+            cmp #$50 ; bottom half              ; 9315 C9 50
+            if_eq                               ; 9317 D0 1F
+                ; consider tile above
+                lda L47_TEMP                    ; 9319 A5 47
+                sec                             ; 931B 38
+                sbc #$08                        ; 931C E9 08
+                tay                             ; 931E A8
+                lda ($57),y                     ; 931F B1 57
+                and #$F0                        ; 9321 29 F0
+                cmp #$90 ; mid-vertical         ; 9323 C9 90
+                if_ne                           ; 9325 F0 0E
+                    cmp #$40 ; top half         ; 9327 C9 40
+                    if_ne                       ; 9329 F0 0A
+                        ldy L47_TEMP            ; 932B A4 47
+                        lda ($57),y             ; 932D B1 57
+                        and #$0F                ; 932F 29 0F
+                        ora #$80 ; small round  ; 9331 09 80
+                        sta ($57),y             ; 9333 91 57
+                    end_if
+                end_if
+                jmp break                       ; 9335 4C F9 93
+            end_if
+            cmp #$60 ; left half                ; 9338 C9 60
+            if_eq                               ; 933A D0 1F
+                ; consider tile to right
+                lda L47_TEMP                    ; 933C A5 47
+                clc                             ; 933E 18
+                adc #$01                        ; 933F 69 01
+                tay                             ; 9341 A8
+                lda ($57),y                     ; 9342 B1 57
+                and #$F0                        ; 9344 29 F0
+                cmp #$A0 ; mid-horizontal       ; 9346 C9 A0
+                if_ne                           ; 9348 F0 0E
+                    cmp #$70 ; right half       ; 934A C9 70
+                    if_ne                       ; 934C F0 0A
+                        ldy L47_TEMP            ; 934E A4 47
+                        lda ($57),y             ; 9350 B1 57
+                        and #$0F                ; 9352 29 0F
+                        ora #$80 ; small round  ; 9354 09 80
+                        sta ($57),y             ; 9356 91 57
+                    end_if
+                end_if
+                jmp break                       ; 9358 4C F9 93
+            end_if
+            cmp #$70 ; right half               ; 935B C9 70
+            if_eq                               ; 935D D0 1F
+                ; consider tile to left
+                lda L47_TEMP                    ; 935F A5 47
+                sec                             ; 9361 38
+                sbc #$01                        ; 9362 E9 01
+                tay                             ; 9364 A8
+                lda ($57),y                     ; 9365 B1 57
+                and #$F0                        ; 9367 29 F0
+                cmp #$A0 ; mid-horizontal       ; 9369 C9 A0
+                if_ne                           ; 936B F0 0E
+                    cmp #$60 ; left half        ; 936D C9 60
+                    if_ne                       ; 936F F0 0A
+                        ldy L47_TEMP            ; 9371 A4 47
+                        lda ($57),y             ; 9373 B1 57
+                        and #$0F                ; 9375 29 0F
+                        ora #$80 ; small round  ; 9377 09 80
+                        sta ($57),y             ; 9379 91 57
+                    end_if
+                end_if
+                jmp break                       ; 937B 4C F9 93
+            end_if
+            cmp #$90 ; mid-vertical             ; 937E C9 90
+            if_eq                               ; 9380 D0 3B
+                ; consider tile above
+                lda L47_TEMP                    ; 9382 A5 47
+                sec                             ; 9384 38
+                sbc #$08                        ; 9385 E9 08
+                tay                             ; 9387 A8
+                lda ($57),y                     ; 9388 B1 57
+                and #$F0                        ; 938A 29 F0
+                cmp #$90 ; mid-vertical         ; 938C C9 90
+                if_ne                           ; 938E F0 0E
+                    cmp #$40 ; top half         ; 9390 C9 40
+                    if_ne                       ; 9392 F0 0A
+                        ldy L47_TEMP            ; 9394 A4 47
+                        lda ($57),y             ; 9396 B1 57
+                        and #$0F                ; 9398 29 0F
+                        ora #$40 ; top half     ; 939A 09 40
+                        sta ($57),y             ; 939C 91 57
+                    end_if
+                end_if
+                ; consider tile below
+                lda L47_TEMP                    ; 939E A5 47
+                clc                             ; 93A0 18
+                adc #$08                        ; 93A1 69 08
+                tay                             ; 93A3 A8
+                lda ($57),y                     ; 93A4 B1 57
+                and #$F0                        ; 93A6 29 F0
+                cmp #$90 ; mid-vertical         ; 93A8 C9 90
+                if_ne                           ; 93AA F0 0E
+                    cmp #$50 ; bottom half      ; 93AC C9 50
+                    if_ne                       ; 93AE F0 0A
+                        ldy L47_TEMP            ; 93B0 A4 47
+                        lda ($57),y             ; 93B2 B1 57
+                        and #$0F                ; 93B4 29 0F
+                        ora #$50 ; bottom half  ; 93B6 09 50
+                        sta ($57),y             ; 93B8 91 57
+                    end_if
+                end_if
+                jmp break                       ; 93BA 4C F9 93
+            end_if
+            cmp #$A0 ; mid-horizontal           ; 93BD C9 A0
+            if_eq                               ; 93BF D0 38
+                ; consider tile to left
+                lda L47_TEMP                    ; 93C1 A5 47
+                sec                             ; 93C3 38
+                sbc #$01                        ; 93C4 E9 01
+                tay                             ; 93C6 A8
+                lda ($57),y                     ; 93C7 B1 57
+                and #$F0                        ; 93C9 29 F0
+                cmp #$A0 ; mid-horizontal       ; 93CB C9 A0
+                if_ne                           ; 93CD F0 0E
+                    cmp #$60 ; left half        ; 93CF C9 60
+                    if_ne                       ; 93D1 F0 0A
+                        ldy L47_TEMP            ; 93D3 A4 47
+                        lda ($57),y             ; 93D5 B1 57
+                        and #$0F                ; 93D7 29 0F
+                        ora #$60 ; left half    ; 93D9 09 60
+                        sta ($57),y             ; 93DB 91 57
+                    end_if
+                end_if
+                ; consider tile to right
+                lda L47_TEMP                    ; 93DD A5 47
+                clc                             ; 93DF 18
+                adc #$01                        ; 93E0 69 01
+                tay                             ; 93E2 A8
+                lda ($57),y                     ; 93E3 B1 57
+                and #$F0                        ; 93E5 29 F0
+                cmp #$A0 ; mid-horizontal       ; 93E7 C9 A0
+                if_ne                           ; 93E9 F0 0E
+                    cmp #$70 ; right half       ; 93EB C9 70
+                    if_ne                       ; 93ED F0 0A
+                        ldy L47_TEMP            ; 93EF A4 47
+                        lda ($57),y             ; 93F1 B1 57
+                        and #$0F                ; 93F3 29 0F
+                        ora #$70 ; right half   ; 93F5 09 70
+                        sta ($57),y             ; 93F7 91 57
+                    end_if
                 end_if
             end_if
-            jmp L93F9                           ; 9312 4C F9 93
-        end_if
-        cmp     #$50                            ; 9315 C9 50
-        if_eq                                   ; 9317 D0 1F
-            lda $47                             ; 9319 A5 47
-            sec                                 ; 931B 38
-            sbc #$08                            ; 931C E9 08
-            tay                                 ; 931E A8
-            lda ($57),y                         ; 931F B1 57
-            and #$F0                            ; 9321 29 F0
-            cmp #$90                            ; 9323 C9 90
-            if_ne                               ; 9325 F0 0E
-                cmp #$40                        ; 9327 C9 40
-                if_ne                           ; 9329 F0 0A
-                    ldy $47                     ; 932B A4 47
-                    lda ($57),y                 ; 932D B1 57
-                    and #$0F                    ; 932F 29 0F
-                    ora #$80                    ; 9331 09 80
-                    sta ($57),y                 ; 9333 91 57
-                end_if
-            end_if
-            jmp L93F9                           ; 9335 4C F9 93
-        end_if
-        cmp     #$60                            ; 9338 C9 60
-        if_eq                                   ; 933A D0 1F
-            lda $47                             ; 933C A5 47
-            clc                                 ; 933E 18
-            adc #$01                            ; 933F 69 01
-            tay                                 ; 9341 A8
-            lda ($57),y                         ; 9342 B1 57
-            and #$F0                            ; 9344 29 F0
-            cmp #$A0                            ; 9346 C9 A0
-            if_ne                               ; 9348 F0 0E
-                cmp #$70                        ; 934A C9 70
-                if_ne                           ; 934C F0 0A
-                    ldy $47                     ; 934E A4 47
-                    lda ($57),y                 ; 9350 B1 57
-                    and #$0F                    ; 9352 29 0F
-                    ora #$80                    ; 9354 09 80
-                    sta ($57),y                 ; 9356 91 57
-                end_if
-            end_if
-            jmp L93F9                           ; 9358 4C F9 93
-        end_if
-        cmp     #$70                            ; 935B C9 70
-        if_eq                                   ; 935D D0 1F
-            lda $47                             ; 935F A5 47
-            sec                                 ; 9361 38
-            sbc #$01                            ; 9362 E9 01
-            tay                                 ; 9364 A8
-            lda ($57),y                         ; 9365 B1 57
-            and #$F0                            ; 9367 29 F0
-            cmp #$A0                            ; 9369 C9 A0
-            if_ne                               ; 936B F0 0E
-                cmp #$60                        ; 936D C9 60
-                if_ne                           ; 936F F0 0A
-                    ldy $47                     ; 9371 A4 47
-                    lda ($57),y                 ; 9373 B1 57
-                    and #$0F                    ; 9375 29 0F
-                    ora #$80                    ; 9377 09 80
-                    sta ($57),y                 ; 9379 91 57
-                end_if
-            end_if
-            jmp L93F9                           ; 937B 4C F9 93
-        end_if
-        cmp #$90                                ; 937E C9 90
-        if_eq                                   ; 9380 D0 3B
-            lda $47                             ; 9382 A5 47
-            sec                                 ; 9384 38
-            sbc #$08                            ; 9385 E9 08
-            tay                                 ; 9387 A8
-            lda ($57),y                         ; 9388 B1 57
-            and #$F0                            ; 938A 29 F0
-            cmp #$90                            ; 938C C9 90
-            if_ne                               ; 938E F0 0E
-                cmp #$40                        ; 9390 C9 40
-                if_ne                           ; 9392 F0 0A
-                    ldy $47                     ; 9394 A4 47
-                    lda ($57),y                 ; 9396 B1 57
-                    and #$0F                    ; 9398 29 0F
-                    ora #$40                    ; 939A 09 40
-                    sta ($57),y                 ; 939C 91 57
-                end_if
-            end_if
-            lda $47                             ; 939E A5 47
-            clc                                 ; 93A0 18
-            adc #$08                            ; 93A1 69 08
-            tay                                 ; 93A3 A8
-            lda ($57),y                         ; 93A4 B1 57
-            and #$F0                            ; 93A6 29 F0
-            cmp #$90                            ; 93A8 C9 90
-            if_ne                               ; 93AA F0 0E
-                cmp #$50                        ; 93AC C9 50
-                if_ne                           ; 93AE F0 0A
-                    ldy $47                     ; 93B0 A4 47
-                    lda ($57),y                 ; 93B2 B1 57
-                    and #$0F                    ; 93B4 29 0F
-                    ora #$50                    ; 93B6 09 50
-                    sta ($57),y                 ; 93B8 91 57
-                end_if
-            end_if
-            jmp L93F9                           ; 93BA 4C F9 93
-        end_if
-        cmp     #$A0                            ; 93BD C9 A0
-        if_eq                                   ; 93BF D0 38
-            lda $47                             ; 93C1 A5 47
-            sec                                 ; 93C3 38
-            sbc #$01                            ; 93C4 E9 01
-            tay                                 ; 93C6 A8
-            lda ($57),y                         ; 93C7 B1 57
-            and #$F0                            ; 93C9 29 F0
-            cmp #$A0                            ; 93CB C9 A0
-            if_ne                               ; 93CD F0 0E
-                cmp #$60                        ; 93CF C9 60
-                if_ne                           ; 93D1 F0 0A
-                    ldy $47                     ; 93D3 A4 47
-                    lda ($57),y                 ; 93D5 B1 57
-                    and #$0F                    ; 93D7 29 0F
-                    ora #$60                    ; 93D9 09 60
-                    sta ($57),y                 ; 93DB 91 57
-                end_if
-            end_if
-            lda $47                             ; 93DD A5 47
-            clc                                 ; 93DF 18
-            adc #$01                            ; 93E0 69 01
-            tay                                 ; 93E2 A8
-            lda ($57),y                         ; 93E3 B1 57
-            and #$F0                            ; 93E5 29 F0
-            cmp #$A0                            ; 93E7 C9 A0
-            if_ne                               ; 93E9 F0 0E
-                cmp #$70                        ; 93EB C9 70
-                if_ne                           ; 93ED F0 0A
-                    ldy $47                     ; 93EF A4 47
-                    lda ($57),y                 ; 93F1 B1 57
-                    and #$0F                    ; 93F3 29 0F
-                    ora #$70                    ; 93F5 09 70
-                    sta ($57),y                 ; 93F7 91 57
-                end_if
-            end_if
-        end_if
-L93F9:  dec     $47                             ; 93F9 C6 47
-        lda     $47                             ; 93FB A5 47
-        cmp     #$FF                            ; 93FD C9 FF
-        if_ne                                   ; 93FF F0 03
-            jmp L92DF                           ; 9401 4C DF 92
-        end_if
-        inc $87                                 ; 9404 E6 87
-        lda #$0F                                ; 9406 A9 0F
-        sta L80_UPDATE_ROW                      ; 9408 85 80
-        lda $94                                 ; 940A A5 94
-        if_ne                                   ; 940C F0 04
-            lda #$01                            ; 940E A9 01
-            sta $87                             ; 9410 85 87
-        end_if
-        rts                                     ; 9412 60
-.endscope ;L92DB
+        end
+        dec L47_TEMP                            ; 93F9 C6 47
+        lda L47_TEMP                            ; 93FB A5 47
+        cmp #$FF                                ; 93FD C9 FF
+        beq break                               ; 93FF F0 03
+    forever                                     ; 9401 4C DF 92
+    inc $87                                     ; 9404 E6 87
+    lda #$0F                                    ; 9406 A9 0F
+    sta L80_UPDATE_ROW                          ; 9408 85 80
+    lda $94                                     ; 940A A5 94
+    if_ne                                       ; 940C F0 04
+        lda #$01                                ; 940E A9 01
+        sta $87                                 ; 9410 85 87
+    end_if
+    rts                                         ; 9412 60
 
 ; ----------------------------------------------------------------------------
 ; R8C73 routine 4.
-L9413:
-        lda     #$00                            ; 9413 A9 00
-        sta     $94                             ; 9415 85 94
-        inc     $87                             ; 9417 E6 87
-        rts                                     ; 9419 60
+; $94 = 0.
+; Go to state 5.
+L9413_4:
+    lda #$00                                    ; 9413 A9 00
+    sta $94                                     ; 9415 85 94
+    inc $87                                     ; 9417 E6 87
+    rts                                         ; 9419 60
 
 ; ----------------------------------------------------------------------------
 ; Called once in L91FB.
@@ -3368,6 +3402,8 @@ R941A_KILL_VIRUS:
     rts                                         ; 944A 60
 
 ; ----------------------------------------------------------------------------
+; Record colors of up to 4 clears.
+; Inputs: $48, $8F.
 ; If $8F == #$01, $A9 = $48.
 ; If $8F == #$02, $AA = $48.
 ; If $8F == #$03, $AB = $48.
@@ -3399,119 +3435,120 @@ R944B:
 
 ; ----------------------------------------------------------------------------
 ; R8C73 routine 6.
-L9469:
-.scope
+; Check for vertical clears.
+; Go to state 7.
+L9469_6_CHECK_VERTICAL_CLEAR:
     lda #$00                                    ; 9469 A9 00
     sta L59_TEMP                                ; 946B 85 59
-L946D:
-    lda L59_TEMP                                ; 946D A5 59
-    sta L5A_TEMP                                ; 946F 85 5A
-    lda #$00                                    ; 9471 A9 00
-    sta $47                                     ; 9473 85 47
-    ldy L59_TEMP                                ; 9475 A4 59
-    lda ($57),y                                 ; 9477 B1 57
-    sta $48                                     ; 9479 85 48
-    cmp #$F0                                    ; 947B C9 F0
-    if_cc_jmp                                   ; 947D 90 03 4C 10 95
-        lda $48                                 ; 9482 A5 48
-        and #$0F                                ; 9484 29 0F
-        sta $48                                 ; 9486 85 48
-        loop
-            lda L5A_TEMP                        ; 9488 A5 5A
-            clc                                 ; 948A 18
-            adc #$08                            ; 948B 69 08
-            sta L5A_TEMP                        ; 948D 85 5A
-            lda L5A_TEMP                        ; 948F A5 5A
-            and #$F8                            ; 9491 29 F8
-            beq break                           ; 9493 F0 0F
-            ldy L5A_TEMP                        ; 9495 A4 5A
-            lda ($57),y                         ; 9497 B1 57
-            and #$0F                            ; 9499 29 0F
-            cmp $48                             ; 949B C5 48
-            bne break                           ; 949D D0 05
-            inc $47                             ; 949F E6 47
-        forever
-
-        lda $47                                 ; 94A4 A5 47
-        cmp #$03                                ; 94A6 C9 03
-        if_pl                                   ; 94A8 30 5F
-            inc $8F                             ; 94AA E6 8F
-            sta $8E                             ; 94AC 85 8E
-            jsr R944B                           ; 94AE 20 4B 94
-            lda $A1                             ; 94B1 A5 A1
-            clc                                 ; 94B3 18
-            adc $47                             ; 94B4 65 47
-            sta $A1                             ; 94B6 85 A1
-            inc $A1                             ; 94B8 E6 A1
-            lda L59_TEMP                        ; 94BA A5 59
-            and #$78                            ; 94BC 29 78
-            lsr a                               ; 94BE 4A
-            lsr a                               ; 94BF 4A
-            lsr a                               ; 94C0 4A
-            sta $95                             ; 94C1 85 95
-            lda L5A_TEMP                        ; 94C3 A5 5A
-            sta $49                             ; 94C5 85 49
-            lda L59_TEMP                        ; 94C7 A5 59
-            sta L5A_TEMP                        ; 94C9 85 5A
+    begin
+        lda L59_TEMP                            ; 946D A5 59
+        sta L5A_TEMP                            ; 946F 85 5A
+        lda #$00                                ; 9471 A9 00
+        sta L47_TEMP                            ; 9473 85 47
+        ldy L59_TEMP                            ; 9475 A4 59
+        lda ($57),y                             ; 9477 B1 57
+        sta L48_TEMP ; color to match           ; 9479 85 48
+        cmp #$F0                                ; 947B C9 F0
+        if_cc_jmp                               ; 947D 90 03 4C 10 95
+            lda L48_TEMP                        ; 9482 A5 48
+            and #$0F                            ; 9484 29 0F
+            sta L48_TEMP                        ; 9486 85 48
             loop
-                lda #$02                        ; 94CB A9 02
-                sta $06F1                       ; 94CD 8D F1 06
-                ldy L5A_TEMP                    ; 94D0 A4 5A
-                lda ($57),y                     ; 94D2 B1 57
-                and #$F0                        ; 94D4 29 F0
-                cmp #$D0                        ; 94D6 C9 D0
-                if_eq                           ; 94D8 D0 14
-                    lda #$04                    ; 94DA A9 04
-                    sta $06F1                   ; 94DC 8D F1 06
-                    jsr R941A_KILL_VIRUS        ; 94DF 20 1A 94
-                    ; set bit 4 (virus#)
-                    lda #$10                    ; 94E2 A9 10
-                    ora L52_REDRAW_FLAGS        ; 94E4 05 52
-                    sta L52_REDRAW_FLAGS        ; 94E6 85 52
-                    lda LA4_VIRUS_BCD           ; 94E8 A5 A4
-                    if_eq                       ; 94EA D0 02
-                        inc L9E_WINS            ; 94EC E6 9E
+                lda L5A_TEMP                    ; 9488 A5 5A
+                clc                             ; 948A 18
+                adc #$08                        ; 948B 69 08
+                sta L5A_TEMP                    ; 948D 85 5A
+                lda L5A_TEMP                    ; 948F A5 5A
+                and #$F8                        ; 9491 29 F8
+                beq break                       ; 9493 F0 0F
+                ldy L5A_TEMP                    ; 9495 A4 5A
+                lda ($57),y                     ; 9497 B1 57
+                and #$0F                        ; 9499 29 0F
+                cmp L48_TEMP                    ; 949B C5 48
+                bne break                       ; 949D D0 05
+                inc L47_TEMP                    ; 949F E6 47
+            forever
+
+            lda L47_TEMP                        ; 94A4 A5 47
+            cmp #$03                            ; 94A6 C9 03
+            if_pl                               ; 94A8 30 5F
+                inc $8F                         ; 94AA E6 8F
+                sta $8E                         ; 94AC 85 8E
+                jsr R944B                       ; 94AE 20 4B 94
+                lda $A1                         ; 94B1 A5 A1
+                clc                             ; 94B3 18
+                adc L47_TEMP                    ; 94B4 65 47
+                sta $A1                         ; 94B6 85 A1
+                inc $A1                         ; 94B8 E6 A1
+                lda L59_TEMP                    ; 94BA A5 59
+                and #$78                        ; 94BC 29 78
+                lsr a                           ; 94BE 4A
+                lsr a                           ; 94BF 4A
+                lsr a                           ; 94C0 4A
+                sta $95                         ; 94C1 85 95
+                lda L5A_TEMP                    ; 94C3 A5 5A
+                sta L49_TEMP                    ; 94C5 85 49
+                lda L59_TEMP                    ; 94C7 A5 59
+                sta L5A_TEMP                    ; 94C9 85 5A
+                loop
+                    lda #$02                    ; 94CB A9 02
+                    sta $06F1                   ; 94CD 8D F1 06
+                    ldy L5A_TEMP                ; 94D0 A4 5A
+                    lda ($57),y                 ; 94D2 B1 57
+                    and #$F0                    ; 94D4 29 F0
+                    cmp #$D0                    ; 94D6 C9 D0
+                    if_eq                       ; 94D8 D0 14
+                        lda #$04                ; 94DA A9 04
+                        sta $06F1               ; 94DC 8D F1 06
+                        jsr R941A_KILL_VIRUS    ; 94DF 20 1A 94
+                        ; set bit 4 (virus#)
+                        lda #$10                ; 94E2 A9 10
+                        ora L52_REDRAW_FLAGS    ; 94E4 05 52
+                        sta L52_REDRAW_FLAGS    ; 94E6 85 52
+                        lda LA4_VIRUS_BCD       ; 94E8 A5 A4
+                        if_eq                   ; 94EA D0 02
+                            inc L9E_WINS        ; 94EC E6 9E
+                        end_if
                     end_if
-                end_if
-                lda ($57),y                     ; 94EE B1 57
-                and #$0F                        ; 94F0 29 0F
-                ora #$B0                        ; 94F2 09 B0
-                sta ($57),y                     ; 94F4 91 57
-                lda L5A_TEMP                    ; 94F6 A5 5A
-                clc                             ; 94F8 18
-                adc #$08                        ; 94F9 69 08
-                sta L5A_TEMP                    ; 94FB 85 5A
-                ldy L5A_TEMP                    ; 94FD A4 5A
-                cpy $49                         ; 94FF C4 49
-            while_ne                            ; 9501 D0 C8
-            inc $94                             ; 9503 E6 94
-            lda $49                             ; 9505 A5 49
-            sta L5A_TEMP                        ; 9507 85 5A
+                    lda ($57),y                 ; 94EE B1 57
+                    and #$0F                    ; 94F0 29 0F
+                    ora #$B0 ; marked           ; 94F2 09 B0
+                    sta ($57),y                 ; 94F4 91 57
+                    lda L5A_TEMP                ; 94F6 A5 5A
+                    clc                         ; 94F8 18
+                    adc #$08                    ; 94F9 69 08
+                    sta L5A_TEMP                ; 94FB 85 5A
+                    ldy L5A_TEMP                ; 94FD A4 5A
+                    cpy L49_TEMP                ; 94FF C4 49
+                while_ne                        ; 9501 D0 C8
+                inc $94                         ; 9503 E6 94
+                lda L49_TEMP                    ; 9505 A5 49
+                sta L5A_TEMP                    ; 9507 85 5A
+            end_if
+            lda L5A_TEMP                        ; 9509 A5 5A
+            sta L59_TEMP                        ; 950B 85 59
+        else                                    ; 950D 4C 17 95
+            lda L59_TEMP                        ; 9510 A5 59
+            clc                                 ; 9512 18
+            adc #$08                            ; 9513 69 08
+            sta L59_TEMP                        ; 9515 85 59
         end_if
-        lda L5A_TEMP                            ; 9509 A5 5A
-        sta L59_TEMP                            ; 950B 85 59
-    else                                        ; 950D 4C 17 95
-        lda L59_TEMP                            ; 9510 A5 59
-        clc                                     ; 9512 18
-        adc #$08                                ; 9513 69 08
-        sta L59_TEMP                            ; 9515 85 59
-    end_if
-    lda L59_TEMP                                ; 9517 A5 59
-    cmp #$68                                    ; 9519 C9 68
-    if_cc                                       ; 951B B0 03
-        jmp L946D                               ; 951D 4C 6D 94
-    end_if
-    inc L59_TEMP                                ; 9520 E6 59
-    lda L59_TEMP                                ; 9522 A5 59
-    and #$07                                    ; 9524 29 07
-    sta L59_TEMP                                ; 9526 85 59
-    lda L59_TEMP                                ; 9528 A5 59
-    if_ne                                       ; 952A F0 03
-        jmp L946D                               ; 952C 4C 6D 94
-    end_if
+        lda L59_TEMP                            ; 9517 A5 59
+        cmp #$68                                ; 9519 C9 68
+        if_cc                                   ; 951B B0 03
+            jmp continue                        ; 951D 4C 6D 94
+        end_if
+        inc L59_TEMP                            ; 9520 E6 59
+        lda L59_TEMP                            ; 9522 A5 59
+        and #$07                                ; 9524 29 07
+        sta L59_TEMP                            ; 9526 85 59
+        lda L59_TEMP                            ; 9528 A5 59
+        if_ne                                   ; 952A F0 03
+            jmp continue                        ; 952C 4C 6D 94
+        end_if
+    end
     inc $87                                     ; 952F E6 87
     rts                                         ; 9531 60
-.endscope ;L9469
 
 ; ----------------------------------------------------------------------------
 ; jump table vector 5
@@ -4113,8 +4150,8 @@ L9912:
     lda L0731_MUSIC_CHOICE                      ; 9929 AD 31 07
     sta $073F                                   ; 992C 8D 3F 07
     lda #$00                                    ; 992F A9 00
-    sta $70                                     ; 9931 85 70
-    sta $69                                     ; 9933 85 69
+    sta L70_DEMO_INPUT                          ; 9931 85 70
+    sta L69_DEMO_DELAY                          ; 9933 85 69
     lda #$01                                    ; 9935 A9 01
     sta L8B_SPEED                               ; 9937 85 8B
     sta L030B_P1_SPEED                          ; 9939 8D 0B 03
@@ -4494,7 +4531,7 @@ R9BB9:
 .scope
     lda L97_STATE                               ; 9BB9 A5 97
     jsr RB8AC_JUMP_TABLE                        ; 9BBB 20 AC B8
-    .word L8D56 ; 0: jsr R871F R8D70_DROP_PILL R8DBF_PILL_MOVE R8E2B_PILL_ROTATE
+    .word L8D56 ; 0: jsr R871F_THIS_PILL_SPRITE R8D70_DROP_PILL R8DBF_PILL_MOVE R8E2B_PILL_ROTATE
     .word L8C6F ; 1: jsr R8C73
     .word L9BD4 ; 2: jsr R9BE9 R9C01
     .word L9BCF ; 3: to state 0
@@ -4551,86 +4588,86 @@ R9BE9:
     rts                                         ; 9C00 60
 
 ; ----------------------------------------------------------------------------
+; Make garbage pieces in 2-player mode?
+; Go to state 1 if garbage was made; else state 5.
 R9C01:
-.scope
-        lda     #$00                            ; 9C01 A9 00
-        sta     $57                             ; 9C03 85 57
-        ldx     $58                             ; 9C05 A6 58
-        lda     LA545,x                         ; 9C07 BD 45 A5
-        tax                                     ; 9C0A AA
-        lda     $0318,x                         ; 9C0B BD 18 03
-        cmp     #$02                            ; 9C0E C9 02
-        if_cs                                   ; 9C10 90 7A
-            if_eq                               ; 9C12 D0 1A
-                lda L43_CLOCK                   ; 9C14 A5 43
-                and #$03                        ; 9C16 29 03
-                tay                             ; 9C18 A8
-                lda $0329,x                     ; 9C19 BD 29 03
-                ora #$80                        ; 9C1C 09 80
-                sta ($57),y                     ; 9C1E 91 57
-                iny                             ; 9C20 C8
-                iny                             ; 9C21 C8
-                iny                             ; 9C22 C8
-                iny                             ; 9C23 C8
-                lda $032A,x                     ; 9C24 BD 2A 03
-                ora #$80                        ; 9C27 09 80
-                sta ($57),y                     ; 9C29 91 57
-            else                                ; 9C2B 4C 7A 9C
-                cmp     #$03                    ; 9C2E C9 03
-                if_eq                           ; 9C30 D0 21
-                    lda L43_CLOCK               ; 9C32 A5 43
-                    and #$03                    ; 9C34 29 03
-                    tay                         ; 9C36 A8
-                    lda $0329,x                 ; 9C37 BD 29 03
-                    ora #$80                    ; 9C3A 09 80
-                    sta ($57),y                 ; 9C3C 91 57
-                    iny                         ; 9C3E C8
-                    iny                         ; 9C3F C8
-                    lda $032A,x                 ; 9C40 BD 2A 03
-                    ora #$80                    ; 9C43 09 80
-                    sta ($57),y                 ; 9C45 91 57
-                    iny                         ; 9C47 C8
-                    iny                         ; 9C48 C8
-                    lda $032B,x                 ; 9C49 BD 2B 03
-                    ora #$80                    ; 9C4C 09 80
-                    sta ($57),y                 ; 9C4E 91 57
-                else                            ; 9C50 4C 7A 9C
-                    lda L43_CLOCK               ; 9C53 A5 43
-                    and #$01                    ; 9C55 29 01
-                    tay                         ; 9C57 A8
-                    lda $0329,x                 ; 9C58 BD 29 03
-                    ora #$80                    ; 9C5B 09 80
-                    sta ($57),y                 ; 9C5D 91 57
-                    iny                         ; 9C5F C8
-                    iny                         ; 9C60 C8
-                    lda $032A,x                 ; 9C61 BD 2A 03
-                    ora #$80                    ; 9C64 09 80
-                    sta ($57),y                 ; 9C66 91 57
-                    iny                         ; 9C68 C8
-                    iny                         ; 9C69 C8
-                    lda $032B,x                 ; 9C6A BD 2B 03
-                    ora #$80                    ; 9C6D 09 80
-                    sta ($57),y                 ; 9C6F 91 57
-                    iny                         ; 9C71 C8
-                    iny                         ; 9C72 C8
-                    lda $032C,x                 ; 9C73 BD 2C 03
-                    ora #$80                    ; 9C76 09 80
-                    sta ($57),y                 ; 9C78 91 57
-                end_if
+    lda #$00                                    ; 9C01 A9 00
+    sta $57                                     ; 9C03 85 57
+    ldx $58                                     ; 9C05 A6 58
+    lda LA545,x ; 4 -> $80, 5 -> $00            ; 9C07 BD 45 A5
+    tax                                         ; 9C0A AA
+    lda $0318,x                                 ; 9C0B BD 18 03
+    cmp #$02                                    ; 9C0E C9 02
+    if_cs                                       ; 9C10 90 7A
+        if_eq                                   ; 9C12 D0 1A
+            lda L43_CLOCK                       ; 9C14 A5 43
+            and #$03                            ; 9C16 29 03
+            tay                                 ; 9C18 A8
+            lda $0329,x                         ; 9C19 BD 29 03
+            ora #$80 ; small round              ; 9C1C 09 80
+            sta ($57),y                         ; 9C1E 91 57
+            iny                                 ; 9C20 C8
+            iny                                 ; 9C21 C8
+            iny                                 ; 9C22 C8
+            iny                                 ; 9C23 C8
+            lda $032A,x                         ; 9C24 BD 2A 03
+            ora #$80 ; small round              ; 9C27 09 80
+            sta ($57),y                         ; 9C29 91 57
+        else                                    ; 9C2B 4C 7A 9C
+            cmp #$03                            ; 9C2E C9 03
+            if_eq                               ; 9C30 D0 21
+                lda L43_CLOCK                   ; 9C32 A5 43
+                and #$03                        ; 9C34 29 03
+                tay                             ; 9C36 A8
+                lda $0329,x                     ; 9C37 BD 29 03
+                ora #$80 ; small round          ; 9C3A 09 80
+                sta ($57),y                     ; 9C3C 91 57
+                iny                             ; 9C3E C8
+                iny                             ; 9C3F C8
+                lda $032A,x                     ; 9C40 BD 2A 03
+                ora #$80                        ; 9C43 09 80
+                sta ($57),y                     ; 9C45 91 57
+                iny                             ; 9C47 C8
+                iny                             ; 9C48 C8
+                lda $032B,x                     ; 9C49 BD 2B 03
+                ora #$80 ; small round          ; 9C4C 09 80
+                sta ($57),y                     ; 9C4E 91 57
+            else                                ; 9C50 4C 7A 9C
+                lda L43_CLOCK                   ; 9C53 A5 43
+                and #$01                        ; 9C55 29 01
+                tay                             ; 9C57 A8
+                lda $0329,x                     ; 9C58 BD 29 03
+                ora #$80 ; small round          ; 9C5B 09 80
+                sta ($57),y                     ; 9C5D 91 57
+                iny                             ; 9C5F C8
+                iny                             ; 9C60 C8
+                lda $032A,x                     ; 9C61 BD 2A 03
+                ora #$80 ; small round          ; 9C64 09 80
+                sta ($57),y                     ; 9C66 91 57
+                iny                             ; 9C68 C8
+                iny                             ; 9C69 C8
+                lda $032B,x                     ; 9C6A BD 2B 03
+                ora #$80 ; small round          ; 9C6D 09 80
+                sta ($57),y                     ; 9C6F 91 57
+                iny                             ; 9C71 C8
+                iny                             ; 9C72 C8
+                lda $032C,x                     ; 9C73 BD 2C 03
+                ora #$80 ; small round          ; 9C76 09 80
+                sta ($57),y                     ; 9C78 91 57
             end_if
-            ldx $58                             ; 9C7A A6 58
-            lda LA545,x                         ; 9C7C BD 45 A5
-            tax                                 ; 9C7F AA
-            lda #$00                            ; 9C80 A9 00
-            sta $0318,x                         ; 9C82 9D 18 03
-            lda #$01                            ; 9C85 A9 01
-            sta L97_STATE                       ; 9C87 85 97
-        else                                    ; 9C89 4C 90 9C
-            lda #$05                            ; 9C8C A9 05
-            sta L97_STATE                       ; 9C8E 85 97
         end_if
-        rts                                     ; 9C90 60
-.endscope
+        ldx $58                                 ; 9C7A A6 58
+        lda LA545,x                             ; 9C7C BD 45 A5
+        tax                                     ; 9C7F AA
+        lda #$00                                ; 9C80 A9 00
+        sta $0318,x                             ; 9C82 9D 18 03
+        lda #$01                                ; 9C85 A9 01
+        sta L97_STATE                           ; 9C87 85 97
+    else                                        ; 9C89 4C 90 9C
+        lda #$05                                ; 9C8C A9 05
+        sta L97_STATE                           ; 9C8E 85 97
+    end_if
+    rts                                         ; 9C90 60
 
 ; ----------------------------------------------------------------------------
 ; R8157 jump table vector 8
@@ -4712,21 +4749,21 @@ R9CFF_ADD_VIRUS:
         jsr RB771_STEP_LFSR                     ; 9D0A 20 71 B7
         lda $17                                 ; 9D0D A5 17
         and #$0F                                ; 9D0F 29 0F
-        sta $47                                 ; 9D11 85 47
+        sta L47_TEMP                            ; 9D11 85 47
         ldx L96_LEVEL                           ; 9D13 A6 96
         lda LA3DE,x ; 9 to 12                   ; 9D15 BD DE A3
-        cmp $47                                 ; 9D18 C5 47
+        cmp L47_TEMP                            ; 9D18 C5 47
     while_cc                                    ; 9D1A 90 EA
-    lda $47                                     ; 9D1C A5 47
+    lda L47_TEMP                                ; 9D1C A5 47
     ; $47 = row offset in playfield
     tax                                         ; 9D1E AA
     lda LA474,x                                 ; 9D1F BD 74 A4
-    sta $47                                     ; 9D22 85 47
+    sta L47_TEMP                                ; 9D22 85 47
     ; Choose random 3-bit column
     lda $18                                     ; 9D24 A5 18
     and #$07                                    ; 9D26 29 07
     clc                                         ; 9D28 18
-    adc $47                                     ; 9D29 65 47
+    adc L47_TEMP                                ; 9D29 65 47
     ; Store cell offset in $57 and $49
     sta $57                                     ; 9D2B 85 57
     sta $49                                     ; 9D2D 85 49
@@ -4767,7 +4804,7 @@ L9D54: ; try next cell
 L9D61:
     ; copy virus color to $47.
     lda $48                                     ; 9D61 A5 48
-    sta $47                                     ; 9D63 85 47
+    sta L47_TEMP                                ; 9D63 85 47
     ldx L8B_SPEED                               ; 9D65 A6 8B
     lda LA390,x ; $10,$10,$10                   ; 9D67 BD 90 A3
     sta $4A                                     ; 9D6A 85 4A
@@ -4875,7 +4912,7 @@ L9D61:
     sta $57                                     ; 9E04 85 57
     ldy #$00                                    ; 9E06 A0 00
     lda $48                                     ; 9E08 A5 48
-    ora #$D0                                    ; 9E0A 09 D0
+    ora #$D0 ; virus                            ; 9E0A 09 D0
     sta ($57),y                                 ; 9E0C 91 57
     ; increment virus color counts
     and #$07                                    ; 9E0E 29 07
@@ -5135,11 +5172,11 @@ L9F87:
             lda LA2_NEXT_DIR                    ; 9FC4 A5 A2
             and #$03                            ; 9FC6 29 03
             sta LA2_NEXT_DIR                    ; 9FC8 85 A2
-            jmp L9FED                           ; 9FCA 4C ED 9F
+            jmp L9FED ; rts                     ; 9FCA 4C ED 9F
         end_if
     end_if
 
-    jsr R8E8D                                   ; 9FCD 20 8D 8E
+    jsr R8E8D_NEW_PILL                          ; 9FCD 20 8D 8E
     lda #$00                                    ; 9FD0 A9 00
     sta LA2_NEXT_DIR                            ; 9FD2 85 A2
     lda #$00                                    ; 9FD4 A9 00
@@ -5494,7 +5531,7 @@ LA45B:  .byte $00,$FF,$FF,$60,$68,$70,$78,$80,$88,$90,$98,$C0,$C1,$C2,$B0,$B1
 LA474:  .byte $78,$70,$68,$60,$58,$50,$48,$40   ; A474 78 70 68 60 58 50 48 40
         .byte $38,$30,$28,$20,$18,$10,$08,$00   ; A47C 38 30 28 20 18 10 08 00
 ; ----------------------------------------------------------------------------
-; Table of 16 sprite Y-coordinates, used in R871F, indexed by L86_PILL_ROW.
+; Table of 16 sprite Y-coordinates, used in R871F_THIS_PILL_SPRITE, indexed by L86_PILL_ROW.
 LA484:  .byte $C8,$C0,$B8,$B0,$A8,$A0,$98,$90,$88,$80,$78,$70,$68,$60,$58,$50
 
 ; ----------------------------------------------------------------------------
@@ -5555,7 +5592,9 @@ LA50C:  .byte $60,$70,$00,$00
         .byte $47,$57,$67,$77,$87,$97,$A7,$01,$02
 
 ; ----------------------------------------------------------------------------
-LA545:  .byte $00,$00,$00,$00,$80,$00,$11,$13,$15,$17,$10,$12,$14,$16,$09,$0B
+; Used in R9C01, indexed by $58.
+LA545:  .byte $00,$00,$00,$00,$80,$00
+        .byte $11,$13,$15,$17,$10,$12,$14,$16,$09,$0B
         .byte $0D,$0F,$08,$0A,$0C,$0E,$10,$12,$14,$16,$11,$13,$15,$17,$08,$0A
         .byte $0C,$0E,$09,$0B,$0D,$0F
 
@@ -5647,7 +5686,7 @@ LA6E7:  .byte $3F,$00,$10
         .byte $FF
 
 ; ----------------------------------------------------------------------------
-; Table of 4 sprite x-coordinates, used in R871F.
+; Table of 4 sprite x-coordinates, used in R871F_THIS_PILL_SPRITE.
 ; Left edges of playfields.
 ; Indexed by 2(NUM_PLAYERS - 1) + ($58 - 4)
 LA6FB:  .byte $60,$60,$20,$A0
@@ -5715,11 +5754,11 @@ LA7ED:  .byte $00,$01,$02,$02,$01,$00,$00,$01
         .byte $02,$02,$01,$00,$00,$01,$02,$01
 
 ; ----------------------------------------------------------------------------
-; 9-byte lookup table, used by R8E8D. Copied to L9A_NEXT_COLOR_0.
+; 9-byte lookup table, used by R8E8D_NEW_PILL. Copied to L9A_NEXT_COLOR_0.
 LA7FD:  .byte $00,$00,$00,$01,$01,$01,$02,$02,$02
 
 ; ----------------------------------------------------------------------------
-; 9-byte lookup table, used by R8E8D. Copied to L9B_NEXT_COLOR_1.
+; 9-byte lookup table, used by R8E8D_NEW_PILL. Copied to L9B_NEXT_COLOR_1.
 LA806:  .byte $00,$01,$02,$00,$01,$02,$00,$01,$02
 
 ; ----------------------------------------------------------------------------
@@ -6320,24 +6359,24 @@ RB371:
         loop
             ; if $43 & 3 == 0 then increment Y-coordinate
             lda $0580,x                     ; B37B BD 80 05
-            sta $47                         ; B37E 85 47
+            sta L47_TEMP                    ; B37E 85 47
             lda L43_CLOCK                   ; B380 A5 43
             and #$03                        ; B382 29 03
             if_eq                           ; B384 D0 02
-                inc $47                     ; B386 E6 47
+                inc L47_TEMP                ; B386 E6 47
             end_if
-            lda $47                         ; B388 A5 47
+            lda L47_TEMP                    ; B388 A5 47
             sta $0580,x                     ; B38A 9D 80 05
             sta $0200,y                     ; B38D 99 00 02
             inx                             ; B390 E8
             iny                             ; B391 C8
             ; if $43 & 1 then rotate bottom 2 bits of tile index
             lda $0580,x                     ; B392 BD 80 05
-            sta $47                         ; B395 85 47
+            sta L47_TEMP                    ; B395 85 47
             lda L43_CLOCK                   ; B397 A5 43
             and #$01                        ; B399 29 01
             clc                             ; B39B 18
-            adc $47                         ; B39C 65 47
+            adc L47_TEMP                    ; B39C 65 47
             and #$03                        ; B39E 29 03
             ora #$40                        ; B3A0 09 40
             sta $0580,x                     ; B3A2 9D 80 05
@@ -6760,9 +6799,9 @@ RB5B8:
         end_if
         ldx L3A_V2_X                            ; B60B A6 3A
         lda LA073,x                             ; B60D BD 73 A0
-        sta $47                                 ; B610 85 47
+        sta L47_TEMP                            ; B610 85 47
         lda L43_CLOCK                           ; B612 A5 43
-        and $47                                 ; B614 25 47
+        and L47_TEMP                            ; B614 25 47
         if_eq                                   ; B616 D0 13
             lda LA07C,x                         ; B618 BD 7C A0
             clc                                 ; B61B 18
@@ -6776,9 +6815,9 @@ RB5B8:
             end_if
         end_if
         lda LA058,x                             ; B62B BD 58 A0
-        sta $47                                 ; B62E 85 47
+        sta L47_TEMP                            ; B62E 85 47
         lda L43_CLOCK                           ; B630 A5 43
-        and $47                                 ; B632 25 47
+        and L47_TEMP                            ; B632 25 47
         if_eq                                   ; B634 D0 08
             lda L3E_VIRUS_CYCLE                 ; B636 A5 3E
             eor #$01                            ; B638 49 01
@@ -7946,7 +7985,7 @@ LCF00:
         .byte $D2,$D1,$FF,$D0,$FF,$D1,$D1,$FF
 
 ; ----------------------------------------------------------------------------
-; 128 numbers from 0-8. Used in R8E8D, indexed by LA7_PILL_INDEX.
+; 128 numbers from 0-8. Used in R8E8D_NEW_PILL, indexed by LA7_PILL_INDEX.
 ; Used to index LA7FD and LA806.
 LCF80:
         .byte $00,$00,$07,$02,$01,$05,$03,$05,$00,$06,$06,$03,$05,$00,$05,$03 ; CF80
@@ -7959,7 +7998,16 @@ LCF80:
         .byte $04,$04,$03,$01,$05,$04,$00,$01,$00,$06,$00,$05,$04,$00,$01,$01 ; CFF0
 
 ; ----------------------------------------------------------------------------
-; Demo mode input
+; Demo mode input (run-length encoded)
+; Alternating bytes: (Button state, frame count)
+; $01 = right
+; $02 = left
+; $04 = down
+; $08 = up
+; $10 = start
+; $20 = select
+; $40 = B
+; $80 = A
 
 LD000:  .byte $00,$00,$00,$08,$00,$97,$01,$08,$41,$06,$01,$17,$00,$0E,$04,$08 ; D000
         .byte $00,$24,$01,$06,$00,$03,$01,$06,$00,$09,$04,$0E,$00,$31,$04,$0C ; D010
