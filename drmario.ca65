@@ -50,6 +50,7 @@
 .define L79_V2_TIMER     $79
 .define L7A_V3_TIMER     $7A
 .define L7B_VIRUS_MARCH  $7B
+.define L7D_TOSS_TIMER   $7D
 
 .define L80_UPDATE_ROW   $80
 .define L81_PILL_COLOR_0 $81
@@ -60,6 +61,7 @@
 .define L86_PILL_ROW     $86
 .define L8A_EXTRA_SPEED  $8A
 .define L8B_SPEED        $8B
+.define L8F_CLEAR_COMBO  $8F
 .define L90_PILL_COUNT_0 $90
 .define L91_PILL_COUNT_1 $91
 .define L92_DROP_TIMER   $92
@@ -71,6 +73,7 @@
 .define L9C_NEXT_COLOR_2 $9C
 .define L9D_NEXT_COLOR_3 $9D
 .define L9E_WINS         $9E
+.define LA1_             $A1
 .define LA2_NEXT_DIR     $A2
 .define LA3_NEXT_SIZE    $A3
 .define LA4_VIRUS_BCD    $A4
@@ -414,8 +417,8 @@ L8206_TOP_3:
     lda #$00                                    ; 8206 A9 00
     sta L92_DROP_TIMER                          ; 8208 85 92
     sta $57                                     ; 820A 85 57
-    sta $8F                                     ; 820C 85 8F
-    sta $A1                                     ; 820E 85 A1
+    sta L8F_CLEAR_COMBO                         ; 820C 85 8F
+    sta LA1_                                    ; 820E 85 A1
     sta $98                                     ; 8210 85 98
     sta L97_STATE                               ; 8212 85 97
     sta $87                                     ; 8214 85 87
@@ -424,7 +427,7 @@ L8206_TOP_3:
     sta L80_UPDATE_ROW                          ; 821A 85 80
     sta L90_PILL_COUNT_0                        ; 821C 85 90
     sta L91_PILL_COUNT_1                        ; 821E 85 91
-    sta $7D                                     ; 8220 85 7D
+    sta L7D_TOSS_TIMER                          ; 8220 85 7D
     sta LA7_PILL_INDEX                          ; 8222 85 A7
     sta $0728                                   ; 8224 8D 28 07
     sta L75_V1_STATE                            ; 8227 85 75
@@ -1287,7 +1290,7 @@ R87A2_LEVEL_SPRITES:
             end_if
             jsr R9075_LOAD_P1                   ; 87C6 20 75 90
             jsr R89B6_MARIO_SPRITE              ; 87C9 20 B6 89
-            jsr R88B1                           ; 87CC 20 B1 88
+            jsr R88B1_TOSSED_PILL_SPRITE        ; 87CC 20 B1 88
             jmp break                           ; 87CF 4C 6B 88
         end_if
 
@@ -1407,15 +1410,15 @@ R886C:
 
 ; ----------------------------------------------------------------------------
 ; Adds 4 entries to the sprite attribute table.
-; L44_SPRITE_X = LA401,$7D + (LA2_NEXT_DIR & #$01 × #4)
-; L45_SPRITE_Y (Y-coord) = LA41B,$7D + (LA2_NEXT_DIR & #$01 × #4)
-R88B1:
+; L44_SPRITE_X = LA401,L7D_TOSS_TIMER + (LA2_NEXT_DIR & #$01 × #4)
+; L45_SPRITE_Y (Y-coord) = LA41B,L7D_TOSS_TIMER + (LA2_NEXT_DIR & #$01 × #4)
+R88B1_TOSSED_PILL_SPRITE:
     lda LA2_NEXT_DIR                            ; 88B1 A5 A2
     and #$01                                    ; 88B3 29 01
     asl a                                       ; 88B5 0A
     asl a                                       ; 88B6 0A
     sta L47_TEMP                                ; 88B7 85 47
-    ldx $7D                                     ; 88B9 A6 7D
+    ldx L7D_TOSS_TIMER                          ; 88B9 A6 7D
     lda LA401,x                                 ; 88BB BD 01 A4
     add L47_TEMP                                ; 88BE 18 65 47
     sta L44_SPRITE_X                            ; 88C1 85 44
@@ -2012,11 +2015,10 @@ R8C73:
     .word L8C91_2 ; 2: state 3
     .word L8C94_3_TILES_FALL ; to state 2 if tiles fell, state 4 if none fell
     .word L9413_4 ; $94 = 0, state 5.
-    .word L91FB_5_CHECK_HORIZONTAL_CLEAR
+    .word L91FB_5_CHECK_HORIZONTAL_CLEAR ; to state 6 (possibly after delay)
     .word L9469_6_CHECK_VERTICAL_CLEAR ; to state 7
     .word L92DB_7_FIX_SPLIT_PILLS ; to state 8 if $94 = 0, else state 1.
-
-    .word L8D4F
+    .word L8D4F_8
 
 ; ----------------------------------------------------------------------------
 ; R8C73 routine 0.
@@ -2150,8 +2152,8 @@ L8C94_3_TILES_FALL:
 
 ; ----------------------------------------------------------------------------
 ; R8C73 routine 8.
-; Go to state 0.
-L8D4F:
+; Go to state 0, L97_STATE to 2.
+L8D4F_8:
     lda #$00                                    ; 8D4F A9 00
     sta $87                                     ; 8D51 85 87
     inc L97_STATE                               ; 8D53 E6 97
@@ -2166,7 +2168,7 @@ L8D56:
         inc L97_STATE                           ; 8D5A E6 97
     else                                        ; 8D5C 4C 6F 8D
         lda #$00                                ; 8D5F A9 00
-        sta $A1                                 ; 8D61 85 A1
+        sta LA1_                                ; 8D61 85 A1
         jsr R871F_THIS_PILL_SPRITE              ; 8D63 20 1F 87
         jsr R8D70_DROP_PILL ; may go to state 1 ; 8D66 20 70 8D
         jsr R8DBF_PILL_MOVE                     ; 8D69 20 BF 8D
@@ -2367,7 +2369,7 @@ R8E8D_NEW_PILL:
 ; L9B_NEXT_COLOR_1 <- LA806,x
 ; inc LA7_PILL_INDEX
 ; LA7_PILL_INDEX &= #$7F
-; $7D <- #$00
+; L7D_TOSS_TIMER <- #$00
 ; LA2_NEXT_DIR <- #$00
 ; LA3_NEXT_SIZE <- #$02
 ; L85_PILL_COLUMN <- #$03
@@ -2386,7 +2388,7 @@ R8E8D_NEW_PILL:
 ;         }
 ;     }
 ; }
-; $8F <- #$00
+; L8F_CLEAR_COMBO <- #$00
 ; L52_REDRAW_FLAGS |= #$01
 .scope
     lda L9A_NEXT_COLOR_0                        ; 8E8D A5 9A
@@ -2420,7 +2422,7 @@ R8E8D_NEW_PILL:
     and #$7F                                    ; 8EC7 29 7F
     sta LA7_PILL_INDEX                          ; 8EC9 85 A7
     lda #$00                                    ; 8ECB A9 00
-    sta $7D                                     ; 8ECD 85 7D
+    sta L7D_TOSS_TIMER                          ; 8ECD 85 7D
     sta LA2_NEXT_DIR                            ; 8ECF 85 A2
     lda #$02                                    ; 8ED1 A9 02
     sta LA3_NEXT_SIZE                           ; 8ED3 85 A3
@@ -2488,7 +2490,7 @@ R8E8D_NEW_PILL:
     L8F47:
     end_if
     lda #$00                                    ; 8F47 A9 00
-    sta $8F                                     ; 8F49 85 8F
+    sta L8F_CLEAR_COMBO                         ; 8F49 85 8F
     ; bit 0: redraw pill count (unused)
     lda L52_REDRAW_FLAGS                        ; 8F4B A5 52
     ora #$01                                    ; 8F4D 09 01
@@ -3003,13 +3005,13 @@ L91FB_5_CHECK_HORIZONTAL_CLEAR:
                 cmp #$03                        ; 9240 C9 03
                 if_pl ; at least 4-in-a-row     ; 9242 30 62
                     ; record cleared color
-                    inc $8F                     ; 9244 E6 8F
+                    inc L8F_CLEAR_COMBO         ; 9244 E6 8F
                     sta $8E                     ; 9246 85 8E
-                    jsr R944B                   ; 9248 20 4B 94
-                    lda $A1                     ; 924B A5 A1
+                    jsr R944B_CLEARED_COLOR     ; 9248 20 4B 94
+                    lda LA1_                    ; 924B A5 A1
                     add L47_TEMP                ; 924D 18 65 47
-                    sta $A1                     ; 9250 85 A1
-                    inc $A1                     ; 9252 E6 A1
+                    sta LA1_                    ; 9250 85 A1
+                    inc LA1_                    ; 9252 E6 A1
                     lda L59_TEMP                ; 9254 A5 59
                     and #$78                    ; 9256 29 78
                     lsr a                       ; 9258 4A
@@ -3332,13 +3334,13 @@ R941A_KILL_VIRUS:
 
 ; ----------------------------------------------------------------------------
 ; Record colors of up to 4 clears.
-; Inputs: $48, $8F.
-; If $8F == #$01, $A9 = $48.
-; If $8F == #$02, $AA = $48.
-; If $8F == #$03, $AB = $48.
-; If $8F == #$04, $AC = $48.
-R944B:
-    lda $8F                                     ; 944B A5 8F
+; Inputs: $48, L8F_CLEAR_COMBO.
+; If L8F_CLEAR_COMBO == #$01, $A9 = $48.
+; If L8F_CLEAR_COMBO == #$02, $AA = $48.
+; If L8F_CLEAR_COMBO == #$03, $AB = $48.
+; If L8F_CLEAR_COMBO == #$04, $AC = $48.
+R944B_CLEARED_COLOR:
+    lda L8F_CLEAR_COMBO                         ; 944B A5 8F
     if_ne                                       ; 944D F0 0A
         cmp #$05                                ; 944F C9 05
         if_cc                                   ; 9451 B0 06
@@ -3352,7 +3354,7 @@ R944B:
 
 ; ----------------------------------------------------------------------------
 ; unreachable?
-    lda $8F                                     ; 945A A5 8F
+    lda L8F_CLEAR_COMBO                         ; 945A A5 8F
     cmp #$02                                    ; 945C C9 02
     if_eq                                       ; 945E D0 08
         lda $58                                 ; 9460 A5 58
@@ -3399,13 +3401,13 @@ L9469_6_CHECK_VERTICAL_CLEAR:
             lda L47_TEMP                        ; 94A4 A5 47
             cmp #$03                            ; 94A6 C9 03
             if_pl                               ; 94A8 30 5F
-                inc $8F                         ; 94AA E6 8F
+                inc L8F_CLEAR_COMBO             ; 94AA E6 8F
                 sta $8E                         ; 94AC 85 8E
-                jsr R944B                       ; 94AE 20 4B 94
-                lda $A1                         ; 94B1 A5 A1
+                jsr R944B_CLEARED_COLOR         ; 94AE 20 4B 94
+                lda LA1_                        ; 94B1 A5 A1
                 add L47_TEMP                    ; 94B3 18 65 47
-                sta $A1                         ; 94B6 85 A1
-                inc $A1                         ; 94B8 E6 A1
+                sta LA1_                        ; 94B6 85 A1
+                inc LA1_                        ; 94B8 E6 A1
                 lda L59_TEMP                    ; 94BA A5 59
                 and #$78                        ; 94BC 29 78
                 lsr a                           ; 94BE 4A
@@ -4451,13 +4453,14 @@ R9BB9:
 .scope
     lda L97_STATE                               ; 9BB9 A5 97
     jsr RB8AC_JUMP_TABLE                        ; 9BBB 20 AC B8
-    .word L8D56 ; 0: jsr R871F_THIS_PILL_SPRITE R8D70_DROP_PILL R8DBF_PILL_MOVE R8E2B_PILL_ROTATE
-    .word L8C6F ; 1: jsr R8C73
-    .word L9BD4 ; 2: jsr R9BE9 R9C01
+    .word L8D56 ; 0 -> 0 or 1
+      ; jsr R871F_THIS_PILL_SPRITE R8D70_DROP_PILL R8DBF_PILL_MOVE R8E2B_PILL_ROTATE
+    .word L8C6F ; 1: jsr R8C73 (can go to state 2)
+    .word L9BD4 ; 2: jsr R9BE9 R9C01_DROP_GARBAGE, state 1 (garbage made) or 5 (none)
     .word L9BCF ; 3: to state 0
     .word L9700 ; 4: rts
     .word L9BCC ; 5: to state 6
-    .word L9F87 ; 6: lots
+    .word L9F87 ; 6: lots  ; can go to state 3
 .endscope
 
 ; ----------------------------------------------------------------------------
@@ -4481,7 +4484,7 @@ L9BD4:
     cmp #$02                                    ; 9BD7 C9 02
     if_eq                                       ; 9BD9 D0 09
         jsr R9BE9                               ; 9BDB 20 E9 9B
-        jsr R9C01                               ; 9BDE 20 01 9C
+        jsr R9C01_DROP_GARBAGE                  ; 9BDE 20 01 9C
     else                                        ; 9BE1 4C E8 9B
         lda #$05                                ; 9BE4 A9 05
         sta L97_STATE                           ; 9BE6 85 97
@@ -4489,10 +4492,10 @@ L9BD4:
     rts                                         ; 9BE8 60
 
 ; ----------------------------------------------------------------------------
-; If $8F >= #$02 then $98 += $8F, $06F4 = $58 - #3.
-; Then zero $8F.
+; If L8F_CLEAR_COMBO >= #$02 then $98 += L8F_CLEAR_COMBO, $06F4 = $58 - #3.
+; Then zero L8F_CLEAR_COMBO.
 R9BE9:
-    lda $8F                                     ; 9BE9 A5 8F
+    lda L8F_CLEAR_COMBO                         ; 9BE9 A5 8F
     cmp #$02                                    ; 9BEB C9 02
     if_cs                                       ; 9BED 90 0D
         add $98                                 ; 9BEF 18 65 98
@@ -4502,13 +4505,13 @@ R9BE9:
         sta $06F4                               ; 9BF9 8D F4 06
     end_if
     lda #$00                                    ; 9BFC A9 00
-    sta $8F                                     ; 9BFE 85 8F
+    sta L8F_CLEAR_COMBO                         ; 9BFE 85 8F
     rts                                         ; 9C00 60
 
 ; ----------------------------------------------------------------------------
 ; Make garbage pieces in 2-player mode?
 ; Go to state 1 if garbage was made; else state 5.
-R9C01:
+R9C01_DROP_GARBAGE:
     lda #$00                                    ; 9C01 A9 00
     sta $57                                     ; 9C03 85 57
     ldx $58                                     ; 9C05 A6 58
@@ -5045,6 +5048,8 @@ R9F70:
 
 ; ----------------------------------------------------------------------------
 ; R9BB9 routine 6.
+; If 1-player L8B_SPEED = LOW, then maybe waste a frame.
+
 L9F87:
 .scope
     lda L0727_NUM_PLAYERS                       ; 9F87 AD 27 07
@@ -5052,15 +5057,17 @@ L9F87:
     if_eq_jmp                                   ; 9F8C F0 03 4C CD 9F
         lda L8B_SPEED                           ; 9F91 A5 8B
         cmp #$02                                ; 9F93 C9 02
-        beq L9FA1                               ; 9F95 F0 0A
-        cmp #$01                                ; 9F97 C9 01
-        beq L9FA1                               ; 9F99 F0 06
-        lda L43_CLOCK                           ; 9F9B A5 43
-        and #$01                                ; 9F9D 29 01
-        beq L9FED                               ; 9F9F F0 4C
+        if_ne                                   ; 9F95 F0 0A
+            cmp #$01                            ; 9F97 C9 01
+            if_ne                               ; 9F99 F0 06
+                lda L43_CLOCK                   ; 9F9B A5 43
+                and #$01                        ; 9F9D 29 01
+                beq L9FED ; rts                 ; 9F9F F0 4C
+            end_if
+        end_if
     L9FA1:
-        inc $7D                                 ; 9FA1 E6 7D
-        ldx $7D                                 ; 9FA3 A6 7D
+        inc L7D_TOSS_TIMER                      ; 9FA1 E6 7D
+        ldx L7D_TOSS_TIMER                      ; 9FA3 A6 7D
         lda LA401,x                             ; 9FA5 BD 01 A4
         cmp #$FF                                ; 9FA8 C9 FF
         if_ne                                   ; 9FAA F0 21
@@ -5072,9 +5079,9 @@ L9F87:
                 sta $7E                         ; 9FB7 85 7E
                 jmp L9FA1                       ; 9FB9 4C A1 9F
             end_if
-            lda $7D                             ; 9FBC A5 7D
+            lda L7D_TOSS_TIMER                  ; 9FBC A5 7D
             and #$01                            ; 9FBE 29 01
-            bne L9FED                           ; 9FC0 D0 2B
+            bne L9FED ; rts                     ; 9FC0 D0 2B
             dec LA2_NEXT_DIR                    ; 9FC2 C6 A2
             lda LA2_NEXT_DIR                    ; 9FC4 A5 A2
             and #$03                            ; 9FC6 29 03
@@ -5087,7 +5094,7 @@ L9F87:
     lda #$00                                    ; 9FD0 A9 00
     sta LA2_NEXT_DIR                            ; 9FD2 85 A2
     lda #$00                                    ; 9FD4 A9 00
-    sta $7D                                     ; 9FD6 85 7D
+    sta L7D_TOSS_TIMER                          ; 9FD6 85 7D
     lda #$03                                    ; 9FD8 A9 03
     sta L97_STATE                               ; 9FDA 85 97
     jsr R90D3_COLLISION                         ; 9FDC 20 D3 90
@@ -5409,15 +5416,14 @@ LA3DE:  .byte $09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$09,$0A
         .byte $0C,$0C,$0C
 
 ; ----------------------------------------------------------------------------
-; 26-byte lookup table, used in R88B1 and L9F87 (R9BB9 routine 6)
-; indexed by $7D
-; sprite x-coordinates
+; Table of 26 sprite x-coordinates, used in R88B1_TOSSED_PILL_SPRITE
+; and L9F87 (R9BB9 routine 6)
+; Indexed by L7D_TOSS_TIMER
 LA401:  .byte $BE,$F1,$BE,$BC,$B8,$B4,$F2,$B0,$AC,$A8,$A4,$A0,$9E,$98,$94,$90
         .byte $8C,$88,$84,$80,$7C,$7A,$78,$F0,$78,$FF
 ; ----------------------------------------------------------------------------
-; used in R88B1
-; indexed by $7D
-; sprite y-coordinates
+; Table of sprite y-coordinates, used in R88B1_TOSSED_PILL_SPRITE.
+; Indexed by L7D_TOSS_TIMER
 LA41B:  .byte $45,$00,$40,$36,$2E,$27,$00,$21,$1E,$1B,$19,$18,$18,$1A,$1C,$1F
         .byte $23,$28,$2D,$34,$3C,$43,$4A,$00,$4F,$F8,$01,$08,$FF,$00,$00,$07
         .byte $0F,$17,$02,$02,$02,$02,$02,$02,$02,$02,$03,$03,$03,$03,$03,$03
@@ -5499,7 +5505,7 @@ LA50C:  .byte $60,$70,$00,$00
         .byte $47,$57,$67,$77,$87,$97,$A7,$01,$02
 
 ; ----------------------------------------------------------------------------
-; Used in R9C01, indexed by $58.
+; Used in R9C01_DROP_GARBAGE, indexed by $58.
 LA545:  .byte $00,$00,$00,$00,$80,$00
         .byte $11,$13,$15,$17,$10,$12,$14,$16,$09,$0B
         .byte $0D,$0F,$08,$0A,$0C,$0E,$10,$12,$14,$16,$11,$13,$15,$17,$08,$0A
