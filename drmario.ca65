@@ -59,6 +59,8 @@
 .define L84_PILL_COLOR_3 $84
 .define L85_PILL_COLUMN  $85
 .define L86_PILL_ROW     $86
+.define L87_PLAY_STATE   $87
+.define L89_LOST         $89
 .define L8A_EXTRA_SPEED  $8A
 .define L8B_SPEED        $8B
 .define L8F_CLEAR_COMBO  $8F
@@ -96,6 +98,7 @@ L0300_P1 := $0300
 L0380_P2 := $0380
 
 L0300_P1_UPDATE_ROW   := $0300
+L0309_P1_LOST         := $0309
 L030B_P1_SPEED        := $030B
 L0316_P1_LEVEL        := $0316
 L031E_P1_WINS         := $031E
@@ -104,6 +107,7 @@ L0325_P1_PILL_DIR     := $0325
 L0328_P1_VIRUS_TO_ADD := $0328
 
 L0380_P2_UPDATE_ROW   := $0380
+L0389_P2_LOST         := $0389
 L038B_P2_SPEED        := $038B
 L0396_P2_LEVEL        := $0396
 L039E_P2_WINS         := $039E
@@ -316,7 +320,7 @@ L80DC:
     lda #$0E                                    ; 8144 A9 0E
     sta $34                                     ; 8146 85 34
     loop
-        jsr R8157                               ; 8148 20 57 81
+        jsr R8157_TOP_STATE_MACHINE             ; 8148 20 57 81
         jsr R978E_PAUSE                         ; 814B 20 8E 97
         jsr RB654_NEXT_FRAME                    ; 814E 20 54 B6
         jsr R8712 ; pad OAM with FF             ; 8151 20 12 87
@@ -327,7 +331,7 @@ L80DC:
 ; Top-level state machine.
 ; Current state is in L46_TOP_STATE.
 ; State ranges from 0 to 8.
-R8157:
+R8157_TOP_STATE_MACHINE:
 .scope
     lda L46_TOP_STATE                           ; 8157 A5 46
     jsr RB8AC_JUMP_TABLE                        ; 8159 20 AC B8
@@ -421,9 +425,9 @@ L8206_TOP_3:
     sta LA1_                                    ; 820E 85 A1
     sta $98                                     ; 8210 85 98
     sta L97_STATE                               ; 8212 85 97
-    sta $87                                     ; 8214 85 87
+    sta L87_PLAY_STATE                          ; 8214 85 87
     sta $88                                     ; 8216 85 88
-    sta $89                                     ; 8218 85 89
+    sta L89_LOST                                ; 8218 85 89
     sta L80_UPDATE_ROW                          ; 821A 85 80
     sta L90_PILL_COUNT_0                        ; 821C 85 90
     sta L91_PILL_COUNT_1                        ; 821E 85 91
@@ -487,6 +491,7 @@ L8206_TOP_3:
 
 ; ----------------------------------------------------------------------------
 ; Fill $0780-$07ff with 128 random numbers from 0-8.
+; Also set L46_TOP_STATE to 8.
 ; Called once in L8206_TOP_3.
 R82A0_INIT_780:
     lda #$80                                    ; 82A0 A9 80
@@ -1276,7 +1281,7 @@ R87A2_LEVEL_SPRITES:
         cmp #$01                                ; 87A8 C9 01
         if_eq                                   ; 87AA D0 26
             jsr R89D4_VIRUS_SPRITES             ; 87AC 20 D4 89
-            lda $0309                           ; 87AF AD 09 03
+            lda L0309_P1_LOST                   ; 87AF AD 09 03
             if_ne                               ; 87B2 F0 12
                 lda #$C0                        ; 87B4 A9 C0
                 sta L44_SPRITE_X                ; 87B6 85 44
@@ -1610,10 +1615,10 @@ R89C9_BLINK_CHR_BANK:
 ; ----------------------------------------------------------------------------
 ; Display virus sprites
 ; No register inputs
-; READS $43 L72_V1_COUNT L73_V2_COUNT L74_V3_COUNT $89 L067e
+; READS $43 L72_V1_COUNT L73_V2_COUNT L74_V3_COUNT L89_LOST L067e
 R89D4_VIRUS_SPRITES:
 .scope
-    lda $89                                     ; 89D4 A5 89
+    lda L89_LOST                                ; 89D4 A5 89
     if_ne                                       ; 89D6 F0 03
         jmp L8C28                               ; 89D8 4C 28 8C
     end_if
@@ -2005,10 +2010,10 @@ L8C6F:
     rts                                         ; 8C72 60
 
 ; ----------------------------------------------------------------------------
-; Jump to one of 9 subroutines based on $87.
+; Jump to one of 9 subroutines based on L87_PLAY_STATE.
 ; This is the sequence of stuff that needs to get done once a pill is placed.
 R8C73:
-    lda $87                                     ; 8C73 A5 87
+    lda L87_PLAY_STATE                          ; 8C73 A5 87
     jsr RB8AC_JUMP_TABLE                        ; 8C75 20 AC B8
     .word L8C8A_0 ; 0: reset combo count, state 1
     .word L8C91_1 ; 1: state 2
@@ -2026,7 +2031,7 @@ R8C73:
 L8C8A_0:
     lda #$00
     sta LAD_VIRUS_COMBO                         ; 8C8C 85 AD
-    inc $87                                     ; 8C8E E6 87
+    inc L87_PLAY_STATE                          ; 8C8E E6 87
     rts                                         ; 8C90 60
 
 ; ----------------------------------------------------------------------------
@@ -2034,7 +2039,7 @@ L8C8A_0:
 ; Go to state 2 and 3 (respectively).
 L8C91_1:
 L8C91_2:
-    inc $87                                     ; 8C91 E6 87
+    inc L87_PLAY_STATE                          ; 8C91 E6 87
     rts                                         ; 8C93 60
 
 ; ----------------------------------------------------------------------------
@@ -2142,10 +2147,10 @@ L8C94_3_TILES_FALL:
         lda $47                                 ; 8D43 A5 47
         if_ne                                   ; 8D45 F0 05
             ; if so, go to state 2
-            dec $87                             ; 8D47 C6 87
+            dec L87_PLAY_STATE                  ; 8D47 C6 87
         else                                    ; 8D49 4C 4E 8D
             ; if not, go to state 4
-            inc $87                             ; 8D4C E6 87
+            inc L87_PLAY_STATE                  ; 8D4C E6 87
         end_if
     end_if
     rts                                         ; 8D4E 60
@@ -2155,7 +2160,7 @@ L8C94_3_TILES_FALL:
 ; Go to state 0, L97_STATE to 2.
 L8D4F_8:
     lda #$00                                    ; 8D4F A9 00
-    sta $87                                     ; 8D51 85 87
+    sta L87_PLAY_STATE                          ; 8D51 85 87
     inc L97_STATE                               ; 8D53 E6 97
     rts                                         ; 8D55 60
 
@@ -2545,6 +2550,9 @@ R8F52_PLACE_PILL:
         lda $49                                 ; 8F98 A5 49
         cmp #$04                                ; 8F9A C9 04
     while_ne                                    ; 8F9C D0 D5
+    ; L80_UPDATE_ROW counts from 0 at the top,
+    ; while L86_PILL_ROW counts from 0 at the
+    ; bottom, so exclusive-OR to reverse order.
     lda L86_PILL_ROW                            ; 8F9E A5 86
     eor #$0F                                    ; 8FA0 49 0F
     sta L80_UPDATE_ROW                          ; 8FA2 85 80
@@ -2968,7 +2976,7 @@ L91FB_5_CHECK_HORIZONTAL_CLEAR:
     end_if
 
     ; local variables:
-    ; L59_TEMP = Board position (0 to 127, top to bottom, left to right)
+    ; L59_TEMP = Playfield position (0 to 127, top to bottom, left to right)
     ; L5A_TEMP = Advance position (to the right)
     ; L47_TEMP = Length of consecutive run - 1
     ; L48_TEMP = Color to match
@@ -3086,7 +3094,7 @@ L91FB_5_CHECK_HORIZONTAL_CLEAR:
         beq break                               ; 92D3 F0 03
     forever                                     ; 92D5 4C 0C 92
 
-    inc $87                                     ; 92D8 E6 87
+    inc L87_PLAY_STATE                          ; 92D8 E6 87
 L92DA:
     rts                                         ; 92DA 60
 .endscope ;L91FB
@@ -3277,13 +3285,13 @@ L92DB_7_FIX_SPLIT_PILLS:
         cmp #$FF                                ; 93FD C9 FF
         beq break                               ; 93FF F0 03
     forever                                     ; 9401 4C DF 92
-    inc $87                                     ; 9404 E6 87
+    inc L87_PLAY_STATE                          ; 9404 E6 87
     lda #$0F                                    ; 9406 A9 0F
     sta L80_UPDATE_ROW                          ; 9408 85 80
     lda $94                                     ; 940A A5 94
     if_ne                                       ; 940C F0 04
         lda #$01                                ; 940E A9 01
-        sta $87                                 ; 9410 85 87
+        sta L87_PLAY_STATE                      ; 9410 85 87
     end_if
     rts                                         ; 9412 60
 
@@ -3294,7 +3302,7 @@ L92DB_7_FIX_SPLIT_PILLS:
 L9413_4:
     lda #$00                                    ; 9413 A9 00
     sta $94                                     ; 9415 85 94
-    inc $87                                     ; 9417 E6 87
+    inc L87_PLAY_STATE                          ; 9417 E6 87
     rts                                         ; 9419 60
 
 ; ----------------------------------------------------------------------------
@@ -3473,7 +3481,7 @@ L9469_6_CHECK_VERTICAL_CLEAR:
             jmp continue                        ; 952C 4C 6D 94
         end_if
     end
-    inc $87                                     ; 952F E6 87
+    inc L87_PLAY_STATE                          ; 952F E6 87
     rts                                         ; 9531 60
 
 ; ----------------------------------------------------------------------------
@@ -3485,14 +3493,14 @@ L9532_TOP_5:
     sta $0732                                   ; 9536 8D 32 07
     lda #$04                                    ; 9539 A9 04
     sta $58                                     ; 953B 85 58
-    lda $0309                                   ; 953D AD 09 03
+    lda L0309_P1_LOST                           ; 953D AD 09 03
     if_eq                                       ; 9540 D0 06
         inc L031E_P1_WINS                       ; 9542 EE 1E 03
     else                                        ; 9545 4C 56 95
         lda L0727_NUM_PLAYERS                   ; 9548 AD 27 07
         cmp #$01                                ; 954B C9 01
         beq L9585                               ; 954D F0 36
-        jsr R96C0                               ; 954F 20 C0 96
+        jsr R96C0 ; clear lower playfield       ; 954F 20 C0 96
         lda #$01                                ; 9552 A9 01
         sta $61                                 ; 9554 85 61
     end_if
@@ -3500,17 +3508,17 @@ L9532_TOP_5:
     sta L0300_P1_UPDATE_ROW                     ; 9558 8D 00 03
     lda #$05                                    ; 955B A9 05
     sta $58                                     ; 955D 85 58
-    lda $0389                                   ; 955F AD 89 03
+    lda L0389_P2_LOST                           ; 955F AD 89 03
     if_eq                                       ; 9562 D0 06
         inc L039E_P2_WINS                       ; 9564 EE 9E 03
     else                                        ; 9567 4C 80 95
-        lda $0309                               ; 956A AD 09 03
+        lda L0309_P1_LOST                       ; 956A AD 09 03
         if_ne                                   ; 956D F0 0A
             jsr R9682_DRAW_GAME                 ; 956F 20 82 96
             lda #$00                            ; 9572 A9 00
             sta $61                             ; 9574 85 61
         else                                    ; 9576 4C 80 95
-            jsr R96C0                           ; 9579 20 C0 96
+            jsr R96C0 ; clear lower playfield   ; 9579 20 C0 96
             lda #$02                            ; 957C A9 02
             sta $61                             ; 957E 85 61
         end_if
@@ -3613,7 +3621,7 @@ L958A_TOP_7:
     lda #$01                                    ; 9632 A9 01
     sta L46_TOP_STATE                           ; 9634 85 46
     lda #$00                                    ; 9636 A9 00
-    sta $89                                     ; 9638 85 89
+    sta L89_LOST                                ; 9638 85 89
     jsr R9721_UPDATE_TOP_SCORE                  ; 963A 20 21 97
     lda #$00                                    ; 963D A9 00
     sta LF5_P1_INPUT_NEW                        ; 963F 85 F5
@@ -3622,6 +3630,7 @@ L958A_TOP_7:
     rts                                         ; 9645 60
 
 L9646:
+    ; 2-player game not over
     jsr R96ED_WAIT_UPDATE_ALL_ROWS              ; 9646 20 ED 96
     loop
         lda L43_CLOCK                           ; 9649 A5 43
@@ -3635,6 +3644,7 @@ L9646:
             lda #$10                            ; 965B A9 10
             sta L53_SPRITE_NUM                  ; 965D 85 53
             jsr R88F6_SPRITE                    ; 965F 20 F6 88
+            ; "START" sprite
         end_if
         jsr RB654_NEXT_FRAME                    ; 9662 20 54 B6
         lda LF5_P1_INPUT_NEW                    ; 9665 A5 F5
@@ -3646,7 +3656,7 @@ L9646:
     lda #$03                                    ; 9671 A9 03
     sta L46_TOP_STATE                           ; 9673 85 46
     lda #$00                                    ; 9675 A9 00
-    sta $89                                     ; 9677 85 89
+    sta L89_LOST                                ; 9677 85 89
     lda #$00                                    ; 9679 A9 00
     sta LF5_P1_INPUT_NEW                        ; 967B 85 F5
     lda #$FF                                    ; 967D A9 FF
@@ -3974,7 +3984,7 @@ L981C_TOP_0:
     jsr RB67C_DISABLE_VIDEO                     ; 9868 20 7C B6
     jsr RB6A2_DISABLE_NMI                       ; 986B 20 A2 B6
     jsr RB6C2_PRINT                             ; 986E 20 C2 B6
-    .word LB91C                                 ; 9871 1C B9
+    .word LB91C ; title screen                  ; 9871 1C B9
     lda #$81                                    ; 9873 A9 81
     sta L66_PALETTE                             ; 9875 85 66
     jsr R91D0_CHECKSUM                          ; 9877 20 D0 91
@@ -4097,7 +4107,7 @@ L9953_TOP_1:
 .scope
     lda L0741_DEMO_MODE                         ; 9953 AD 41 07
     if_ne                                       ; 9956 F0 03
-        jmp L9AC2                               ; 9958 4C C2 9A
+        jmp L9AC2 ; state 2 and rts             ; 9958 4C C2 9A
     end_if
     jsr RFFD3                                   ; 995B 20 D3 FF
     lda #$05                                    ; 995E A9 05
@@ -4159,14 +4169,14 @@ L9953_TOP_1:
         ldy #$02                                ; 99DA A0 02
         jsr RB771_STEP_LFSR                     ; 99DC 20 71 B7
         lda LF5_P1_INPUT_NEW                    ; 99DF A5 F5
-        cmp #$40                                ; 99E1 C9 40
+        cmp #$40 ; "B"                          ; 99E1 C9 40
         if_eq                                   ; 99E3 D0 07
             ; enter top-level state 0.
             lda #$00                            ; 99E5 A9 00
             sta L46_TOP_STATE                   ; 99E7 85 46
             jmp L9AC4 ; rts                     ; 99E9 4C C4 9A
         end_if
-        cmp #$10                                ; 99EC C9 10
+        cmp #$10 ; "start"                      ; 99EC C9 10
         if_eq                                   ; 99EE D0 03
             jmp break                           ; 99F0 4C C2 9A
         end_if
@@ -4416,11 +4426,11 @@ L9B73_TOP_4:
 
 L9B9A:
     jsr RB24F_CHECK_WIN                         ; 9B9A 20 4F B2
-    lda $0389                                   ; 9B9D AD 89 03
+    lda L0389_P2_LOST                           ; 9B9D AD 89 03
     bne L9BA7                                   ; 9BA0 D0 05
 
-    lda $0309                                   ; 9BA2 AD 09 03
-    beq L9BB3                                   ; 9BA5 F0 0C
+    lda L0309_P1_LOST                           ; 9BA2 AD 09 03
+    beq L9BB3 ; rts                             ; 9BA5 F0 0C
 
 L9BA7:
     ; enter top-level state 5
@@ -4652,6 +4662,8 @@ L9CEA:
 
 ; ----------------------------------------------------------------------------
 ; Create a new virus and put it on the playfield.
+; If both players have the same level, then put
+; the virus on both playfields.
 ; READS $17 $18 $8b $96 L0316 L0396 $01,X
 ; READS La22d,X La390,X La393,X La3de,X La474,X La7ed,X
 ; WRITES $00 $47 $48 $49 $4a $4b $4c $51 $57 $80 L0500,Y
@@ -4676,8 +4688,8 @@ R9CFF_ADD_VIRUS:
         cmp L47_TEMP                            ; 9D18 C5 47
     while_cc                                    ; 9D1A 90 EA
     lda L47_TEMP                                ; 9D1C A5 47
-    ; $47 = row offset in playfield
     tax                                         ; 9D1E AA
+    ; get row offset in playfield
     lda LA474,x                                 ; 9D1F BD 74 A4
     sta L47_TEMP                                ; 9D22 85 47
     ; Choose random 3-bit column
@@ -5099,14 +5111,15 @@ L9F87:
     sta L97_STATE                               ; 9FDA 85 97
     jsr R90D3_COLLISION                         ; 9FDC 20 D3 90
     if_ne                                       ; 9FDF F0 0C
+        ; no room to place pill, player loses
         lda #$05                                ; 9FE1 A9 05
         sta $06F5                               ; 9FE3 8D F5 06
         jsr R8F52_PLACE_PILL                    ; 9FE6 20 52 8F
         lda #$01                                ; 9FE9 A9 01
-        sta $89                                 ; 9FEB 85 89
+        sta L89_LOST                            ; 9FEB 85 89
     end_if
 L9FED:
-    rts                                     ; 9FED 60
+    rts                                         ; 9FED 60
 .endscope
 
 ; ----------------------------------------------------------------------------
