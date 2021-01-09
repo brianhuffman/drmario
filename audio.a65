@@ -2,6 +2,7 @@
 ; Jump table used by LD3FB.
 
 ; noise vectors
+.align $100
 LD200:  .word VD5DC, VD698, VD619, VD5BA
         .word VD67A, VD570, VD693, VD294
 LD210:  .word VD5EE, VD69F, VD66A, VD5D1
@@ -43,7 +44,7 @@ LD27C:
     lda #>$4000                                 ; D27E A9 40
     sta $E1                                     ; D280 85 E1
     sty $E2                                     ; D282 84 E2
-    lda #$D3                                    ; D284 A9 D3
+    lda #>LD300                                 ; D284 A9 D3
     sta $E3                                     ; D286 85 E3
     ; copy 4 bytes from ($E2) to ($E0)
     ldy #$00                                    ; D288 A0 00
@@ -109,8 +110,9 @@ LD2BF:
 ; ----------------------------------------------------------------------------
 ; values to copy into APU registers
 ; Used in RD52B.
-        ;D300
-        .byte $03,$7F,$0F,$C0
+.align $100
+LD300:
+    .byte $03,$7F,$0F,$C0
 
 ; Registers for noise channel ($400C-$400F)
 ; $400C: --LC VVVV Envelope loops / length counter halt (L), constant volume (C), volume/envelope (V)
@@ -2039,22 +2041,22 @@ RDFB5:
 case2:  lda #$0E                                ; DFC9 A9 0E
         sta $E1                                 ; DFCB 85 E1
         lda #$07                                ; DFCD A9 07
-        ldy #$F4                                ; DFCF A0 F4
+        ldy #>(LFD00 << 2)                      ; DFCF A0 F4
         bne final                               ; DFD1 D0 1C
 case6:  lda #$0F                                ; DFD3 A9 0F
         sta $E1                                 ; DFD5 85 E1
         lda #$0F                                ; DFD7 A9 0F
-        ldy #$F6                                ; DFD9 A0 F6
+        ldy #>(LFD80 << 2)                      ; DFD9 A0 F6
         bne final                               ; DFDB D0 12
 case4:  lda #$07                                ; DFDD A9 07
         sta $E1                                 ; DFDF 85 E1
         lda #$07                                ; DFE1 A9 07
-        ldy #$F4                                ; DFE3 A0 F4
+        ldy #>(LFD00 << 2)                      ; DFE3 A0 F4
         bne final                               ; DFE5 D0 08
 case8:  lda #$0E                                ; DFE7 A9 0E
         sta $E1                                 ; DFE9 85 E1
         lda #$0F                                ; DFEB A9 0F
-        ldy #$F6                                ; DFED A0 F6
+        ldy #>(LFD80 << 2)                      ; DFED A0 F6
 final:  sta $4013                               ; DFEF 8D 13 40
         sty $4012                               ; DFF2 8C 12 40
         lda $06F7                               ; DFF5 AD F7 06
@@ -3225,6 +3227,7 @@ RDAFB = RDAFB::RDAFB
 
 ; ----------------------------------------------------------------------------
 ; APU audio sample 1, 112 bytes
+.align $40
 LFD00:  .byte $74,$FF,$FF,$03,$24,$01,$82,$54
         .byte $01,$10,$FF,$FF,$FF,$FF,$0F,$00
         .byte $00,$B0,$FF,$7F,$09,$00,$00,$B8
@@ -3245,6 +3248,7 @@ LFD00:  .byte $74,$FF,$FF,$03,$24,$01,$82,$54
 
 ; ----------------------------------------------------------------------------
 ; APU audio sample 2, 240 bytes
+.align $40
 LFD80:  .byte $ff,$02,$00,$00,$e0,$ff,$ff,$5f   ; FD80
         .byte $00,$00,$e0,$ff,$ff,$97,$04,$00
         .byte $ac,$55,$b7,$93,$44,$f7,$ef,$5f
