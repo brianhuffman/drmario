@@ -3147,10 +3147,17 @@ RDAFB = RDAFB::RDAFB
 ; ============================================================================
 
 ; ----------------------------------------------------------------------------
+.ifdef REV_A
+        .byte $FF,$FF,$FF,$FD,$FF,$FF,$FF,$FF   ; FB00 FF FF FF FD FF FF FF FF
+        .byte $FF,$FF,$FF,$FF,$FF,$FF,$CF,$F4   ; FB08 FF FF FF FF FF FF CF F4
+        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB10 FF FF FF FF FF FF FF FF
+        .byte $FF,$FF,$FF,$FF,$CF,$7A,$FF,$FF   ; FB18 FF FF FF FF CF 7A FF FF
+.else
         .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB00 FF FF FF FF FF FF FF FF
         .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB08 FF FF FF FF FF FF FF FF
         .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB10 FF FF FF FF FF FF FF FF
         .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB18 FF FF FF FF FF FF FF FF
+.endif
         .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB20 00 00 00 00 00 00 00 00
         .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB28 00 00 00 00 00 00 00 00
         .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB30 00 00 00 00 00 00 00 00
@@ -3178,7 +3185,11 @@ RDAFB = RDAFB::RDAFB
         .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBE0 00 00 00 00 00 00 00 00
         .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBE8 00 00 00 00 00 00 00 00
         .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBF0 00 00 00 00 00 00 00 00
+.ifdef REV_A
+        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBF8 00 00 00 00 00 00 00 00
+.else
         .byte $00,$00,$00,$00,$00,$00,$81,$08   ; FBF8 00 00 00 00 00 00 81 08
+.endif
         .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC00 FF FF FF FF FF FF FF FF
         .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC08 FF FF FF FF FF FF FF FF
         .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC10 FF FF FF FF FF FF FF FF

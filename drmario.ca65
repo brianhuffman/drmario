@@ -182,6 +182,10 @@ L8005_NMI_HANDLER:
         pha                                     ; 8007 48
             tya                                 ; 8008 98
             pha                                 ; 8009 48
+                .ifdef REV_A
+                lda $FE
+                sta $2001
+                .endif
                 jsr RB788_OAM_DMA               ; 800A 20 88 B7
                 jsr R8393_PRINT_CHANGES         ; 800D 20 93 83
                 jsr R82F7_PRINT_PLAYFIELD_ROWS  ; 8010 20 F7 82
@@ -259,6 +263,12 @@ L807B:
 
 L808D:
     ldx #$00                                    ; 808D A2 00
+    .ifdef REV_A
+    lda #$FF
+    ldx #$07
+    ldy #$07
+    jsr RB894_FILL_PAGES
+    .endif
     ; set top score to 1000.
     lda #$00                                    ; 808F A9 00
     sta L0700_TOP_SCORE_0                       ; 8091 8D 00 07
@@ -309,6 +319,9 @@ L80DC:
     sta L2000_PPUCTRL                           ; 80F5 8D 00 20
     lda #$06                                    ; 80F8 A9 06
     sta L2001_PPUMASK                           ; 80FA 8D 01 20
+    .ifdef REV_A
+    sta $FE
+    .endif
     jsr RFFD6                                   ; 80FD 20 D6 FF
     jsr RFFD3                                   ; 8100 20 D3 FF
     lda #$C0                                    ; 8103 A9 C0
@@ -2970,7 +2983,11 @@ R91D0_CHECKSUM:
         cmp #$BE                                ; 91EB C9 BE
     while_ne                                    ; 91ED D0 EE
     lda L49_TEMP                                ; 91EF A5 49
+    .ifdef REV_A
+    cmp #$98
+    .else
     cmp #$C1                                    ; 91F1 C9 C1
+    .endif
     if_ne                                       ; 91F3 F0 05
         lda #$FF                                ; 91F5 A9 FF
         sta L0740_CHECKSUM_FAIL                 ; 91F7 8D 40 07
@@ -3911,7 +3928,11 @@ R978E_PAUSE:
         jsr RB654_NEXT_FRAME                    ; 97B6 20 54 B6
         ; Turn off background
         lda #$16                                ; 97B9 A9 16
+        .ifdef REV_A
+        sta $FE
+        .else
         sta L2001_PPUMASK                       ; 97BB 8D 01 20
+        .endif
         lda #$FF                                ; 97BE A9 FF
         ldx #$02                                ; 97C0 A2 02
         ldy #$02                                ; 97C2 A0 02
@@ -3937,7 +3958,11 @@ R978E_PAUSE:
         sta $5D                                 ; 97EA 85 5D
         ; Turn on background
         lda #$1E                                ; 97EC A9 1E
+        .ifdef REV_A
+        sta $FE
+        .else
         sta L2001_PPUMASK                       ; 97EE 8D 01 20
+        .endif
         lda #$00                                ; 97F1 A9 00
         sta L068D                               ; 97F3 8D 8D 06
     end
@@ -4146,6 +4171,14 @@ L9953_TOP_1:
     sta L80_UPDATE_ROW                          ; 997A 85 80
     sta L0300_P1_UPDATE_ROW                     ; 997C 8D 00 03
     sta L0380_P2_UPDATE_ROW                     ; 997F 8D 80 03
+    .ifdef REV_A
+    lda L0731_MUSIC_CHOICE
+    cmp #$03
+    if_cs
+        lda #$00
+        sta L0731_MUSIC_CHOICE
+    end_if
+    .endif
     lda L0316_P1_LEVEL                          ; 9982 AD 16 03
     cmp #$15                                    ; 9985 C9 15
     if_pl                                       ; 9987 30 05
@@ -6474,7 +6507,7 @@ LB4A6:
 ; ----------------------------------------------------------------------------
 ; RB43F routine 29.
 LB4B6:
-    jsr $B569                                   ; B4B6 20 69 B5
+    jsr RB569                                   ; B4B6 20 69 B5
     lda #$0C                                    ; B4B9 A9 0C
     sta $06F5                                   ; B4BB 8D F5 06
     inc $5E                                     ; B4BE E6 5E
@@ -7900,9 +7933,15 @@ LCA5A:
         .byte $23,$E0,$20,$FF,$00,$00,$00,$00,$00,$00,$FF,$FF,$00,$00,$00,$00,$00,$00,$FF,$FF,$F0,$F0,$F0,$F0,$F0,$F0,$FF,$0F,$0F,$0F,$0F,$0F,$0F,$0F,$0F
         .byte $FF
 
+.ifdef REV_A
+        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+        .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+.else
         .byte $FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC,$FC
         .byte $23,$C0,$20,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$55,$55,$55,$55,$55,$55,$FF,$FF,$55,$55,$55,$55,$55,$55,$FF,$FF,$55,$55,$55,$55,$55,$55,$FF
         .byte $23,$E0,$20,$FF,$00,$00,$00,$00,$00,$00,$FF,$FF,$00,$00,$00,$00,$00,$00,$FF,$FF,$F0,$F0,$F0
+.endif
 
 ; ----------------------------------------------------------------------------
 ; At L9CEA, these 128 bytes are copied to $0400.
@@ -7999,6 +8038,9 @@ LFF00_RESET_HANDLER:
     ldx #$00                                    ; FF02 A2 00
     stx $2000                                   ; FF04 8E 00 20
     stx $2001                                   ; FF07 8E 01 20
+    .ifdef REV_A
+    stx $FE
+    .endif
     ; wait for vblank
     loop
         lda L2002_PPUSTATUS                     ; FF0A AD 02 20
@@ -8020,7 +8062,10 @@ LFF00_RESET_HANDLER:
     jmp L8000                                   ; FF2D 4C 00 80
 
 ; ----------------------------------------------------------------------------
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FF30 00 00 00 00 00 00 00 00
+.ifndef REV_A
+        .byte $00,$00
+.endif
+        .byte $00,$00,$00,$00,$00,$00
         .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FF38 00 00 00 00 00 00 00 00
         .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FF40 FF FF FF FF FF FF FF FF
         .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FF48 FF FF FF FF FF FF FF FF
@@ -8053,8 +8098,12 @@ RFFD6:  jmp     AUDIO::LD2BF                    ; FFD6 4C BF D2
         .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF       ; FFD9 FF FF FF FF FF FF FF
         .byte $20,$20,$20,$20,$20,$20,$20,$20   ; FFE0 20 20 20 20 20 20 20 20
         .byte $44,$52,$2E,$4D,$41,$52,$49,$4F   ; FFE8 44 52 2E 4D 41 52 49 4F
-        .byte $1C,$87,$C2,$A1,$22,$04,$01,$07   ; FFF0 1C 87 C2 A1 22 04 01 07
-        .byte $01,$6E                           ; FFF8 01 6E
+.ifdef REV_A
+        .byte $2D,$85
+.else
+        .byte $1C,$87
+.endif
+        .byte $C2,$A1,$22,$04,$01,$07,$01,$6E   ; FFF2 C2 A1 22 04 01 07 01 6E
 LFFFA:  .word L8005_NMI_HANDLER                 ; FFFA 05 80
 LFFFC:  .word LFF00_RESET_HANDLER               ; FFFC 00 FF
 LFFFE:  .word L8035_IRQ_HANDLER                 ; FFFE 35 80
