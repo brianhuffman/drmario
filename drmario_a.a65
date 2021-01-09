@@ -1,0 +1,2 @@
+REV_A = 1
+.include "drmario.a65"
