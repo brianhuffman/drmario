@@ -2267,15 +2267,6 @@ R8D70_DROP_PILL:
         lda #$07                                ; 8DA7 A9 07
         sta $06F1                               ; 8DA9 8D F1 06
         jsr R8F52_PLACE_PILL                    ; 8DAC 20 52 8F
-        ; make the program crash if $0740 is nonzero
-        ; (which indicates a checksum failure)
-        lda L0740_CHECKSUM_FAIL                 ; 8DAF AD 40 07
-        if_ne                                   ; 8DB2 F0 05
-            lda L53_SPRITE_NUM                  ; 8DB4 A5 53
-            pha                                 ; 8DB6 48
-            pha                                 ; 8DB7 48
-            pha                                 ; 8DB8 48
-        end_if
         inc L97_GAME_STATE                      ; 8DB9 E6 97
         jmp break                               ; 8DBB 4C BE 8D
     end
