@@ -1,8 +1,8 @@
 ; compilation instructions:
-; ca65 -t c64 drmario.ca65
-; ld65 --lib c64.lib -C rom32k.cfg --start-addr $8000 -o drmario.rom drmario.o
+; ca65 -t nes -o drmario.o drmario.a65
+; ld65 -C drmario.cfg -o drmario.nes drmario.o
 
-.include "macros.ca65"
+.include "macros.a65"
 
 ; da65 V2.18 - N/A
 ; Created:    2020-12-19 10:34:39
@@ -8042,7 +8042,7 @@ LD000:  .byte $00,$00,$00,$08,$00,$97,$01,$08,$41,$06,$01,$17,$00,$0E,$04,$08 ; 
 ; Addresses D200 to FEFF
 
 .scope AUDIO
-.include "audio.ca65"
+.include "audio.a65"
 .endscope
 
 ; ----------------------------------------------------------------------------
