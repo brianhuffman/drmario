@@ -14,6 +14,18 @@
 
 ; ----------------------------------------------------------------------------
 
+.segment "HEADER"
+    .byte 'N','E','S',$1A ; ID
+    .byte $02 ; 16k PRG chunk count
+    .byte $04 ; 8k CHR chunk count
+    .byte $10 ; mapper type
+    .byte $00,$00,$00,$00,$00,$00,$00,$00,$00 ; padding
+
+.segment "TILES"
+    .incbin "chrrom.bin"
+
+.segment "ZEROPAGE"
+
 .define L33_NMI_SIGNAL   $33 ; 1 means NMI has run
 .define L38_V1_X         $38
 .define L39_V1_Y         $39
@@ -98,6 +110,10 @@ L0101 := $0101
 L0120 := $0120
 L0202 := $0202
 
+.segment "OAM"
+
+.segment "BSS"
+
 L0300_P1 := $0300
 L0380_P2 := $0380
 
@@ -167,8 +183,7 @@ L2007_PPUDATA   := $2007
 
 L4014_OAMDMA    := $4014
 
-.org    $8000
-.export LOADADDR = *
+.segment "CODE"
 
 ; ----------------------------------------------------------------------------
 L8000:  ldx     #$00                            ; 8000 A2 00
@@ -8104,6 +8119,8 @@ RFFD6:  jmp     AUDIO::LD2BF                    ; FFD6 4C BF D2
         .byte $1C,$87
 .endif
         .byte $C2,$A1,$22,$04,$01,$07,$01,$6E   ; FFF2 C2 A1 22 04 01 07 01 6E
+
+.segment "VECTORS"
 LFFFA:  .word L8005_NMI_HANDLER                 ; FFFA 05 80
 LFFFC:  .word LFF00_RESET_HANDLER               ; FFFC 00 FF
 LFFFE:  .word L8035_IRQ_HANDLER                 ; FFFE 35 80
