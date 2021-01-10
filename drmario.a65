@@ -2141,10 +2141,6 @@ L8D56_GAME_STATE_0:
     end_if
     rts                                         ; 8D6F 60
 
-; ----------------------------------------------------------------------------
-; READS $43 $5c $85 $86 $8a $8b L92_DROP_TIMER $a5 $a6 ($57),Y $a38d,X $a455,X $a458,X $a45b,X $a474,X $a4c4,X $a795,X
-; WRITES $47 $48 $49 $4a $57 L80_UPDATE_ROW $86 L92_DROP_TIMER L97_GAME_STATE $a0 $06f1 ($57),Y
-; JSR $8f52 $90d3
 ; Called once, in L8D56.
 R8D70_DROP_PILL:
     begin
@@ -2180,7 +2176,6 @@ R8D70_DROP_PILL:
     end
     rts                                         ; 8DBE 60
 
-; ----------------------------------------------------------------------------
 ; Increment or decrement pill column based on controller input.
 ; Repeat every 6 frames after holding for 16.
 R8DBF_PILL_MOVE:
@@ -2244,7 +2239,6 @@ R8DBF_PILL_MOVE:
     end
     rts                                         ; 8E2A 60
 
-; ----------------------------------------------------------------------------
 ; Increment or decrement LA5_PILL_DIR (mod 4) depending on controller input.
 R8E2B_PILL_ROTATE:
     lda LA5_PILL_DIR                            ; 8E2B A5 A5
@@ -2275,7 +2269,6 @@ R8E2B_PILL_ROTATE:
     end_if
     rts                                         ; 8E5F 60
 
-; ----------------------------------------------------------------------------
 ; Adjust or undo pill rotation if there are collisions.
 ; Previous DIR and COLUMN values are passed in $4A/$4B.
 R8E60_CHECK_ROTATE:
@@ -2305,6 +2298,7 @@ R8E60_CHECK_ROTATE:
         sta L85_PILL_COLUMN                     ; 8E8A 85 85
     end
     rts                                         ; 8E8C 60
+
 .endscope ;L8D56
 
 ; ----------------------------------------------------------------------------
@@ -2432,14 +2426,14 @@ R8F52_PLACE_PILL:
     eor #$0F                                    ; 8FA0 49 0F
     sta L80_UPDATE_ROW                          ; 8FA2 85 80
     rts                                         ; 8FA4 60
-; ----------------------------------------------------------------------------
+
 ; Table of playfield offsets, used in R8F52_PLACE_PILL
 ; Indexed by 2×LA5_PILL_DIR
 LA4DC:  .byte $00,$01
         .byte $00,$F8
         .byte $01,$00
         .byte $F8,$00
-; ----------------------------------------------------------------------------
+
 ; Table of tile numbers for pill shapes.
 ; Indexed by 2×LA5_PILL_DIR
 LA50C:  .byte $60,$70
@@ -4011,7 +4005,7 @@ L9953_TOP_1:
             end_if
         end_if
         lda LF5_P1_INPUT_NEW                    ; 9A5F A5 F5
-        cmp #$08                                ; 9A61 C9 08
+        cmp #$08 ; "up"                         ; 9A61 C9 08
         if_eq                                   ; 9A63 D0 11
             lda $65                             ; 9A65 A5 65
             if_ne                               ; 9A67 F0 0D
@@ -4024,7 +4018,7 @@ L9953_TOP_1:
             end_if
         end_if
         lda LF5_P1_INPUT_NEW                    ; 9A76 A5 F5
-        cmp #$04                                ; 9A78 C9 04
+        cmp #$04 ; "down"                       ; 9A78 C9 04
         if_eq                                   ; 9A7A D0 13
             lda $65                             ; 9A7C A5 65
             cmp #$02                            ; 9A7E C9 02
