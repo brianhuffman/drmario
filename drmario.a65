@@ -87,7 +87,6 @@
 .define L9A_NEXT_COLOR_0 $9A
 .define L9B_NEXT_COLOR_1 $9B
 .define L9E_WINS         $9E
-.define LA1_             $A1
 .define LA2_NEXT_DIR     $A2
 .define LA3_NEXT_SIZE    $A3
 .define LA4_VIRUS_BCD    $A4
@@ -461,7 +460,6 @@ L8206_TOP_3:
     sta L92_DROP_TIMER                          ; 8208 85 92
     sta $57                                     ; 820A 85 57
     sta L8F_CLEAR_COMBO                         ; 820C 85 8F
-    sta LA1_                                    ; 820E 85 A1
     sta L98_GARBAGE                             ; 8210 85 98
     sta L97_GAME_STATE                          ; 8212 85 97
     sta L87_STATE                               ; 8214 85 87
@@ -2120,8 +2118,6 @@ L8D56_GAME_STATE_0:
     if_ne ; this never happens, does it?        ; 8D58 F0 05
         inc L97_GAME_STATE                      ; 8D5A E6 97
     else                                        ; 8D5C 4C 6F 8D
-        lda #$00                                ; 8D5F A9 00
-        sta LA1_                                ; 8D61 85 A1
         jsr R871F_THIS_PILL_SPRITE              ; 8D63 20 1F 87
         jsr R8D70_DROP_PILL ; may go to state 1 ; 8D66 20 70 8D
         jsr R8DBF_PILL_MOVE                     ; 8D69 20 BF 8D
@@ -2875,10 +2871,6 @@ L91FB_5_CHECK_HORIZONTAL_CLEAR:
                     inc L8F_CLEAR_COMBO         ; 9244 E6 8F
                     sta $8E                     ; 9246 85 8E
                     jsr R944B_CLEARED_COLOR     ; 9248 20 4B 94
-                    lda LA1_                    ; 924B A5 A1
-                    add L47_TEMP                ; 924D 18 65 47
-                    sta LA1_                    ; 9250 85 A1
-                    inc LA1_                    ; 9252 E6 A1
                     lda L59_TEMP                ; 9254 A5 59
                     and #$78                    ; 9256 29 78
                     lsr a                       ; 9258 4A
@@ -3173,10 +3165,6 @@ L9469_6_CHECK_VERTICAL_CLEAR:
                 inc L8F_CLEAR_COMBO             ; 94AA E6 8F
                 sta $8E                         ; 94AC 85 8E
                 jsr R944B_CLEARED_COLOR         ; 94AE 20 4B 94
-                lda LA1_                        ; 94B1 A5 A1
-                add L47_TEMP                    ; 94B3 18 65 47
-                sta LA1_                        ; 94B6 85 A1
-                inc LA1_                        ; 94B8 E6 A1
                 lda L59_TEMP                    ; 94BA A5 59
                 and #$78                        ; 94BC 29 78
                 lsr a                           ; 94BE 4A
