@@ -1479,9 +1479,8 @@ R88CB_NEXT_PILL_SPRITE:
 ; - X position of left side of sprite
 
 R88F6_SPRITE:
-    clc                                         ; 88F6 18
     lda L53_SPRITE_NUM                          ; 88F7 A5 53
-    rol a                                       ; 88F9 2A
+    asl a                                       ; 88F9 2A
     tax                                         ; 88FA AA
     lda LA8C2,x                                 ; 88FB BD C2 A8
     sta $47                                     ; 88FE 85 47
