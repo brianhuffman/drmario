@@ -468,7 +468,6 @@ L8206_TOP_3:
     sta $88                                     ; 8216 85 88
     sta L89_LOST                                ; 8218 85 89
     sta L80_UPDATE_ROW                          ; 821A 85 80
-    sta L90_PILL_COUNT_0                        ; 821C 85 90
     sta L7D_TOSS_TIMER                          ; 8220 85 7D
     sta LA7_PILL_INDEX                          ; 8222 85 A7
     sta $0728                                   ; 8224 8D 28 07
@@ -485,6 +484,8 @@ L8206_TOP_3:
     sta $61                                     ; 823B 85 61
     sta L55_ROUND_WINNER                        ; 823D 85 55
     sta L3E_VIRUS_CYCLE                         ; 823F 85 3E
+    lda #$0B
+    sta L90_PILL_COUNT_0
     lda #$06                                    ; 8241 A9 06
     sta L97_GAME_STATE                          ; 8243 85 97
     lda #$04                                    ; 8245 A9 04
@@ -497,8 +498,6 @@ L8206_TOP_3:
     jsr R82A0_INIT_780                          ; 8254 20 A0 82
     jsr R8E8D_NEW_PILL                          ; 8257 20 8D 8E
     jsr R8E8D_NEW_PILL                          ; 825A 20 8D 8E
-    lda #$01                                    ; 825D A9 01
-    sta L90_PILL_COUNT_0                        ; 825F 85 90
     jsr R8FA5_SAVE_STATS                        ; 8261 20 A5 8F
     jsr R90AF_SAVE_P1                           ; 8264 20 AF 90
     jsr R90BC_SAVE_P2                           ; 8267 20 BC 90
@@ -2361,11 +2360,9 @@ R8E8D_NEW_PILL:
     lda #$0F                                    ; 8ED9 A9 0F
     sta L86_PILL_ROW                            ; 8EDB 85 86
 
-    inc L90_PILL_COUNT_0
-    lda L90_PILL_COUNT_0
-    cmp #$0A
+    dec L90_PILL_COUNT_0
     if_eq
-        lda #$00
+        lda #$0A
         sta L90_PILL_COUNT_0
         lda $0723
         if_eq
