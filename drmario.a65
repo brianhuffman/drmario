@@ -7950,30 +7950,6 @@ LFF00_RESET_HANDLER:
     jmp L8000                                   ; FF2D 4C 00 80
 
 ; ----------------------------------------------------------------------------
-.ifndef REV_A
-        .byte $00,$00
-.endif
-        .byte $00,$00,$00,$00,$00,$00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FF38 00 00 00 00 00 00 00 00
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FF40 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FF48 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FF50 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FF58 FF FF FF FF FF FF FF FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FF60 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FF68 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FF70 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FF78 00 00 00 00 00 00 00 00
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FF80 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FF88 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FF90 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FF98 FF FF FF FF FF FF FF FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FFA0 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FFA8 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FFB0 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FFB8 00 00 00 00 00 00 00 00
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FFC0 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FFC8 FF FF FF FF FF FF FF FF
-; ----------------------------------------------------------------------------
 ; Entry points to audio code
 
 RFFD0:  jmp     AUDIO::LD470                    ; FFD0 4C 70 D4
@@ -7983,15 +7959,6 @@ RFFD3:  jmp     AUDIO::RD4E5                    ; FFD3 4C E5 D4
 ; called from one place
 RFFD6:  jmp     AUDIO::LD2BF                    ; FFD6 4C BF D2
 ; ----------------------------------------------------------------------------
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF       ; FFD9 FF FF FF FF FF FF FF
-        .byte $20,$20,$20,$20,$20,$20,$20,$20   ; FFE0 20 20 20 20 20 20 20 20
-        .byte $44,$52,$2E,$4D,$41,$52,$49,$4F   ; FFE8 44 52 2E 4D 41 52 49 4F
-.ifdef REV_A
-        .byte $2D,$85
-.else
-        .byte $1C,$87
-.endif
-        .byte $C2,$A1,$22,$04,$01,$07,$01,$6E   ; FFF2 C2 A1 22 04 01 07 01 6E
 
 .segment "VECTORS"
 LFFFA:  .word L8005_NMI_HANDLER                 ; FFFA 05 80

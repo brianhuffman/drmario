@@ -102,12 +102,6 @@ LD2BF:
     rts                                         ; D2CB 60
 
 ; ----------------------------------------------------------------------------
-        ;D2CC
-        .byte $FF,$FF,$FF,$FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-; ----------------------------------------------------------------------------
 ; values to copy into APU registers
 ; Used in RD52B.
 .align $100
@@ -3391,83 +3385,6 @@ LFAEB:                                          ; L
 .endscope ;RDAFB
 RDAFB = RDAFB::RDAFB
 ; ============================================================================
-
-; ----------------------------------------------------------------------------
-.ifdef REV_A
-        .byte $FF,$FF,$FF,$FD,$FF,$FF,$FF,$FF   ; FB00 FF FF FF FD FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$CF,$F4   ; FB08 FF FF FF FF FF FF CF F4
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB10 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$CF,$7A,$FF,$FF   ; FB18 FF FF FF FF CF 7A FF FF
-.else
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB00 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB08 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB10 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB18 FF FF FF FF FF FF FF FF
-.endif
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB20 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB28 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB30 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB38 00 00 00 00 00 00 00 00
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB40 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB48 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB50 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB58 FF FF FF FF FF FF FF FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB60 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB68 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB70 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB78 00 00 00 00 00 00 00 00
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB80 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB88 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB90 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB98 FF FF FF FF FF FF FF FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBA0 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBA8 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBB0 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBB8 00 00 00 00 00 00 00 00
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FBC0 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FBC8 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FBD0 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FBD8 FF FF FF FF FF FF FF FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBE0 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBE8 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBF0 00 00 00 00 00 00 00 00
-.ifdef REV_A
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBF8 00 00 00 00 00 00 00 00
-.else
-        .byte $00,$00,$00,$00,$00,$00,$81,$08   ; FBF8 00 00 00 00 00 00 81 08
-.endif
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC00 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC08 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC10 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC18 FF FF FF FF FF FF FF FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC20 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC28 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC30 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC38 00 00 00 00 00 00 00 00
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC40 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC48 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC50 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC58 FF FF FF FF FF FF FF FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC60 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC68 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC70 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC78 00 00 00 00 00 00 00 00
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC80 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC88 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC90 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC98 FF FF FF FF FF FF FF FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCA0 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCA8 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCB0 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCB8 00 00 00 00 00 00 00 00
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FCC0 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FCC8 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FCD0 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FCD8 FF FF FF FF FF FF FF FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCE0 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCE8 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCF0 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCF8 00 00 00 00 00 00 00 00
 
 ; ----------------------------------------------------------------------------
 ; APU audio sample 1, 112 bytes
