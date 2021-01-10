@@ -1685,7 +1685,7 @@ R89D4_VIRUS_SPRITES:
                     sta $06F1                   ; 8A90 8D F1 06
                     lda #$03                    ; 8A93 A9 03
                     sta L75_V1_STATE            ; 8A95 85 75
-                    lda #$00                    ; 8A97 A9 00
+                    lda #$05
                     sta L78_V1_TIMER            ; 8A99 85 78
                 end_if
             end_if
@@ -1708,10 +1708,8 @@ R89D4_VIRUS_SPRITES:
             sta L53_SPRITE_NUM                  ; 8AB7 85 53
             jsr R88F6_SPRITE                    ; 8AB9 20 F6 88
             ; 8-way pop lines
-            inc L78_V1_TIMER                    ; 8ABC E6 78
-            lda L78_V1_TIMER                    ; 8ABE A5 78
-            cmp #$05                            ; 8AC0 C9 05
-            if_cs                               ; 8AC2 90 02
+            dec L78_V1_TIMER
+            if_eq
                 inc L75_V1_STATE                ; 8AC4 E6 75
             end_if
         end_if
@@ -1767,7 +1765,7 @@ R89D4_VIRUS_SPRITES:
                     sta $06F1                   ; 8B1F 8D F1 06
                     lda #$03                    ; 8B22 A9 03
                     sta L76_V2_STATE            ; 8B24 85 76
-                    lda #$00                    ; 8B26 A9 00
+                    lda #$05
                     sta L79_V2_TIMER            ; 8B28 85 79
                 end_if
             end_if
@@ -1790,11 +1788,9 @@ R89D4_VIRUS_SPRITES:
             sta L53_SPRITE_NUM                  ; 8B46 85 53
             jsr R88F6_SPRITE                    ; 8B48 20 F6 88
             ; 8-way pop
-            inc L79_V2_TIMER                    ; 8B4B E6 79
-            lda L79_V2_TIMER                    ; 8B4D A5 79
-            cmp #$05                            ; 8B4F C9 05
-            if_cs                               ; 8B51 90 02
-                inc L76_V2_STATE                ; 8B53 E6 76
+            dec L79_V2_TIMER
+            if_eq
+                inc L76_V2_STATE
             end_if
         end_if
     end
@@ -1848,7 +1844,7 @@ R89D4_VIRUS_SPRITES:
                     sta $06F1                   ; 8BAE 8D F1 06
                     lda #$03                    ; 8BB1 A9 03
                     sta L77_V3_STATE            ; 8BB3 85 77
-                    lda #$00                    ; 8BB5 A9 00
+                    lda #$05
                     sta L7A_V3_TIMER            ; 8BB7 85 7A
                 end_if
             end_if
@@ -1870,10 +1866,8 @@ R89D4_VIRUS_SPRITES:
             sta L53_SPRITE_NUM                  ; 8BD5 85 53
             jsr R88F6_SPRITE                    ; 8BD7 20 F6 88
             ; 8-way pop
-            inc L7A_V3_TIMER                    ; 8BDA E6 7A
-            lda L7A_V3_TIMER                    ; 8BDC A5 7A
-            cmp #$05                            ; 8BDE C9 05
-            if_cs                               ; 8BE0 90 02
+            dec L7A_V3_TIMER
+            if_eq
                 inc L77_V3_STATE                ; 8BE2 E6 77
             end_if
         end_if
