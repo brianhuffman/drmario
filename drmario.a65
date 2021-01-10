@@ -469,7 +469,6 @@ L8206_TOP_3:
     sta L89_LOST                                ; 8218 85 89
     sta L80_UPDATE_ROW                          ; 821A 85 80
     sta L90_PILL_COUNT_0                        ; 821C 85 90
-    sta L91_PILL_COUNT_1                        ; 821E 85 91
     sta L7D_TOSS_TIMER                          ; 8220 85 7D
     sta LA7_PILL_INDEX                          ; 8222 85 A7
     sta $0728                                   ; 8224 8D 28 07
@@ -2323,20 +2322,6 @@ R8E8D_NEW_PILL:
 ; LA2_NEXT_DIR <- #$00
 ; L85_PILL_COLUMN <- #$03
 ; L86_PILL_ROW <- #$0F
-; inc L90_PILL_COUNT_0
-; if L90_PILL_COUNT_0 & #$0F >= #$0A then L90_PILL_COUNT_0+=#$06
-; if L90_PILL_COUNT_0 & #$F0 >= #$A0 then L90_PILL_COUNT_0+=#$60; L91_PILL_COUNT_1++
-; if L91_PILL_COUNT_1 & #$0F >= #$0A then L91_PILL_COUNT_1+=#$06
-; if L91_PILL_COUNT_1 & #$F0 >= #$A0 then L91_PILL_COUNT_1+=#$60; L90_PILL_COUNT_0 <- #$99; L91_PILL_COUNT_1 <- #$99
-; if ($0723 == 0) {
-;     if (L90_PILL_COUNT_0 == 0 || L90_PILL_COUNT_0 & #$0F == 0) {
-;         if (L8A_EXTRA_SPEED != #$31) {
-;             inc L8A_EXTRA_SPEED
-;             $06F1 <- #$06
-;             L52_REDRAW_FLAGS |= #$12
-;         }
-;     }
-; }
 ; L8F_CLEAR_COMBO <- #$00
 ; L52_REDRAW_FLAGS |= #$01
 .scope
@@ -2375,65 +2360,29 @@ R8E8D_NEW_PILL:
     sta L85_PILL_COLUMN                         ; 8ED7 85 85
     lda #$0F                                    ; 8ED9 A9 0F
     sta L86_PILL_ROW                            ; 8EDB 85 86
-    inc L90_PILL_COUNT_0                        ; 8EDD E6 90
-    lda L90_PILL_COUNT_0                        ; 8EDF A5 90
-    and #$0F                                    ; 8EE1 29 0F
-    cmp #$0A                                    ; 8EE3 C9 0A
-    if_cs                                       ; 8EE5 90 07
-        lda L90_PILL_COUNT_0                    ; 8EE7 A5 90
-        add #$06                                ; 8EE9 18 69 06
-        sta L90_PILL_COUNT_0                    ; 8EEC 85 90
-    end_if
-    lda L90_PILL_COUNT_0                        ; 8EEE A5 90
-    and #$F0                                    ; 8EF0 29 F0
-    cmp #$A0                                    ; 8EF2 C9 A0
-    if_cs                                       ; 8EF4 90 09
-        lda L90_PILL_COUNT_0                    ; 8EF6 A5 90
-        add #$60                                ; 8EF8 18 69 60
-        sta L90_PILL_COUNT_0                    ; 8EFB 85 90
-        inc L91_PILL_COUNT_1                    ; 8EFD E6 91
-    end_if
-    lda L91_PILL_COUNT_1                        ; 8EFF A5 91
-    and #$0F                                    ; 8F01 29 0F
-    cmp #$0A                                    ; 8F03 C9 0A
-    if_cs                                       ; 8F05 90 07
-        lda L91_PILL_COUNT_1                    ; 8F07 A5 91
-        add #$06                                ; 8F09 18 69 06
-        sta L91_PILL_COUNT_1                    ; 8F0C 85 91
-    end_if
-    lda L91_PILL_COUNT_1                        ; 8F0E A5 91
-    and #$F0                                    ; 8F10 29 F0
-    cmp #$A0                                    ; 8F12 C9 A0
-    if_cs                                       ; 8F14 90 0B
-        lda L91_PILL_COUNT_1                    ; 8F16 A5 91
-        add #$60                                ; 8F18 18 69 60
-        lda #$99                                ; 8F1B A9 99
-        sta L90_PILL_COUNT_0                    ; 8F1D 85 90
-        sta L91_PILL_COUNT_1                    ; 8F1F 85 91
-    end_if
-    lda $0723                                   ; 8F21 AD 23 07
-    if_eq                                       ; 8F24 D0 21
-        lda L90_PILL_COUNT_0                    ; 8F26 A5 90
-        cmp #$00                                ; 8F28 C9 00
-        beq L8F32                               ; 8F2A F0 06
-        and #$0F                                ; 8F2C 29 0F
-        cmp #$00                                ; 8F2E C9 00
-        bne L8F47                               ; 8F30 D0 15
-    L8F32:
-        lda L8A_EXTRA_SPEED                     ; 8F32 A5 8A
-        cmp #$31                                ; 8F34 C9 31
-        if_ne                                   ; 8F36 F0 0F
-            inc L8A_EXTRA_SPEED                 ; 8F38 E6 8A
-            lda #$06                            ; 8F3A A9 06
-            sta $06F1                           ; 8F3C 8D F1 06
-            ; redraw level# and virus#
-            lda L52_REDRAW_FLAGS                ; 8F3F A5 52
-            ora #$12                            ; 8F41 09 12
-            ora #$02                            ; 8F43 09 02
-            sta L52_REDRAW_FLAGS                ; 8F45 85 52
+
+    inc L90_PILL_COUNT_0
+    lda L90_PILL_COUNT_0
+    cmp #$0A
+    if_eq
+        lda #$00
+        sta L90_PILL_COUNT_0
+        lda $0723
+        if_eq
+            lda L8A_EXTRA_SPEED
+            cmp #$31
+            if_ne
+                inc L8A_EXTRA_SPEED
+                lda #$06
+                sta $06F1
+                ; redraw level# and virus#
+                lda L52_REDRAW_FLAGS
+                ora #$12
+                sta L52_REDRAW_FLAGS
+            end_if
         end_if
-    L8F47:
     end_if
+
     lda #$00                                    ; 8F47 A9 00
     sta L8F_CLEAR_COMBO                         ; 8F49 85 8F
     ; bit 0: redraw pill count (unused)
