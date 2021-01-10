@@ -1262,12 +1262,8 @@ R871F_THIS_PILL_SPRITE:
     sta L45_SPRITE_Y                            ; 8745 85 45
 ; from this point, similar to R88CB_NEXT_PILL_SPRITE
     ldy L42_OAM_OFFSET                          ; 8747 A4 42
-    lda LA6_PILL_SIZE                           ; 8749 A5 A6
-    asl a                                       ; 874B 0A
-    asl a                                       ; 874C 0A
-    add LA5_PILL_DIR                            ; 874D 18 65 A5
-    tax                                         ; 8750 AA
-    lda LA494,x                                 ; 8751 BD 94 A4
+    ldx LA5_PILL_DIR
+    lda LA494,x
     tax                                         ; 8754 AA
     lda L81_PILL_COLOR_0                        ; 8755 A5 81
     sta L47_TEMP                                ; 8757 85 47
@@ -1480,12 +1476,8 @@ R88B1_TOSSED_PILL_SPRITE:
 ; called from R87A2
 R88CB_NEXT_PILL_SPRITE:
     ldy L42_OAM_OFFSET                          ; 88CB A4 42
-    lda LA3_NEXT_SIZE                           ; 88CD A5 A3
-    asl a                                       ; 88CF 0A
-    asl a                                       ; 88D0 0A
-    add LA2_NEXT_DIR                            ; 88D1 18 65 A2
-    tax                                         ; 88D4 AA
-    lda LA494,x                                 ; 88D5 BD 94 A4
+    ldx LA2_NEXT_DIR                            ; 88D1 18 65 A2
+    lda LA494,x                               ; 88D5 BD 94 A4
     tax                                         ; 88D8 AA
     lda L9A_NEXT_COLOR_0                        ; 88D9 A5 9A
     sta L47_TEMP                                ; 88DB 85 47
@@ -2362,7 +2354,6 @@ R8E8D_NEW_PILL:
 ; L83_PILL_COLOR_2 <- L9C_NEXT_COLOR_2
 ; L84_PILL_COLOR_3 <- L9D_NEXT_COLOR_3
 ; LA5_PILL_DIR <- #$00
-; LA6_PILL_SIZE <- LA3_NEXT_SIZE
 ; if L0741_DEMO_MODE > 0 then x <- LCF80,LA7_PILL_INDEX else x <- $0780,LA7_PILL_INDEX
 ; L9A_NEXT_COLOR_0 <- LA7FD,x
 ; L9B_NEXT_COLOR_1 <- LA806,x
@@ -2370,7 +2361,6 @@ R8E8D_NEW_PILL:
 ; LA7_PILL_INDEX &= #$7F
 ; L7D_TOSS_TIMER <- #$00
 ; LA2_NEXT_DIR <- #$00
-; LA3_NEXT_SIZE <- #$02
 ; L85_PILL_COLUMN <- #$03
 ; L86_PILL_ROW <- #$0F
 ; inc L90_PILL_COUNT_0
@@ -2400,7 +2390,7 @@ R8E8D_NEW_PILL:
     sta L84_PILL_COLOR_3                        ; 8E9B 85 84
     lda #$00                                    ; 8E9D A9 00
     sta LA5_PILL_DIR                            ; 8E9F 85 A5
-    lda LA3_NEXT_SIZE                           ; 8EA1 A5 A3
+    lda #$02
     sta LA6_PILL_SIZE                           ; 8EA3 85 A6
     lda L0741_DEMO_MODE                         ; 8EA5 AD 41 07
     if_ne                                       ; 8EA8 F0 09
@@ -2500,30 +2490,19 @@ R8E8D_NEW_PILL:
 ; ----------------------------------------------------------------------------
 ; Place a pill into the playfield.
 R8F52_PLACE_PILL:
+.scope
     ldx L86_PILL_ROW                            ; 8F52 A6 86
     lda LA474,x                                 ; 8F54 BD 74 A4
     add L85_PILL_COLUMN                         ; 8F57 18 65 85
     sta $47                                     ; 8F5A 85 47
     ; $47 is playfield offset for pill
-    lda LA6_PILL_SIZE                           ; 8F5C A5 A6
-    sub #$02                                    ; 8F5E 38 E9 02
-    asl a                                       ; 8F61 0A
-    asl a                                       ; 8F62 0A
-    asl a                                       ; 8F63 0A
-    asl a                                       ; 8F64 0A
-    sta $48                                     ; 8F65 85 48
-    ; shape is always 2, so $48 = 0.
     lda LA5_PILL_DIR                            ; 8F67 A5 A5
     asl a                                       ; 8F69 0A
-    asl a                                       ; 8F6A 0A
-    add $48                                     ; 8F6B 18 65 48
     tax                                         ; 8F6E AA
     lda #$00                                    ; 8F6F A9 00
     sta $49                                     ; 8F71 85 49
     loop
         lda LA4DC,x                             ; 8F73 BD DC A4
-        cmp #$63                                ; 8F76 C9 63
-        beq break                               ; 8F78 F0 24
         add $47                                 ; 8F7A 18 65 47
         sta $57                                 ; 8F7D 85 57
         ; check that we are within playfield
@@ -2531,7 +2510,6 @@ R8F52_PLACE_PILL:
         if_cc                                   ; 8F81 B0 12
             ; get tile number
             lda LA50C,x                         ; 8F83 BD 0C A5
-            clc                                 ; 8F86 18
             sta $4A                             ; 8F87 85 4A
             ldy $49                             ; 8F89 A4 49
             lda L81_PILL_COLOR_0,y              ; 8F8B B9 81 00
@@ -2542,7 +2520,7 @@ R8F52_PLACE_PILL:
         inx                                     ; 8F95 E8
         inc $49                                 ; 8F96 E6 49
         lda $49                                 ; 8F98 A5 49
-        cmp #$04                                ; 8F9A C9 04
+        cmp #$02                                ; 8F9A C9 04
     while_ne                                    ; 8F9C D0 D5
     ; L80_UPDATE_ROW counts from 0 at the top,
     ; while L86_PILL_ROW counts from 0 at the
@@ -2551,6 +2529,21 @@ R8F52_PLACE_PILL:
     eor #$0F                                    ; 8FA0 49 0F
     sta L80_UPDATE_ROW                          ; 8FA2 85 80
     rts                                         ; 8FA4 60
+; ----------------------------------------------------------------------------
+; Table of playfield offsets, used in R8F52_PLACE_PILL
+; Indexed by 2×LA5_PILL_DIR
+LA4DC:  .byte $00,$01
+        .byte $00,$F8
+        .byte $01,$00
+        .byte $F8,$00
+; ----------------------------------------------------------------------------
+; Table of tile numbers for pill shapes.
+; Indexed by 2×LA5_PILL_DIR
+LA50C:  .byte $60,$70
+        .byte $50,$40
+        .byte $70,$60
+        .byte $40,$50
+.endscope
 
 ; ----------------------------------------------------------------------------
 ; Copy L031E_P1_WINS L039E_P2_WINS L0316_P1_LEVEL L0396_P2_LEVEL L030B_P1_SPEED L038B_P2_SPEED
@@ -2756,65 +2749,47 @@ R90C9_INIT_4_5:
 
 ; ----------------------------------------------------------------------------
 ; Pill collision detection.
-; READS L85_PILL_COLUMN L86_PILL_ROW LA5_PILL_DIR LA6_PILL_SIZE ($57),Y La455,X La458,X La45b,X La474,X La4c4,X
+; READS L85_PILL_COLUMN L86_PILL_ROW LA5_PILL_DIR ($57),Y
 ; WRITES $47 $48 $49 $57
 ; Returns A = 0, Z set for no collision.
 ; Returns A = FF, Z clear for collision.
 R90D3_COLLISION:
 .scope
-    ldx LA6_PILL_SIZE                           ; 90D3 A6 A6
-    dex                                         ; 90D5 CA
-    dex                                         ; 90D6 CA
     lda LA5_PILL_DIR                            ; 90D7 A5 A5
     and #$01 ; 1 = U/D, 0 = L/R                 ; 90D9 29 01
     if_eq                                       ; 90DB D0 13
-        lda LA455,x ; $00,$FF,$FF               ; 90DD BD 55 A4
-        add L85_PILL_COLUMN                     ; 90E0 18 65 85
-        bmi collision                           ; 90E3 30 4C
-        lda LA458,x ; $F9,$F9,$FA               ; 90E5 BD 58 A4
-        add L85_PILL_COLUMN                     ; 90E8 18 65 85
-        bpl collision                           ; 90EB 10 44
-    else                                        ; 90ED 4C F8 90
-        lda LA45B,x                             ; 90F0 BD 5B A4
-        add L86_PILL_ROW                        ; 90F3 18 65 86
-        bmi collision                           ; 90F6 30 39
+        lda L85_PILL_COLUMN
+        bmi collision
+        cmp #$07
+        beq collision
     end_if
     lda #$00                                    ; 90F8 A9 00
     sta $57                                     ; 90FA 85 57
     ldx L86_PILL_ROW                            ; 90FC A6 86
     lda LA474,x                                 ; 90FE BD 74 A4
-    add L85_PILL_COLUMN                         ; 9101 18 65 85
+    ora L85_PILL_COLUMN
     sta $47                                     ; 9104 85 47
-    lda LA6_PILL_SIZE                           ; 9106 A5 A6
-    sub #$02                                    ; 9108 38 E9 02
-    asl a                                       ; 910B 0A
-    sta $49                                     ; 910C 85 49
-    ; $49 = LA6_PILL_SIZE - 2
-    lda LA5_PILL_DIR                            ; 910E A5 A5
-    and #$01 ; 1 = U/D, 0 = L/R                 ; 9110 29 01
-    add $49                                     ; 9112 18 65 49
-    asl a                                       ; 9115 0A
-    asl a                                       ; 9116 0A
-    tax                                         ; 9117 AA
-    ; x = ((LA5_PILL_DIR & #1) + $49) << 2
-    lda #$04                                    ; 9118 A9 04
-    sta $48                                     ; 911A 85 48
-    loop
-        lda LA4C4,x                             ; 911C BD C4 A4
-        add $47                                 ; 911F 18 65 47
-        tay                                     ; 9122 A8
-        lda ($57),y                             ; 9123 B1 57
-        cmp #$FF                                ; 9125 C9 FF
-        bne collision                           ; 9127 D0 08
-        inx                                     ; 9129 E8
-        dec $48                                 ; 912A C6 48
-    while_ne                                    ; 912C D0 EE
-    lda #$00                                    ; 912E A9 00
-    rts                                         ; 9130 60
+    tay
+    lda ($57),y
+    cmp #$FF
+    bne collision
+    ldx LA5_PILL_DIR                            ; 910E A5 A5
+    lda LA4C4,x
+    add $47
+    tay
+    lda ($57),y
+    cmp #$FF
+    bne collision
+    lda #$00
+    rts
 
 collision:
     lda #$FF                                    ; 9131 A9 FF
     rts                                         ; 9133 60
+
+LA4C4:
+    .byte $01,$F8,$01,$F8
+
 .endscope
 
 ; ----------------------------------------------------------------------------
@@ -5432,16 +5407,6 @@ LA41B:  .byte $45,$00,$40,$36,$2E,$27,$00,$21,$1E,$1B,$19,$18,$18,$1A,$1C,$1F
         .byte $0F,$17,$02,$02,$02,$02,$02,$02,$02,$02,$03,$03,$03,$03,$03,$03
         .byte $03,$03,$04,$04,$04,$04,$04,$04,$04,$04
 ; ----------------------------------------------------------------------------
-; Used in R90D3_COLLISION, indexed by LA6_PILL_SIZE-2.
-LA455:  .byte $00,$FF,$FF                       ; A455 00 FF FF
-; ----------------------------------------------------------------------------
-; Used in R90D3_COLLISION, indexed by LA6_PILL_SIZE-2.
-LA458:  .byte $F9,$F9,$FA                       ; A458 F9 F9 FA
-; ----------------------------------------------------------------------------
-; Used in R90D3_COLLISION, indexed by LA6_PILL_SIZE-2.
-LA45B:  .byte $00,$FF,$FF,$60,$68,$70,$78,$80,$88,$90,$98,$C0,$C1,$C2,$B0,$B1
-        .byte $B2,$08,$F8,$01,$FF,$50,$40,$70,$60
-; ----------------------------------------------------------------------------
 ; lookup table, 16 bytes, indexed by L86_PILL_ROW or ...
 ; playfield offsets for rows
 LA474:  .byte $78,$70,$68,$60,$58,$50,$48,$40   ; A474 78 70 68 60 58 50 48 40
@@ -5453,11 +5418,9 @@ LA484:  .byte $C8,$C0,$B8,$B0,$A8,$A0,$98,$90,$88,$80,$78,$70,$68,$60,$58,$50
 ; ----------------------------------------------------------------------------
 ; 12-byte lookup table
 ; used as offsets into table LA4A0.
-; indexed by 4×LA3_NEXT_SIZE+LA2_NEXT_DIR
-; indexed by 4×LA6_PILL_SIZE+LA5_PILL_DIR
-LA494:  .byte $00,$00,$00,$00
-        .byte $00,$00,$00,$00
-        .byte $00,$09,$12,$1B
+; indexed by LA2_NEXT_DIR
+; indexed by LA5_PILL_DIR
+LA494:  .byte $00,$09,$12,$1B
 ; ----------------------------------------------------------------------------
 ; lookup table, used in R8772_PILL_SPRITE, indexed by values from LA494.
 ; Sprite data: Y-coord, tile index, flags, X-coord
@@ -5465,47 +5428,6 @@ LA4A0:  .byte $00,$60,$02,$00,$00,$70,$02,$08,$FF ; Pill L-R, (0,0) and (+8,0)
         .byte $00,$50,$02,$00,$F8,$40,$02,$00,$FF ; Pill D-U, (0,0) and (0,-8)
         .byte $00,$70,$02,$08,$00,$60,$02,$00,$FF ; Pill R-L, (+8,0) and (0,0)
         .byte $F8,$40,$02,$00,$00,$50,$02,$00,$FF ; Pill U-D, (-8,0) and (0,0)
-; ----------------------------------------------------------------------------
-; 20-byte lookup table, used in R90D3_COLLISION.
-LA4C4:  .byte $00,$01,$00,$00
-        .byte $F8,$00,$00,$00
-        .byte $FF,$00,$01,$00
-        .byte $F8,$00,$08,$00
-        .byte $FF,$00,$01,$02
-        .byte $F0,$F8,$00,$08
-
-; ----------------------------------------------------------------------------
-; Table of playfield offsets, used in R8F52_PLACE_PILL
-; Indexed by 16×(LA6_PILL_SIZE - 2) + 4×LA5_PILL_DIR
-LA4DC:  .byte $00,$01,$63,$63
-        .byte $00,$F8,$63,$63
-        .byte $01,$00,$63,$63
-        .byte $F8,$00,$63,$63
-        .byte $FF,$00,$01,$63
-        .byte $08,$00,$F8,$63
-        .byte $01,$00,$FF,$63
-        .byte $F8,$00,$08,$63
-        .byte $FF,$00,$01,$02
-        .byte $08,$00,$F8,$F0
-        .byte $02,$01,$00,$FF
-        .byte $F0,$F8,$00,$08
-
-; ----------------------------------------------------------------------------
-; Table of tile numbers for pill shapes.
-; Indexed by 16×(LA6_PILL_SIZE - 2) + 4×LA5_PILL_DIR
-LA50C:  .byte $60,$70,$00,$00
-        .byte $50,$40,$00,$00
-        .byte $70,$60,$00,$00
-        .byte $40,$50,$00,$00
-        .byte $60,$A0,$70,$00
-        .byte $50,$90,$40,$00
-        .byte $70,$A0,$60,$00
-        .byte $40,$90,$50,$00
-        .byte $60,$A0,$A0,$70
-        .byte $50,$90,$90,$40
-        .byte $70,$A0,$A0,$60
-        .byte $40,$90,$90,$50
-        .byte $47,$57,$67,$77,$87,$97,$A7,$01,$02
 
 ; ----------------------------------------------------------------------------
 ; Used in R9C01_DROP_GARBAGE, indexed by $58.
