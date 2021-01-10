@@ -1598,39 +1598,6 @@ R893B_BCD_SPRITE:
     rts                                         ; 8975 60
 
 ; ----------------------------------------------------------------------------
-; unreachable?
-    lda L0727_NUM_PLAYERS                       ; 8976 AD 27 07
-    cmp #$02                                    ; 8979 C9 02
-    bne L89B5                                   ; 897B D0 38
-    lda #$27                                    ; 897D A9 27
-    sta L45_SPRITE_Y                            ; 897F 85 45
-    lda #$6C                                    ; 8981 A9 6C
-    sta L44_SPRITE_X                            ; 8983 85 44
-    lda L0725_MAX_WINS                          ; 8985 AD 25 07
-    sta L53_SPRITE_NUM                          ; 8988 85 53
-    lda #$00                                    ; 898A A9 00
-    sta $60                                     ; 898C 85 60
-    jsr R893B_BCD_SPRITE                        ; 898E 20 3B 89
-    lda #$3F                                    ; 8991 A9 3F
-    sta L45_SPRITE_Y                            ; 8993 85 45
-    lda #$6C                                    ; 8995 A9 6C
-    sta L44_SPRITE_X                            ; 8997 85 44
-    lda L031E_P1_WINS                           ; 8999 AD 1E 03
-    sta L53_SPRITE_NUM                          ; 899C 85 53
-    lda #$00                                    ; 899E A9 00
-    sta $60                                     ; 89A0 85 60
-    jsr R893B_BCD_SPRITE                        ; 89A2 20 3B 89
-    lda #$84                                    ; 89A5 A9 84
-    sta L44_SPRITE_X                            ; 89A7 85 44
-    lda L039E_P2_WINS                           ; 89A9 AD 9E 03
-    sta L53_SPRITE_NUM                          ; 89AC 85 53
-    lda #$00                                    ; 89AE A9 00
-    sta $60                                     ; 89B0 85 60
-    jsr R893B_BCD_SPRITE                        ; 89B2 20 3B 89
-L89B5:
-    rts                                         ; 89B5 60
-
-; ----------------------------------------------------------------------------
 ; Load sprite number L7E_MARIO_ARM + #10 at (192,75)
 ; Pill-tossing mario sprites
 ; Called once in R87A2.
@@ -3404,17 +3371,6 @@ R944B_CLEARED_COLOR:
     rts                                         ; 9459 60
 
 ; ----------------------------------------------------------------------------
-; unreachable?
-    lda L8F_CLEAR_COMBO                         ; 945A A5 8F
-    cmp #$02                                    ; 945C C9 02
-    if_eq                                       ; 945E D0 08
-        lda $58                                 ; 9460 A5 58
-        sub #$03                                ; 9462 38 E9 03
-        sta $06F4                               ; 9465 8D F4 06
-    end_if
-    rts                                         ; 9468 60
-
-; ----------------------------------------------------------------------------
 ; R8C73 routine 6.
 ; Check for vertical clears.
 ; Go to state 7.
@@ -3740,23 +3696,6 @@ R9691_DRAW_MESSAGE:
     lda #$0F                                    ; 96A7 A9 0F
     sta L80_UPDATE_ROW                          ; 96A9 85 80
     rts                                         ; 96AB 60
-
-; ----------------------------------------------------------------------------
-; unreachable?
-.scope
-    lda #$00                                    ; 96AC A9 00
-    sta $57                                     ; 96AE 85 57
-    ldy #$7F                                    ; 96B0 A0 7F
-    loop
-        lda #$FF                                ; 96B2 A9 FF
-        sta ($57),y                             ; 96B4 91 57
-        dey                                     ; 96B6 88
-        cpy #$FF                                ; 96B7 C0 FF
-    while_ne                                    ; 96B9 D0 F7
-    lda #$0F                                    ; 96BB A9 0F
-    sta L80_UPDATE_ROW                          ; 96BD 85 80
-    rts                                         ; 96BF 60
-.endscope
 
 ; ----------------------------------------------------------------------------
 ; Clear bottom half of playfield.
@@ -6528,13 +6467,6 @@ LB4C1:
     rts                                         ; B4C7 60
 
 ; ----------------------------------------------------------------------------
-; unreachable
-    lda #$41                                    ; B4C8 A9 41
-    sta $7F                                     ; B4CA 85 7F
-    inc $5E                                     ; B4CC E6 5E
-    rts                                         ; B4CE 60
-
-; ----------------------------------------------------------------------------
 ; RB43F routine 13.
 LB4CF:
     lda L43_CLOCK                               ; B4CF A5 43
@@ -7135,11 +7067,6 @@ RB7B5_COMBINE_CONTROLLERS:
     rts                                         ; B7C1 60
 
 ; ----------------------------------------------------------------------------
-; unreachable
-    jsr RB793_READ_CONTROLLERS                  ; B7C2 20 93 B7
-    beq LB7E7                                   ; B7C5 F0 20
-
-; ----------------------------------------------------------------------------
 ; Read controller inputs twice and bitwise-AND them together to avoid glitches.
 ; XOR old and new and AND with new to get edge detection in LF5_P1_INPUT_NEW/LF6_P2_INPUT_NEW.
 ; READS $fb L4017
@@ -7173,53 +7100,6 @@ LB7E7:
         dex                                     ; B7F4 CA
     while_pl                                    ; B7F5 10 F2
     rts                                         ; B7F7 60
-
-; ----------------------------------------------------------------------------
-; unreachable
-    jsr RB793_READ_CONTROLLERS                  ; B7F8 20 93 B7
-    loop
-        loop
-            ldy LF5_P1_INPUT_NEW                ; B7FB A4 F5
-            lda LF6_P2_INPUT_NEW                ; B7FD A5 F6
-            pha                                 ; B7FF 48
-                jsr RB793_READ_CONTROLLERS      ; B800 20 93 B7
-            pla                                 ; B803 68
-            cmp LF6_P2_INPUT_NEW                ; B804 C5 F6
-        while_ne                                ; B806 D0 F3
-        cpy LF5_P1_INPUT_NEW                    ; B808 C4 F5
-    while_ne                                    ; B80A D0 EF
-    beq LB7E7                                   ; B80C F0 D9
-    jsr RB793_READ_CONTROLLERS                  ; B80E 20 93 B7
-    jsr RB7B5_COMBINE_CONTROLLERS               ; B811 20 B5 B7
-    loop
-        loop
-            ldy LF5_P1_INPUT_NEW                ; B814 A4 F5
-            lda LF6_P2_INPUT_NEW                ; B816 A5 F6
-            pha                                 ; B818 48
-                jsr RB793_READ_CONTROLLERS      ; B819 20 93 B7
-                jsr RB7B5_COMBINE_CONTROLLERS   ; B81C 20 B5 B7
-            pla                                 ; B81F 68
-            cmp LF6_P2_INPUT_NEW                ; B820 C5 F6
-        while_ne                                ; B822 D0 F0
-        cpy LF5_P1_INPUT_NEW                    ; B824 C4 F5
-    while_ne                                    ; B826 D0 EC
-    beq LB7E7                                   ; B828 F0 BD
-    jsr RB793_READ_CONTROLLERS                  ; B82A 20 93 B7
-    lda $00                                     ; B82D A5 00
-    sta LF7_P1_INPUT_OLD                        ; B82F 85 F7
-    lda $01                                     ; B831 A5 01
-    sta LF8_P2_INPUT_OLD                        ; B833 85 F8
-    ldx #$03                                    ; B835 A2 03
-    loop
-        lda LF5_P1_INPUT_NEW,x                  ; B837 B5 F5
-        tay                                     ; B839 A8
-        eor $F1,x                               ; B83A 55 F1
-        and LF5_P1_INPUT_NEW,x                  ; B83C 35 F5
-        sta LF5_P1_INPUT_NEW,x                  ; B83E 95 F5
-        sty $F1,x                               ; B840 94 F1
-        dex                                     ; B842 CA
-    while_pl                                    ; B843 10 F2
-    rts                                         ; B845 60
 
 ; ----------------------------------------------------------------------------
 ; Input A = Starting PPU page
@@ -7318,14 +7198,6 @@ RB8AC_JUMP_TABLE:
     sta $01                                     ; B8BB 85 01
     stx $00                                     ; B8BD 86 00
     jmp ($00)                                   ; B8BF 6C 00 00
-
-; ----------------------------------------------------------------------------
-; unreachable?
-    sei                                         ; B8C2 78
-    inc L8000                                   ; B8C3 EE 00 80
-    lda #$1A                                    ; B8C6 A9 1A
-    jsr RB8CC ; Set mapper control register.    ; B8C8 20 CC B8
-    rts                                         ; B8CB 60
 
 ; ----------------------------------------------------------------------------
 ; Set MMC1 mapper Control register to A.
