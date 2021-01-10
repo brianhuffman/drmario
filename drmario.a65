@@ -6926,124 +6926,144 @@ RB6B4:
 ; Subroutine RB74B copies the pointer argument to $00/$01, and adjusts
 ; the return address.
 
+; $80 (or any other byte with bit 7 set) indicates the end of the program.
+; $4C followed by a 2-byte address indicates a call to a subroutine.
+; $60 indicates a return from a subroutine.
+; Otherwise the first two bytes are a PPU address (high byte first).
+; Following the address is a draw sequence:
+; Bits 0-5: Length of sequence (1 to 63, or all 0s = 64)
+; Bit 6 = 0: Non-repeated data (followed by sequence of bytes)
+; Bit 6 = 1: Repeated byte (followed by one data byte, to be repeated n times)
+; Bit 7 = 0: Horizontal sequence (increment PPU address by 1)
+; Bit 7 = 1: Vertical sequence (increment PPU address by 32)
+
 RB6C2_PRINT:
 .scope
-        jsr     RB74B                           ; B6C2 20 4B B7
-        jmp     LB71C                           ; B6C5 4C 1C B7
+    jsr RB74B                                   ; B6C2 20 4B B7
+    jmp read_byte                               ; B6C5 4C 1C B7
 
-LB6C8:
+normal_byte:
 ; case A = anything 00-7F except 60 or 4C
 ; Y = 0
-        pha                                     ; B6C8 48
-            sta L2006_PPUADDR                   ; B6C9 8D 06 20    ;p[0] -> $2006 (PPU addr hi)
-            iny                                 ; B6CC C8          ;Y=1
-            lda ($00),y                         ; B6CD B1 00       ;A=p[1]
-            sta L2006_PPUADDR                   ; B6CF 8D 06 20    ;p[1] -> $2006 (PPU addr lo)
-            iny                                 ; B6D2 C8          ;Y=2
-            lda ($00),y                         ; B6D3 B1 00       ;A = p[2] = abcdefgh
-            asl a                               ; B6D5 0A          ;A = p[2]*2 = bcdefgh0
-            pha                                 ; B6D6 48          ;push p[2]*2
-                lda $FF                         ; B6D7 A5 FF
-                ora #$04                        ; B6D9 09 04       ;copy high bit of p[2] (i.e. 'a') to bit 2 of $ff
-                if_cc                           ; B6DB B0 02
-                    and #$FB                    ; B6DD 29 FB
-                end_if
-                sta L2000_PPUCTRL               ; B6DF 8D 00 20
-                sta $FF                         ; B6E2 85 FF
-            pla                                 ; B6E4 68          ;A = p[2]*2 = bcdefgh0
-            asl a                               ; B6E5 0A          ;A = p[2]*4 = cdefgh00 (C = b)
-            php                                 ; B6E6 08
-                if_cs                           ; B6E7 90 03       ;if 'b'
-                    ora #$02                    ; B6E9 09 02       ;A = cdefghb0
-                    iny                         ; B6EB C8          ;Y = 2+b
-                end_if
-            plp                                 ; B6EC 28
-            clc                                 ; B6ED 18
-            if_eq                               ; B6EE D0 01       ;C = (if cdefgh = 0 then 0 else 1)
-                sec                             ; B6F0 38
+    pha                                         ; B6C8 48
+        sta L2006_PPUADDR                       ; B6C9 8D 06 20    ;p[0] -> $2006 (PPU addr hi)
+        iny                                     ; B6CC C8          ;Y=1
+        lda ($00),y                             ; B6CD B1 00       ;A=p[1]
+        sta L2006_PPUADDR                       ; B6CF 8D 06 20    ;p[1] -> $2006 (PPU addr lo)
+        iny                                     ; B6D2 C8          ;Y=2
+        lda ($00),y                             ; B6D3 B1 00       ;A = p[2] = abcdefgh
+        asl a                                   ; B6D5 0A          ;A = p[2]*2 = bcdefgh0
+        pha                                     ; B6D6 48          ;push p[2]*2
+            lda $FF                             ; B6D7 A5 FF
+            ora #$04                            ; B6D9 09 04       ;copy high bit of p[2] (i.e. 'a') to bit 2 of $ff
+            if_cc                               ; B6DB B0 02
+                and #$FB                        ; B6DD 29 FB
             end_if
-            ror a                               ; B6F1 6A          ;A = 0cdefghb OR 1000000b, C=0
-            lsr a                               ; B6F2 4A          ;A = 00cdefgh OR 01000000, C=b
-            tax                                 ; B6F3 AA          ;X = 00cdefgh OR 01000000, C=b
-            loop                                                   ;bits 5:0 of p[2] determine the count.
-                if_cc                           ; B6F4 B0 01       ;bit 6 of p[2] determines whether it is a repeated value
-                    iny                         ; B6F6 C8
-                end_if
-                lda ($00),y                     ; B6F7 B1 00
-                sta L2007_PPUDATA               ; B6F9 8D 07 20    ;Copy value to PPU data
-                dex                             ; B6FC CA
-            while_ne                            ; B6FD D0 F5
-        pla                                     ; B6FF 68          ;a=p[0]
-        cmp #$3F                                ; B700 C9 3F       ;if PPU addr hi = $3f
-        if_eq                                   ; B702 D0 0C
-            sta L2006_PPUADDR                   ; B704 8D 06 20    ;PPU addr = $3f00
-            stx L2006_PPUADDR                   ; B707 8E 06 20
-            stx L2006_PPUADDR                   ; B70A 8E 06 20    ;PPU addr = $0000
-            stx L2006_PPUADDR                   ; B70D 8E 06 20
+            sta L2000_PPUCTRL                   ; B6DF 8D 00 20
+            sta $FF                             ; B6E2 85 FF
+        pla                                     ; B6E4 68          ;A = p[2]*2 = bcdefgh0
+        asl a                                   ; B6E5 0A          ;A = p[2]*4 = cdefgh00 (C = b)
+        php                                     ; B6E6 08
+            if_cs                               ; B6E7 90 03       ;if 'b'
+                ora #$02                        ; B6E9 09 02       ;A = cdefghb0
+                iny                             ; B6EB C8          ;Y = 2+b
+            end_if
+        plp                                     ; B6EC 28
+        clc                                     ; B6ED 18
+        if_eq                                   ; B6EE D0 01       ;C = (if cdefgh = 0 then 0 else 1)
+            sec                                 ; B6F0 38
         end_if
-LB710:
-        ; increment $00/$01 by Y+1.
-        sec                                     ; B710 38
-        tya                                     ; B711 98
-        adc $00                                 ; B712 65 00
-        sta $00                                 ; B714 85 00
-        lda #$00                                ; B716 A9 00
-        adc $01                                 ; B718 65 01
-        sta $01                                 ; B71A 85 01
-; entry point
-LB71C:  ldx L2002_PPUSTATUS                     ; B71C AE 02 20
-        ldy #$00                                ; B71F A0 00
-        lda ($00),y                             ; B721 B1 00
-        if_mi                                   ; B723 10 01
-            rts                                 ; B725 60
-        end_if
-        cmp #$60                                ; B726 C9 60
-        bne LB734                               ; B728 D0 0A
-; case 60 (RTS):
-; pull $00/$01 from the stack, increment $00/$01 by 3, and repeat.
+        ror a                                   ; B6F1 6A          ;A = 0cdefghb OR 1000000b, C=0
+        lsr a                                   ; B6F2 4A          ;A = 00cdefgh OR 01000000, C=b
+        tax                                     ; B6F3 AA          ;X = 00cdefgh OR 01000000, C=b
+        loop                                                       ;bits 5:0 of p[2] determine the count.
+            if_cc                               ; B6F4 B0 01       ;bit 6 of p[2] determines whether it is a repeated value
+                iny                             ; B6F6 C8
+            end_if
+            lda ($00),y                         ; B6F7 B1 00
+            sta L2007_PPUDATA                   ; B6F9 8D 07 20    ;Copy value to PPU data
+            dex                                 ; B6FC CA
+        while_ne                                ; B6FD D0 F5
+    pla                                         ; B6FF 68          ;a=p[0]
+    cmp #$3F                                    ; B700 C9 3F       ;if PPU addr hi = $3f
+    if_eq                                       ; B702 D0 0C
+        sta L2006_PPUADDR                       ; B704 8D 06 20    ;PPU addr = $3f00
+        stx L2006_PPUADDR                       ; B707 8E 06 20
+        stx L2006_PPUADDR                       ; B70A 8E 06 20    ;PPU addr = $0000
+        stx L2006_PPUADDR                       ; B70D 8E 06 20
+    end_if
+
+; Increment $00/$01 by Y+1.
+next_byte:
+    sec                                         ; B710 38
+    tya                                         ; B711 98
+    adc $00                                     ; B712 65 00
+    sta $00                                     ; B714 85 00
+    lda #$00                                    ; B716 A9 00
+    adc $01                                     ; B718 65 01
+    sta $01                                     ; B71A 85 01
+
+; Interpret printing program at address pointed to by $00/$01.
+read_byte:
+    ldx L2002_PPUSTATUS                         ; B71C AE 02 20
+    ldy #$00                                    ; B71F A0 00
+    lda ($00),y                                 ; B721 B1 00
+    if_mi                                       ; B723 10 01
+        rts                                     ; B725 60
+    end_if
+
+    cmp #$60                                    ; B726 C9 60
+    if_eq                                       ; B728 D0 0A
+        ; case 60 (RTS):
+        ; pull $00/$01 from the stack,
+        ; increment $00/$01 by 3, and repeat.
         pla                                     ; B72A 68
         sta $01                                 ; B72B 85 01
         pla                                     ; B72D 68
         sta $00                                 ; B72E 85 00
         ldy #$02                                ; B730 A0 02
-        bne LB710                               ; B732 D0 DC ; Always Branch
+        bne next_byte ; always                  ; B732 D0 DC
+    end_if
 
-LB734:  cmp #$4C                                ; B734 C9 4C
-        bne LB6C8                               ; B736 D0 90
-; case 4C (JMP):
+    cmp #$4C                                    ; B734 C9 4C
+    bne normal_byte                             ; B736 D0 90
+
+; case 4C (JSR):
 ; push $00/$01 to the stack
-        lda $00                                 ; B738 A5 00
-        pha                                     ; B73A 48
-        lda $01                                 ; B73B A5 01
-        pha                                     ; B73D 48
-        iny                                     ; B73E C8
-        lda ($00),y                             ; B73F B1 00
-        tax                                     ; B741 AA
-        iny                                     ; B742 C8
-        lda ($00),y                             ; B743 B1 00
-        sta $01                                 ; B745 85 01
-        stx $00                                 ; B747 86 00
-        bcs LB71C                               ; B749 B0 D1  ; Always Branch
+; copy the following two bytes to $00/$01.
+    lda $00                                     ; B738 A5 00
+    pha                                         ; B73A 48
+    lda $01                                     ; B73B A5 01
+    pha                                         ; B73D 48
+    iny                                         ; B73E C8
+    lda ($00),y                                 ; B73F B1 00
+    tax                                         ; B741 AA
+    iny                                         ; B742 C8
+    lda ($00),y                                 ; B743 B1 00
+    sta $01                                     ; B745 85 01
+    stx $00                                     ; B747 86 00
+    bcs read_byte ; always                      ; B749 B0 D1
 
-RB74B:  tsx                                     ; B74B BA
-        lda $0103,x                             ; B74C BD 03 01
-        sta $05                                 ; B74F 85 05
-        lda $0104,x                             ; B751 BD 04 01
-        sta $06                                 ; B754 85 06
-        ldy #$01                                ; B756 A0 01
-        lda ($05),y                             ; B758 B1 05
-        sta $00                                 ; B75A 85 00
-        iny                                     ; B75C C8
-        lda ($05),y                             ; B75D B1 05
-        sta $01                                 ; B75F 85 01
-        clc                                     ; B761 18
-        lda #$02                                ; B762 A9 02
-        adc $05                                 ; B764 65 05
-        sta $0103,x                             ; B766 9D 03 01
-        lda #$00                                ; B769 A9 00
-        adc $06                                 ; B76B 65 06
-        sta $0104,x                             ; B76D 9D 04 01
-        rts                                     ; B770 60
+RB74B:
+    tsx                                         ; B74B BA
+    lda $0103,x                                 ; B74C BD 03 01
+    sta $05                                     ; B74F 85 05
+    lda $0104,x                                 ; B751 BD 04 01
+    sta $06                                     ; B754 85 06
+    ldy #$01                                    ; B756 A0 01
+    lda ($05),y                                 ; B758 B1 05
+    sta $00                                     ; B75A 85 00
+    iny                                         ; B75C C8
+    lda ($05),y                                 ; B75D B1 05
+    sta $01                                     ; B75F 85 01
+    clc                                         ; B761 18
+    lda #$02                                    ; B762 A9 02
+    adc $05                                     ; B764 65 05
+    sta $0103,x                                 ; B766 9D 03 01
+    lda #$00                                    ; B769 A9 00
+    adc $06                                     ; B76B 65 06
+    sta $0104,x                                 ; B76D 9D 04 01
+    rts                                         ; B770 60
 .endscope
 
 ; ----------------------------------------------------------------------------
