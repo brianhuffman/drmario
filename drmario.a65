@@ -707,7 +707,7 @@ R8393_PRINT_CHANGES:
     end_if
     lda L52_REDRAW_FLAGS                        ; 83A1 A5 52
     if_eq                                       ; 83A3 D0 03
-        jmp L8507 ; rts                         ; 83A5 4C 07 85
+        rts
     end_if
     lda L0727_NUM_PLAYERS                       ; 83A8 AD 27 07
     cmp #$01                                    ; 83AB C9 01
@@ -820,85 +820,85 @@ L846E:
     lda L0727_NUM_PLAYERS                       ; 846E AD 27 07
     cmp #$02                                    ; 8471 C9 02
     if_ne                                       ; 8473 F0 03
-        jmp L8507 ; rts                         ; 8475 4C 07 85
+        rts
     end_if
 
     ; test bit 7 (victory marker)
     lda L52_REDRAW_FLAGS                        ; 8478 A5 52
     and #$80                                    ; 847A 29 80
-    if_ne_jmp                                   ; 847C D0 03 4C 07 85
-        lda L031E_P1_WINS                       ; 8481 AD 1E 03
-        if_ne                                   ; 8484 F0 3B
-            ; look up PPU address from LA396
-            ; save a copy in $47/$48
-            asl a                               ; 8486 0A
-            tax                                 ; 8487 AA
-            dex                                 ; 8488 CA
-            dex                                 ; 8489 CA
-            lda LA396,x                         ; 848A BD 96 A3
-            sta L2006_PPUADDR                   ; 848D 8D 06 20
-            sta $48                             ; 8490 85 48
-            lda LA396+1,x                       ; 8492 BD 97 A3
-            sta L2006_PPUADDR                   ; 8495 8D 06 20
-            sta $47                             ; 8498 85 47
-            lda #$5C                            ; 849A A9 5C
-            sta L2007_PPUDATA                   ; 849C 8D 07 20
-            lda #$5D                            ; 849F A9 5D
-            sta L2007_PPUDATA                   ; 84A1 8D 07 20
-            ; $47/$48 += #$0020
-            ; set PPU address one row down
-            lda $47                             ; 84A4 A5 47
-            add #$20                            ; 84A6 18 69 20
-            sta $47                             ; 84A9 85 47
-            lda #$00                            ; 84AB A9 00
-            adc $48                             ; 84AD 65 48
-            sta L2006_PPUADDR                   ; 84AF 8D 06 20
-            lda $47                             ; 84B2 A5 47
-            sta L2006_PPUADDR                   ; 84B4 8D 06 20
-            lda #$6C                            ; 84B7 A9 6C
-            sta L2007_PPUDATA                   ; 84B9 8D 07 20
-            lda #$6D                            ; 84BC A9 6D
-            sta L2007_PPUDATA                   ; 84BE 8D 07 20
-        end_if
-        lda L039E_P2_WINS                       ; 84C1 AD 9E 03
-        if_ne                                   ; 84C4 F0 3B
-            ; look up PPU address from LA39C
-            ; save a copy in $47/$48
-            asl a                               ; 84C6 0A
-            tax                                 ; 84C7 AA
-            dex                                 ; 84C8 CA
-            dex                                 ; 84C9 CA
-            lda LA39C,x                         ; 84CA BD 9C A3
-            sta L2006_PPUADDR                   ; 84CD 8D 06 20
-            sta $48                             ; 84D0 85 48
-            lda LA39C+1,x                       ; 84D2 BD 9D A3
-            sta L2006_PPUADDR                   ; 84D5 8D 06 20
-            sta $47                             ; 84D8 85 47
-            lda #$5C                            ; 84DA A9 5C
-            sta L2007_PPUDATA                   ; 84DC 8D 07 20
-            lda #$5D                            ; 84DF A9 5D
-            sta L2007_PPUDATA                   ; 84E1 8D 07 20
-            ; $47/$48 += #$0020
-            ; set PPU address one row down
-            lda $47                             ; 84E4 A5 47
-            add #$20                            ; 84E6 18 69 20
-            sta $47                             ; 84E9 85 47
-            lda #$00                            ; 84EB A9 00
-            adc $48                             ; 84ED 65 48
-            sta L2006_PPUADDR                   ; 84EF 8D 06 20
-            lda $47                             ; 84F2 A5 47
-            sta L2006_PPUADDR                   ; 84F4 8D 06 20
-            lda #$6C                            ; 84F7 A9 6C
-            sta L2007_PPUDATA                   ; 84F9 8D 07 20
-            lda #$6D                            ; 84FC A9 6D
-            sta L2007_PPUDATA                   ; 84FE 8D 07 20
-        end_if
-        ; clear bit 7
-        lda L52_REDRAW_FLAGS                    ; 8501 A5 52
-        and $7F ; typo in original?             ; 8503 25 7F
-        sta L52_REDRAW_FLAGS                    ; 8505 85 52
+    if_eq
+        rts
     end_if
-L8507:
+    lda L031E_P1_WINS                       ; 8481 AD 1E 03
+    if_ne                                   ; 8484 F0 3B
+        ; look up PPU address from LA396
+        ; save a copy in $47/$48
+        asl a                               ; 8486 0A
+        tax                                 ; 8487 AA
+        dex                                 ; 8488 CA
+        dex                                 ; 8489 CA
+        lda LA396,x                         ; 848A BD 96 A3
+        sta L2006_PPUADDR                   ; 848D 8D 06 20
+        sta $48                             ; 8490 85 48
+        lda LA396+1,x                       ; 8492 BD 97 A3
+        sta L2006_PPUADDR                   ; 8495 8D 06 20
+        sta $47                             ; 8498 85 47
+        lda #$5C                            ; 849A A9 5C
+        sta L2007_PPUDATA                   ; 849C 8D 07 20
+        lda #$5D                            ; 849F A9 5D
+        sta L2007_PPUDATA                   ; 84A1 8D 07 20
+        ; $47/$48 += #$0020
+        ; set PPU address one row down
+        lda $47                             ; 84A4 A5 47
+        add #$20                            ; 84A6 18 69 20
+        sta $47                             ; 84A9 85 47
+        lda #$00                            ; 84AB A9 00
+        adc $48                             ; 84AD 65 48
+        sta L2006_PPUADDR                   ; 84AF 8D 06 20
+        lda $47                             ; 84B2 A5 47
+        sta L2006_PPUADDR                   ; 84B4 8D 06 20
+        lda #$6C                            ; 84B7 A9 6C
+        sta L2007_PPUDATA                   ; 84B9 8D 07 20
+        lda #$6D                            ; 84BC A9 6D
+        sta L2007_PPUDATA                   ; 84BE 8D 07 20
+    end_if
+    lda L039E_P2_WINS                       ; 84C1 AD 9E 03
+    if_ne                                   ; 84C4 F0 3B
+        ; look up PPU address from LA39C
+        ; save a copy in $47/$48
+        asl a                               ; 84C6 0A
+        tax                                 ; 84C7 AA
+        dex                                 ; 84C8 CA
+        dex                                 ; 84C9 CA
+        lda LA39C,x                         ; 84CA BD 9C A3
+        sta L2006_PPUADDR                   ; 84CD 8D 06 20
+        sta $48                             ; 84D0 85 48
+        lda LA39C+1,x                       ; 84D2 BD 9D A3
+        sta L2006_PPUADDR                   ; 84D5 8D 06 20
+        sta $47                             ; 84D8 85 47
+        lda #$5C                            ; 84DA A9 5C
+        sta L2007_PPUDATA                   ; 84DC 8D 07 20
+        lda #$5D                            ; 84DF A9 5D
+        sta L2007_PPUDATA                   ; 84E1 8D 07 20
+        ; $47/$48 += #$0020
+        ; set PPU address one row down
+        lda $47                             ; 84E4 A5 47
+        add #$20                            ; 84E6 18 69 20
+        sta $47                             ; 84E9 85 47
+        lda #$00                            ; 84EB A9 00
+        adc $48                             ; 84ED 65 48
+        sta L2006_PPUADDR                   ; 84EF 8D 06 20
+        lda $47                             ; 84F2 A5 47
+        sta L2006_PPUADDR                   ; 84F4 8D 06 20
+        lda #$6C                            ; 84F7 A9 6C
+        sta L2007_PPUDATA                   ; 84F9 8D 07 20
+        lda #$6D                            ; 84FC A9 6D
+        sta L2007_PPUDATA                   ; 84FE 8D 07 20
+    end_if
+    ; clear bit 7
+    lda L52_REDRAW_FLAGS                    ; 8501 A5 52
+    and $7F ; typo in original?             ; 8503 25 7F
+    sta L52_REDRAW_FLAGS                    ; 8505 85 52
     rts                                         ; 8507 60
 .endscope
 
@@ -917,7 +917,7 @@ R8508_PRINT_SETTINGS:
                 .word LA2B8 ; attribute data
                 lda #$00
                 sta $68                         ; 851B 85 68
-                jmp break                       ; 851D 4C 79 85
+                rts
             end_if
             cmp #$02                            ; 8520 C9 02
             if_eq                               ; 8522 D0 0C
@@ -925,7 +925,7 @@ R8508_PRINT_SETTINGS:
                 .word LA2FF ; attribute data    ; 8527 FF A2
                 lda #$00                        ; 8529 A9 00
                 sta $68                         ; 852B 85 68
-                jmp break                       ; 852D 4C 79 85
+                rts
             end_if
             cmp #$03                            ; 8530 C9 03
             bne break                           ; 8532 D0 45
@@ -933,7 +933,7 @@ R8508_PRINT_SETTINGS:
             .word LA346 ; attribute data        ; 8537 46 A3
             lda #$00                            ; 8539 A9 00
             sta $68                             ; 853B 85 68
-            jmp break                           ; 853D 4C 79 85
+            rts
         end_if
         lda $68                                 ; 8540 A5 68
         and #$04                                ; 8542 29 04
@@ -963,7 +963,7 @@ R8508_PRINT_SETTINGS:
         sta L2006_PPUADDR                       ; 856D 8D 06 20
         ldx L0396_P2_LEVEL                      ; 8570 AE 96 03
         lda LA777,x ; BCD table 00-29           ; 8573 BD 77 A7
-        jsr R864E_NYBBLES_PPUDATA               ; 8576 20 4E 86
+        jmp R864E_NYBBLES_PPUDATA
     end
     rts                                         ; 8579 60
 
@@ -1322,100 +1322,95 @@ R8772_PILL_SPRITE:
 ; Display sprites on level screen
 ; Called once in RB654_NEXT_FRAME.
 R87A2_LEVEL_SPRITES:
-    begin
-        jsr R89C9_BLINK_CHR_BANK                ; 87A2 20 C9 89
-        lda L0727_NUM_PLAYERS                   ; 87A5 AD 27 07
-        cmp #$01                                ; 87A8 C9 01
-        if_eq                                   ; 87AA D0 26
-            jsr R89D4_VIRUS_SPRITES             ; 87AC 20 D4 89
-            lda L0309_P1_LOST                   ; 87AF AD 09 03
-            if_ne                               ; 87B2 F0 12
-                lda #$C0                        ; 87B4 A9 C0
-                sta L44_SPRITE_X                ; 87B6 85 44
-                lda #$4B                        ; 87B8 A9 4B
-                sta L45_SPRITE_Y                ; 87BA 85 45
-                lda #$32                        ; 87BC A9 32
-                sta L53_SPRITE_NUM              ; 87BE 85 53
-                jsr R88F6_SPRITE                ; 87C0 20 F6 88
-                ; Shrugging Mario
-                jmp break                       ; 87C3 4C 6B 88
-            end_if
-            jsr R9075_LOAD_P1                   ; 87C6 20 75 90
-            jsr R89B6_MARIO_SPRITE              ; 87C9 20 B6 89
-            jsr R88B1_TOSSED_PILL_SPRITE        ; 87CC 20 B1 88
-            jmp break                           ; 87CF 4C 6B 88
+    jsr R89C9_BLINK_CHR_BANK                ; 87A2 20 C9 89
+    lda L0727_NUM_PLAYERS                   ; 87A5 AD 27 07
+    cmp #$01                                ; 87A8 C9 01
+    if_eq                                   ; 87AA D0 26
+        jsr R89D4_VIRUS_SPRITES             ; 87AC 20 D4 89
+        lda L0309_P1_LOST                   ; 87AF AD 09 03
+        if_ne                               ; 87B2 F0 12
+            lda #$C0                        ; 87B4 A9 C0
+            sta L44_SPRITE_X                ; 87B6 85 44
+            lda #$4B                        ; 87B8 A9 4B
+            sta L45_SPRITE_Y                ; 87BA 85 45
+            lda #$32                        ; 87BC A9 32
+            sta L53_SPRITE_NUM              ; 87BE 85 53
+            jmp R88F6_SPRITE
+            ; Shrugging Mario
         end_if
+        jsr R9075_LOAD_P1                   ; 87C6 20 75 90
+        jsr R89B6_MARIO_SPRITE              ; 87C9 20 B6 89
+        jmp R88B1_TOSSED_PILL_SPRITE
+    end_if
 
-        lda $61                                 ; 87D2 A5 61
-        if_eq                                   ; 87D4 D0 4C
-            lda L55_ROUND_WINNER                ; 87D6 A5 55
-            if_eq                               ; 87D8 D0 48
-                lda L031A_P1_NEXT_COLOR_0       ; 87DA AD 1A 03
-                sta L9A_NEXT_COLOR_0            ; 87DD 85 9A
-                lda L031B_P1_NEXT_COLOR_1       ; 87DF AD 1B 03
-                sta L9B_NEXT_COLOR_1            ; 87E2 85 9B
-                lda L031C_P1_NEXT_COLOR_2       ; 87E4 AD 1C 03
-                sta L9C_NEXT_COLOR_2            ; 87E7 85 9C
-                lda L031D_P1_NEXT_COLOR_3       ; 87E9 AD 1D 03
-                sta L9D_NEXT_COLOR_3            ; 87EC 85 9D
-                lda L0325_P1_PILL_DIR           ; 87EE AD 25 03
-                sta LA5_PILL_DIR                ; 87F1 85 A5
-                lda #$38                        ; 87F3 A9 38
-                sta L44_SPRITE_X                ; 87F5 85 44
-                lda #$33                        ; 87F7 A9 33
-                sta L45_SPRITE_Y                ; 87F9 85 45
-                jsr R88CB_NEXT_PILL_SPRITE      ; 87FB 20 CB 88
+    lda $61                                 ; 87D2 A5 61
+    if_eq                                   ; 87D4 D0 4C
+        lda L55_ROUND_WINNER                ; 87D6 A5 55
+        if_eq                               ; 87D8 D0 48
+            lda L031A_P1_NEXT_COLOR_0       ; 87DA AD 1A 03
+            sta L9A_NEXT_COLOR_0            ; 87DD 85 9A
+            lda L031B_P1_NEXT_COLOR_1       ; 87DF AD 1B 03
+            sta L9B_NEXT_COLOR_1            ; 87E2 85 9B
+            lda L031C_P1_NEXT_COLOR_2       ; 87E4 AD 1C 03
+            sta L9C_NEXT_COLOR_2            ; 87E7 85 9C
+            lda L031D_P1_NEXT_COLOR_3       ; 87E9 AD 1D 03
+            sta L9D_NEXT_COLOR_3            ; 87EC 85 9D
+            lda L0325_P1_PILL_DIR           ; 87EE AD 25 03
+            sta LA5_PILL_DIR                ; 87F1 85 A5
+            lda #$38                        ; 87F3 A9 38
+            sta L44_SPRITE_X                ; 87F5 85 44
+            lda #$33                        ; 87F7 A9 33
+            sta L45_SPRITE_Y                ; 87F9 85 45
+            jsr R88CB_NEXT_PILL_SPRITE      ; 87FB 20 CB 88
 
-                lda L039A_P2_NEXT_COLOR_0       ; 87FE AD 9A 03
-                sta L9A_NEXT_COLOR_0            ; 8801 85 9A
-                lda L039B_P2_NEXT_COLOR_1       ; 8803 AD 9B 03
-                sta L9B_NEXT_COLOR_1            ; 8806 85 9B
-                lda L039C_P2_NEXT_COLOR_2       ; 8808 AD 9C 03
-                sta L9C_NEXT_COLOR_2            ; 880B 85 9C
-                lda L039D_P2_NEXT_COLOR_3       ; 880D AD 9D 03
-                sta L9D_NEXT_COLOR_3            ; 8810 85 9D
-                lda L03A5_P2_PILL_DIR           ; 8812 AD A5 03
-                sta LA5_PILL_DIR                ; 8815 85 A5
-                lda #$B8                        ; 8817 A9 B8
-                sta L44_SPRITE_X                ; 8819 85 44
-                lda #$33                        ; 881B A9 33
-                sta L45_SPRITE_Y                ; 881D 85 45
-                jsr R88CB_NEXT_PILL_SPRITE      ; 881F 20 CB 88
-            end_if
+            lda L039A_P2_NEXT_COLOR_0       ; 87FE AD 9A 03
+            sta L9A_NEXT_COLOR_0            ; 8801 85 9A
+            lda L039B_P2_NEXT_COLOR_1       ; 8803 AD 9B 03
+            sta L9B_NEXT_COLOR_1            ; 8806 85 9B
+            lda L039C_P2_NEXT_COLOR_2       ; 8808 AD 9C 03
+            sta L9C_NEXT_COLOR_2            ; 880B 85 9C
+            lda L039D_P2_NEXT_COLOR_3       ; 880D AD 9D 03
+            sta L9D_NEXT_COLOR_3            ; 8810 85 9D
+            lda L03A5_P2_PILL_DIR           ; 8812 AD A5 03
+            sta LA5_PILL_DIR                ; 8815 85 A5
+            lda #$B8                        ; 8817 A9 B8
+            sta L44_SPRITE_X                ; 8819 85 44
+            lda #$33                        ; 881B A9 33
+            sta L45_SPRITE_Y                ; 881D 85 45
+            jsr R88CB_NEXT_PILL_SPRITE      ; 881F 20 CB 88
         end_if
-        lda #$2B                                ; 8822 A9 2B
-        sta L45_SPRITE_Y                        ; 8824 85 45
-        lda #$01                                ; 8826 A9 01
-        sta $60                                 ; 8828 85 60
-        lda #$6D                                ; 882A A9 6D
-        sta L44_SPRITE_X                        ; 882C 85 44
-        ldx L0316_P1_LEVEL                      ; 882E AE 16 03
-        lda LA777,x ; BCD table 00-29           ; 8831 BD 77 A7
-        sta L53_SPRITE_NUM                      ; 8834 85 53
-        jsr R893B_BCD_SPRITE                    ; 8836 20 3B 89
-        lda #$84                                ; 8839 A9 84
-        sta L44_SPRITE_X                        ; 883B 85 44
-        ldx L0396_P2_LEVEL                      ; 883D AE 96 03
-        lda LA777,x ; BCD table 00-29           ; 8840 BD 77 A7
-        sta L53_SPRITE_NUM                      ; 8843 85 53
-        jsr R893B_BCD_SPRITE                    ; 8845 20 3B 89
-        lda #$BF                                ; 8848 A9 BF
-        sta L45_SPRITE_Y                        ; 884A 85 45
-        lda #$6E                                ; 884C A9 6E
-        sta L44_SPRITE_X                        ; 884E 85 44
-        lda L0324_P1_VIRUS                      ; 8850 AD 24 03
-        sta L53_SPRITE_NUM                      ; 8853 85 53
-        jsr R893B_BCD_SPRITE                    ; 8855 20 3B 89
-        lda #$83                                ; 8858 A9 83
-        sta L44_SPRITE_X                        ; 885A 85 44
-        lda L03A4_P2_VIRUS                      ; 885C AD A4 03
-        sta L53_SPRITE_NUM                      ; 885F 85 53
-        jsr R893B_BCD_SPRITE                    ; 8861 20 3B 89
-        lda #$00                                ; 8864 A9 00
-        sta $60                                 ; 8866 85 60
-        jsr R886C                               ; 8868 20 6C 88
-    end
-    rts                                         ; 886B 60
+    end_if
+    lda #$2B                                ; 8822 A9 2B
+    sta L45_SPRITE_Y                        ; 8824 85 45
+    lda #$01                                ; 8826 A9 01
+    sta $60                                 ; 8828 85 60
+    lda #$6D                                ; 882A A9 6D
+    sta L44_SPRITE_X                        ; 882C 85 44
+    ldx L0316_P1_LEVEL                      ; 882E AE 16 03
+    lda LA777,x ; BCD table 00-29           ; 8831 BD 77 A7
+    sta L53_SPRITE_NUM                      ; 8834 85 53
+    jsr R893B_BCD_SPRITE                    ; 8836 20 3B 89
+    lda #$84                                ; 8839 A9 84
+    sta L44_SPRITE_X                        ; 883B 85 44
+    ldx L0396_P2_LEVEL                      ; 883D AE 96 03
+    lda LA777,x ; BCD table 00-29           ; 8840 BD 77 A7
+    sta L53_SPRITE_NUM                      ; 8843 85 53
+    jsr R893B_BCD_SPRITE                    ; 8845 20 3B 89
+    lda #$BF                                ; 8848 A9 BF
+    sta L45_SPRITE_Y                        ; 884A 85 45
+    lda #$6E                                ; 884C A9 6E
+    sta L44_SPRITE_X                        ; 884E 85 44
+    lda L0324_P1_VIRUS                      ; 8850 AD 24 03
+    sta L53_SPRITE_NUM                      ; 8853 85 53
+    jsr R893B_BCD_SPRITE                    ; 8855 20 3B 89
+    lda #$83                                ; 8858 A9 83
+    sta L44_SPRITE_X                        ; 885A 85 44
+    lda L03A4_P2_VIRUS                      ; 885C AD A4 03
+    sta L53_SPRITE_NUM                      ; 885F 85 53
+    jsr R893B_BCD_SPRITE                    ; 8861 20 3B 89
+    lda #$00                                ; 8864 A9 00
+    sta $60                                 ; 8866 85 60
+    jmp R886C                               ; 8868 20 6C 88
 
 ; ----------------------------------------------------------------------------
 R886C:
@@ -1971,9 +1966,8 @@ R8BE5_TITLE_SPRITES:
     and #$01                                    ; 8C1D 29 01
     add #$49                                    ; 8C1F 18 69 49
     sta L53_SPRITE_NUM                          ; 8C22 85 53
-    jsr R88F6_SPRITE                            ; 8C24 20 F6 88
+    jmp R88F6_SPRITE                            ; 8C24 20 F6 88
     ; Tapping foot
-    rts                                         ; 8C27 60
 
 ; ----------------------------------------------------------------------------
 ; Jump from R89D4_VIRUS_SPRITES
@@ -2014,18 +2008,14 @@ L8C28:
     tax                                         ; 8C65 AA
     lda LA103,x ; #$26 or #$15                  ; 8C66 BD 03 A1
     sta L53_SPRITE_NUM                          ; 8C69 85 53
-    jsr R88F6_SPRITE                            ; 8C6B 20 F6 88
-    rts                                         ; 8C6E 60
-
-; ----------------------------------------------------------------------------
-; R9BB9_GAME_STATE_MACHINE routine 1.
-L8C6F_GAME_STATE_1:
-    jsr R8C73                                   ; 8C6F 20 73 8C
-    rts                                         ; 8C72 60
+    jmp R88F6_SPRITE                            ; 8C6B 20 F6 88
 
 ; ----------------------------------------------------------------------------
 ; Jump to one of 9 subroutines based on L87_STATE.
 ; This is the sequence of stuff that needs to get done once a pill is placed.
+; ----------------------------------------------------------------------------
+; R9BB9_GAME_STATE_MACHINE routine 1.
+L8C6F_GAME_STATE_1:
 R8C73:
     lda L87_STATE                               ; 8C73 A5 87
     jsr RB8AC_JUMP_TABLE                        ; 8C75 20 AC B8
@@ -2235,7 +2225,6 @@ R8D70_DROP_PILL:
         sta $06F1                               ; 8DA9 8D F1 06
         jsr R8F52_PLACE_PILL                    ; 8DAC 20 52 8F
         inc L97_GAME_STATE                      ; 8DB9 E6 97
-        jmp break                               ; 8DBB 4C BE 8D
     end
     rts                                         ; 8DBE 60
 
@@ -2351,7 +2340,7 @@ R8E60_CHECK_ROTATE:
                 jsr R90D3_COLLISION             ; 8E73 20 D3 90
                 beq break                       ; 8E76 F0 14
                 inc L85_PILL_COLUMN             ; 8E78 E6 85
-                jmp break                       ; 8E7A 4C 8C 8E
+                rts
             end_if
             dec L85_PILL_COLUMN                 ; 8E7D C6 85
         end_if
@@ -2977,11 +2966,11 @@ L91FB_5_CHECK_HORIZONTAL_CLEAR:
 .scope
     lda L94_                                    ; 91FB A5 94
     if_ne                                       ; 91FD F0 09
-        ; does this every happen?
+        ; does this ever happen?
         lda L80_UPDATE_ROW                      ; 91FF A5 80
         cmp #$FF                                ; 9201 C9 FF
         if_ne                                   ; 9203 F0 03
-            jmp L92DA ; rts                     ; 9205 4C DA 92
+            rts
         end_if
     end_if
 
@@ -3858,7 +3847,7 @@ R978E_PAUSE:
         lda #$00                                ; 9799 A9 00
         sta L46_TOP_STATE                       ; 979B 85 46
         sta L068D                               ; 979D 8D 8D 06
-        jmp break ; rts                         ; 97A0 4C F6 97
+        rts
 
     L97A3:
         lda $54                                 ; 97A3 A5 54
@@ -4173,7 +4162,7 @@ L9953_TOP_1:
             ; enter top-level state 0.
             lda #$00                            ; 99E5 A9 00
             sta L46_TOP_STATE                   ; 99E7 85 46
-            jmp L9AC4 ; rts                     ; 99E9 4C C4 9A
+            rts
         end_if
         cmp #$10 ; "start"                      ; 99EC C9 10
         if_eq                                   ; 99EE D0 03
@@ -4667,7 +4656,7 @@ R9CFF_ADD_VIRUS:
 .scope
     lda LA8_VIRUS_TO_ADD                        ; 9CFF A5 A8
     if_eq                                       ; 9D01 D0 03
-        jmp L9E4B ; rts                         ; 9D03 4C 4B 9E
+        rts
     end_if
     ; $47 = random number less than LA3DE,L96_LEVEL
     loop
@@ -4725,7 +4714,7 @@ L9D54: ; try next cell
     sta $57                                     ; 9D58 85 57
     cmp #$80                                    ; 9D5A C9 80
     bcc L9D4C                                   ; 9D5C 90 EE
-    jmp L9E4B ; rts                             ; 9D5E 4C 4B 9E
+    rts
 
 L9D61:
     ; copy virus color to $47.
@@ -5090,12 +5079,13 @@ L9F87_GAME_STATE_6:
 
         lda L7D_TOSS_TIMER                      ; 9FBC A5 7D
         and #$01                                ; 9FBE 29 01
-        bne break ; rts                         ; 9FC0 D0 2B
-        dec LA2_NEXT_DIR                        ; 9FC2 C6 A2
-        lda LA2_NEXT_DIR                        ; 9FC4 A5 A2
-        and #$03                                ; 9FC6 29 03
-        sta LA2_NEXT_DIR                        ; 9FC8 85 A2
-        jmp break ; rts                         ; 9FCA 4C ED 9F
+        if_eq
+            dec LA2_NEXT_DIR                        ; 9FC2 C6 A2
+            lda LA2_NEXT_DIR                        ; 9FC4 A5 A2
+            and #$03                                ; 9FC6 29 03
+            sta LA2_NEXT_DIR                        ; 9FC8 85 A2
+        end_if
+        rts
 
     new_pill:
         jsr R8E8D_NEW_PILL                      ; 9FCD 20 8D 8E
@@ -6119,7 +6109,7 @@ RB24F_CHECK_WIN:
     if_ne                                       ; B252 F0 08
         lda L03A4_P2_VIRUS                      ; B254 AD A4 03
         if_ne                                   ; B257 F0 03
-            jmp LB336 ; rts                     ; B259 4C 36 B3
+            rts
         end_if
     end_if
     lda #$0F                                    ; B25C A9 0F
@@ -6222,7 +6212,6 @@ LB2A2:
         ; enter top-level state 3
         lda #$03                                ; B32F A9 03
         sta L46_TOP_STATE                       ; B331 85 46
-        jmp LB336                               ; B333 4C 36 B3
     end_if
 LB336:
     rts                                         ; B336 60
@@ -7949,7 +7938,7 @@ LFF00_RESET_HANDLER:
     while_pl                                    ; FF12 10 FB
     dex                                         ; FF14 CA
     txs                                         ; FF15 9A
-    inc $FF00                                   ; FF16 EE 00 FF
+    inc LFF00_RESET_HANDLER                     ; FF16 EE 00 FF
     lda #$10                                    ; FF19 A9 10
     jsr RB8CC ; Set mapper control register.    ; FF1B 20 CC B8
     lda #$02                                    ; FF1E A9 02
