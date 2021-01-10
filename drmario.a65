@@ -69,8 +69,6 @@
 .define L80_UPDATE_ROW   $80
 .define L81_PILL_COLOR_0 $81
 .define L82_PILL_COLOR_1 $82
-.define L83_PILL_COLOR_2 $83
-.define L84_PILL_COLOR_3 $84
 .define L85_PILL_COLUMN  $85
 .define L86_PILL_ROW     $86
 .define L87_STATE        $87
@@ -88,8 +86,6 @@
 .define L98_GARBAGE      $98
 .define L9A_NEXT_COLOR_0 $9A
 .define L9B_NEXT_COLOR_1 $9B
-.define L9C_NEXT_COLOR_2 $9C
-.define L9D_NEXT_COLOR_3 $9D
 .define L9E_WINS         $9E
 .define LA1_             $A1
 .define LA2_NEXT_DIR     $A2
@@ -125,8 +121,6 @@ L0317_P1_GAME_STATE   := $0317
 L0318_P1_GARBAGE      := $0318
 L031A_P1_NEXT_COLOR_0 := $031A
 L031B_P1_NEXT_COLOR_1 := $031B
-L031C_P1_NEXT_COLOR_2 := $031C
-L031D_P1_NEXT_COLOR_3 := $031D
 L031E_P1_WINS         := $031E
 L0324_P1_VIRUS        := $0324
 L0325_P1_PILL_DIR     := $0325
@@ -143,8 +137,6 @@ L0396_P2_LEVEL        := $0396
 L0397_P2_GAME_STATE   := $0397
 L039A_P2_NEXT_COLOR_0 := $039A
 L039B_P2_NEXT_COLOR_1 := $039B
-L039C_P2_NEXT_COLOR_2 := $039C
-L039D_P2_NEXT_COLOR_3 := $039D
 L039E_P2_WINS         := $039E
 L03A4_P2_VIRUS        := $03A4
 L03A5_P2_PILL_DIR     := $03A5
@@ -1271,12 +1263,6 @@ R871F_THIS_PILL_SPRITE:
     lda L82_PILL_COLOR_1                        ; 875C A5 82
     sta L47_TEMP                                ; 875E 85 47
     jsr R8772_PILL_SPRITE                       ; 8760 20 72 87
-    lda L83_PILL_COLOR_2                        ; 8763 A5 83
-    sta L47_TEMP                                ; 8765 85 47
-    jsr R8772_PILL_SPRITE                       ; 8767 20 72 87
-    lda L84_PILL_COLOR_3                        ; 876A A5 84
-    sta L47_TEMP                                ; 876C 85 47
-    jsr R8772_PILL_SPRITE                       ; 876E 20 72 87
     rts                                         ; 8771 60
 
 ; ----------------------------------------------------------------------------
@@ -1347,10 +1333,6 @@ R87A2_LEVEL_SPRITES:
             sta L9A_NEXT_COLOR_0            ; 87DD 85 9A
             lda L031B_P1_NEXT_COLOR_1       ; 87DF AD 1B 03
             sta L9B_NEXT_COLOR_1            ; 87E2 85 9B
-            lda L031C_P1_NEXT_COLOR_2       ; 87E4 AD 1C 03
-            sta L9C_NEXT_COLOR_2            ; 87E7 85 9C
-            lda L031D_P1_NEXT_COLOR_3       ; 87E9 AD 1D 03
-            sta L9D_NEXT_COLOR_3            ; 87EC 85 9D
             lda L0325_P1_PILL_DIR           ; 87EE AD 25 03
             sta LA5_PILL_DIR                ; 87F1 85 A5
             lda #$38                        ; 87F3 A9 38
@@ -1363,10 +1345,6 @@ R87A2_LEVEL_SPRITES:
             sta L9A_NEXT_COLOR_0            ; 8801 85 9A
             lda L039B_P2_NEXT_COLOR_1       ; 8803 AD 9B 03
             sta L9B_NEXT_COLOR_1            ; 8806 85 9B
-            lda L039C_P2_NEXT_COLOR_2       ; 8808 AD 9C 03
-            sta L9C_NEXT_COLOR_2            ; 880B 85 9C
-            lda L039D_P2_NEXT_COLOR_3       ; 880D AD 9D 03
-            sta L9D_NEXT_COLOR_3            ; 8810 85 9D
             lda L03A5_P2_PILL_DIR           ; 8812 AD A5 03
             sta LA5_PILL_DIR                ; 8815 85 A5
             lda #$B8                        ; 8817 A9 B8
@@ -1471,8 +1449,8 @@ R88B1_TOSSED_PILL_SPRITE:
 ; Adds 4 entries to the sprite attribute table.
 ; Inputs:
 ; L44_SPRITE_X L45_SPRITE_Y
-; L9A_NEXT_COLOR_0 L9B_NEXT_COLOR_1 L9C_NEXT_COLOR_2 L9D_NEXT_COLOR_3: 4 pill colors (0-2)
-; 4×LA3_NEXT_SIZE+LA2_NEXT_DIR used as index to LA494.
+; L9A_NEXT_COLOR_0 L9B_NEXT_COLOR_1: 2 pill colors (0-2)
+; LA2_NEXT_DIR used as index to LA494.
 ; called from R87A2
 R88CB_NEXT_PILL_SPRITE:
     ldy L42_OAM_OFFSET                          ; 88CB A4 42
@@ -1485,12 +1463,6 @@ R88CB_NEXT_PILL_SPRITE:
     lda L9B_NEXT_COLOR_1                        ; 88E0 A5 9B
     sta L47_TEMP                                ; 88E2 85 47
     jsr R8772_PILL_SPRITE                       ; 88E4 20 72 87
-    lda L9C_NEXT_COLOR_2                        ; 88E7 A5 9C
-    sta L47_TEMP                                ; 88E9 85 47
-    jsr R8772_PILL_SPRITE                       ; 88EB 20 72 87
-    lda L9D_NEXT_COLOR_3                        ; 88EE A5 9D
-    sta L47_TEMP                                ; 88F0 85 47
-    jsr R8772_PILL_SPRITE                       ; 88F2 20 72 87
     rts                                         ; 88F5 60
 
 ; ----------------------------------------------------------------------------
@@ -2351,8 +2323,6 @@ R8E60_CHECK_ROTATE:
 R8E8D_NEW_PILL:
 ; L81_PILL_COLOR_0 <- L9A_NEXT_COLOR_0
 ; L82_PILL_COLOR_1 <- L9B_NEXT_COLOR_1
-; L83_PILL_COLOR_2 <- L9C_NEXT_COLOR_2
-; L84_PILL_COLOR_3 <- L9D_NEXT_COLOR_3
 ; LA5_PILL_DIR <- #$00
 ; if L0741_DEMO_MODE > 0 then x <- LCF80,LA7_PILL_INDEX else x <- $0780,LA7_PILL_INDEX
 ; L9A_NEXT_COLOR_0 <- LA7FD,x
@@ -2384,10 +2354,6 @@ R8E8D_NEW_PILL:
     sta L81_PILL_COLOR_0                        ; 8E8F 85 81
     lda L9B_NEXT_COLOR_1                        ; 8E91 A5 9B
     sta L82_PILL_COLOR_1                        ; 8E93 85 82
-    lda L9C_NEXT_COLOR_2                        ; 8E95 A5 9C
-    sta L83_PILL_COLOR_2                        ; 8E97 85 83
-    lda L9D_NEXT_COLOR_3                        ; 8E99 A5 9D
-    sta L84_PILL_COLOR_3                        ; 8E9B 85 84
     lda #$00                                    ; 8E9D A9 00
     sta LA5_PILL_DIR                            ; 8E9F 85 A5
     lda #$02
