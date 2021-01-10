@@ -1276,28 +1276,25 @@ R871F_THIS_PILL_SPRITE:
 ; Add L47_TEMP to 2nd byte (Tile index number).
 R8772_PILL_SPRITE:
     lda LA4A0,x                                 ; 8772 BD A0 A4
-    cmp #$FF                                    ; 8775 C9 FF
-    if_ne                                       ; 8777 F0 28
-        add L45_SPRITE_Y                        ; 8779 18 65 45
-        sta $0200,y                             ; 877C 99 00 02
-        inx                                     ; 877F E8
-        iny                                     ; 8780 C8
-        lda LA4A0,x                             ; 8781 BD A0 A4
-        add L47_TEMP                            ; 8784 18 65 47
-        sta $0200,y                             ; 8787 99 00 02
-        inx                                     ; 878A E8
-        iny                                     ; 878B C8
-        lda LA4A0,x                             ; 878C BD A0 A4
-        sta $0200,y                             ; 878F 99 00 02
-        inx                                     ; 8792 E8
-        iny                                     ; 8793 C8
-        lda LA4A0,x                             ; 8794 BD A0 A4
-        add L44_SPRITE_X                        ; 8797 18 65 44
-        sta $0200,y                             ; 879A 99 00 02
-        inx                                     ; 879D E8
-        iny                                     ; 879E C8
-        sty L42_OAM_OFFSET                      ; 879F 84 42
-    end_if
+    add L45_SPRITE_Y                            ; 8779 18 65 45
+    sta $0200,y                                 ; 877C 99 00 02
+    inx                                         ; 877F E8
+    iny                                         ; 8780 C8
+    lda LA4A0,x                                 ; 8781 BD A0 A4
+    add L47_TEMP                                ; 8784 18 65 47
+    sta $0200,y                                 ; 8787 99 00 02
+    inx                                         ; 878A E8
+    iny                                         ; 878B C8
+    lda LA4A0,x                                 ; 878C BD A0 A4
+    sta $0200,y                                 ; 878F 99 00 02
+    inx                                         ; 8792 E8
+    iny                                         ; 8793 C8
+    lda LA4A0,x                                 ; 8794 BD A0 A4
+    add L44_SPRITE_X                            ; 8797 18 65 44
+    sta $0200,y                                 ; 879A 99 00 02
+    inx                                         ; 879D E8
+    iny                                         ; 879E C8
+    sty L42_OAM_OFFSET                          ; 879F 84 42
     rts                                         ; 87A1 60
 
 ; ----------------------------------------------------------------------------
@@ -1455,7 +1452,7 @@ R88B1_TOSSED_PILL_SPRITE:
 R88CB_NEXT_PILL_SPRITE:
     ldy L42_OAM_OFFSET                          ; 88CB A4 42
     ldx LA2_NEXT_DIR                            ; 88D1 18 65 A2
-    lda LA494,x                               ; 88D5 BD 94 A4
+    lda LA494,x                                 ; 88D5 BD 94 A4
     tax                                         ; 88D8 AA
     lda L9A_NEXT_COLOR_0                        ; 88D9 A5 9A
     sta L47_TEMP                                ; 88DB 85 47
@@ -2174,13 +2171,11 @@ R8D70_DROP_PILL:
         bcs break                               ; 8D92 B0 2A
     L8D94:
         dec L86_PILL_ROW                        ; 8D94 C6 86
-        lda #$00                                ; 8D96 A9 00
-        sta L92_DROP_TIMER                      ; 8D98 85 92
-        jsr R90D3_COLLISION                     ; 8D9A 20 D3 90
-        if_eq                                   ; 8D9D D0 06
-            lda L86_PILL_ROW                    ; 8D9F A5 86
-            cmp #$FF                            ; 8DA1 C9 FF
-            bne break                           ; 8DA3 D0 19
+        if_pl
+            lda #$00                            ; 8D96 A9 00
+            sta L92_DROP_TIMER                  ; 8D98 85 92
+            jsr R90D3_COLLISION                 ; 8D9A 20 D3 90
+            beq break
         end_if
         inc L86_PILL_ROW                        ; 8DA5 E6 86
         lda #$07                                ; 8DA7 A9 07
@@ -2463,6 +2458,7 @@ R8F52_PLACE_PILL:
     lda LA5_PILL_DIR                            ; 8F67 A5 A5
     asl a                                       ; 8F69 0A
     tax                                         ; 8F6E AA
+    ; TODO: make loop count down
     lda #$00                                    ; 8F6F A9 00
     sta $49                                     ; 8F71 85 49
     loop
@@ -4932,10 +4928,10 @@ L9F87_GAME_STATE_6:
         lda L7D_TOSS_TIMER                      ; 9FBC A5 7D
         and #$01                                ; 9FBE 29 01
         if_eq
-            dec LA2_NEXT_DIR                        ; 9FC2 C6 A2
-            lda LA2_NEXT_DIR                        ; 9FC4 A5 A2
-            and #$03                                ; 9FC6 29 03
-            sta LA2_NEXT_DIR                        ; 9FC8 85 A2
+            dec LA2_NEXT_DIR                    ; 9FC2 C6 A2
+            lda LA2_NEXT_DIR                    ; 9FC4 A5 A2
+            and #$03                            ; 9FC6 29 03
+            sta LA2_NEXT_DIR                    ; 9FC8 85 A2
         end_if
         rts
 
