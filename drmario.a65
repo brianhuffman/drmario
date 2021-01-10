@@ -1668,16 +1668,14 @@ R89D4_VIRUS_SPRITES:
             cmp L39_V1_Y                        ; 8A6D C5 39
             bne break                           ; 8A6F D0 55
             inc L75_V1_STATE                    ; 8A71 E6 75
-            lda #$00                            ; 8A73 A9 00
+            lda #$A0
             sta L78_V1_TIMER                    ; 8A75 85 78
             jmp break                           ; 8A77 4C C6 8A
         end_if
 
         cmp #$02                                ; 8A7A C9 02
         if_eq                                   ; 8A7C D0 33
-            inc L78_V1_TIMER                    ; 8A7E E6 78
-            lda L78_V1_TIMER                    ; 8A80 A5 78
-            cmp #$A0                            ; 8A82 C9 A0
+            dec L78_V1_TIMER
             if_eq                               ; 8A84 D0 15
                 lda #$00                        ; 8A86 A9 00
                 sta L75_V1_STATE                ; 8A88 85 75
@@ -1752,16 +1750,14 @@ R89D4_VIRUS_SPRITES:
             cmp L3B_V2_Y                        ; 8AFC C5 3B
             bne break                           ; 8AFE D0 55
             inc L76_V2_STATE                    ; 8B00 E6 76
-            lda #$00                            ; 8B02 A9 00
+            lda #$A0
             sta L79_V2_TIMER                    ; 8B04 85 79
             jmp break                           ; 8B06 4C 55 8B
         end_if
 
         cmp #$02                                ; 8B09 C9 02
         if_eq                                   ; 8B0B D0 33
-            inc L79_V2_TIMER                    ; 8B0D E6 79
-            lda L79_V2_TIMER                    ; 8B0F A5 79
-            cmp #$A0                            ; 8B11 C9 A0
+            dec L79_V2_TIMER
             if_eq                               ; 8B13 D0 15
                 lda #$00                        ; 8B15 A9 00
                 sta L76_V2_STATE                ; 8B17 85 76
@@ -1835,16 +1831,14 @@ R89D4_VIRUS_SPRITES:
             cmp L3D_V3_Y                        ; 8B8B C5 3D
             bne break                           ; 8B8D D0 55
             inc L77_V3_STATE                    ; 8B8F E6 77
-            lda #$00                            ; 8B91 A9 00
+            lda #$A0
             sta L7A_V3_TIMER                    ; 8B93 85 7A
             jmp break                           ; 8B95 4C E4 8B
         end_if
 
         cmp #$02                                ; 8B98 C9 02
         if_eq                                   ; 8B9A D0 33
-            inc L7A_V3_TIMER                    ; 8B9C E6 7A
-            lda L7A_V3_TIMER                    ; 8B9E A5 7A
-            cmp #$A0                            ; 8BA0 C9 A0
+            dec L7A_V3_TIMER
             if_eq                               ; 8BA2 D0 15
                 lda #$00                        ; 8BA4 A9 00
                 sta L77_V3_STATE                ; 8BA6 85 77
