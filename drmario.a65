@@ -538,8 +538,6 @@ R82A0_INIT_780:
     lda #$00                                    ; 82A4 A9 00
     sta $48                                     ; 82A6 85 48
     loop
-        ldx #$17                                ; 82A8 A2 17
-        ldy #$02                                ; 82AA A0 02
         jsr RB771_STEP_LFSR                     ; 82AC 20 71 B7
         ldx L47_TEMP                            ; 82AF A6 47
         dex                                     ; 82B1 CA
@@ -4001,8 +3999,6 @@ L9953_TOP_1:
     lda #$07                                    ; 99D3 A9 07
     sta $06F5                                   ; 99D5 8D F5 06
     loop
-        ldx #$17                                ; 99D8 A2 17
-        ldy #$02                                ; 99DA A0 02
         jsr RB771_STEP_LFSR                     ; 99DC 20 71 B7
         lda LF5_P1_INPUT_NEW                    ; 99DF A5 F5
         cmp #$40 ; "B"                          ; 99E1 C9 40
@@ -4508,8 +4504,6 @@ R9CFF_ADD_VIRUS:
     end_if
     ; $47 = random number less than LA3DE,L96_LEVEL
     loop
-        ldx #$17                                ; 9D06 A2 17
-        ldy #$02                                ; 9D08 A0 02
         jsr RB771_STEP_LFSR                     ; 9D0A 20 71 B7
         lda $17                                 ; 9D0D A5 17
         and #$0F                                ; 9D0F 29 0F
@@ -4537,8 +4531,6 @@ R9CFF_ADD_VIRUS:
     ; if 3, then choose random value 0-2
     cmp #$03                                    ; 9D35 C9 03
     if_eq                                       ; 9D37 D0 13
-        ldx #$17                                ; 9D39 A2 17
-        ldy #$02                                ; 9D3B A0 02
         jsr RB771_STEP_LFSR                     ; 9D3D 20 71 B7
         lda $18                                 ; 9D40 A5 18
         and #$0F                                ; 9D42 29 0F
@@ -6775,28 +6767,17 @@ RB74B:
 
 ; ----------------------------------------------------------------------------
 ; Advance LFSR.
-; Input X and Y
-; Reads bytes X and X+1 in zero page.
+; Reads bytes $17 and $18 in zero page.
 ; If they differ in bit 1 (#$02) then set carry.
-; Call ROR on Y bytes starting at X.
-; (Always called with X = #$17 and Y = #2.)
+; Call ROR on $17 and $18.
 ; This is the same LFSR as RD295.
 RB771_STEP_LFSR:
-    lda $00,x                                   ; B771 B5 00
-    and #$02                                    ; B773 29 02
-    sta $00                                     ; B775 85 00
-    lda $01,x                                   ; B777 B5 01
-    and #$02                                    ; B779 29 02
-    eor $00                                     ; B77B 45 00
-    clc                                         ; B77D 18
-    if_ne                                       ; B77E F0 01
-        sec                                     ; B780 38
-    end_if
-    loop
-        ror $00,x                               ; B781 76 00
-        inx                                     ; B783 E8
-        dey                                     ; B784 88
-    while_ne                                    ; B785 D0 FA
+    lda $17
+    eor $18
+    lsr a
+    lsr a
+    ror $17
+    ror $18
     rts                                         ; B787 60
 
 ; ----------------------------------------------------------------------------
