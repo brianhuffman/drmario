@@ -1695,7 +1695,7 @@ R89D4_VIRUS_SPRITES:
             and #$04                            ; 8AA2 29 04
             lsr a                               ; 8AA4 4A
             lsr a                               ; 8AA5 4A
-            add #$30                            ; 8AA6 18 69 30
+            ora #$30
             sta L53_SPRITE_NUM                  ; 8AA9 85 53
             jsr R88F6_SPRITE                    ; 8AAB 20 F6 88
             ; Yellow virus fussy animation
@@ -1777,7 +1777,7 @@ R89D4_VIRUS_SPRITES:
             and #$04                            ; 8B31 29 04
             lsr a                               ; 8B33 4A
             lsr a                               ; 8B34 4A
-            add #$2C                            ; 8B35 18 69 2C
+            ora #$2C
             sta L53_SPRITE_NUM                  ; 8B38 85 53
             jsr R88F6_SPRITE                    ; 8B3A 20 F6 88
             ; Red virus fussy animated
@@ -1858,7 +1858,7 @@ R89D4_VIRUS_SPRITES:
             and #$04                            ; 8BC0 29 04
             lsr a                               ; 8BC2 4A
             lsr a                               ; 8BC3 4A
-            add #$2E                            ; 8BC4 18 69 2E
+            ora #$2E
             sta L53_SPRITE_NUM                  ; 8BC7 85 53
             jsr R88F6_SPRITE                    ; 8BC9 20 F6 88
             jmp break                           ; 8BCC 4C E4 8B
