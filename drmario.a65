@@ -2165,11 +2165,9 @@ R8D70_DROP_PILL:
         beq L8D94                               ; 8D7C F0 16
     L8D7E:
         inc L92_DROP_TIMER                      ; 8D7E E6 92
-        lda L8A_EXTRA_SPEED                     ; 8D80 A5 8A
-        sta $A0 ; redundant copy                ; 8D82 85 A0
         ldx L8B_SPEED                           ; 8D84 A6 8B
         lda LA38D,x ; $0F,$19,$1F               ; 8D86 BD 8D A3
-        add $A0                                 ; 8D89 18 65 A0
+        add L8A_EXTRA_SPEED
         tax                                     ; 8D8C AA
         lda LA795,x ; drop timer threshold      ; 8D8D BD 95 A7
         cmp L92_DROP_TIMER                      ; 8D90 C5 92
