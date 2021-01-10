@@ -3068,16 +3068,13 @@ L92DB_7_FIX_SPLIT_PILLS:
                 tay                             ; 92FB A8
                 lda ($57),y                     ; 92FC B1 57
                 and #$F0                        ; 92FE 29 F0
-                cmp #$90 ; mid-vertical         ; 9300 C9 90
-                if_ne                           ; 9302 F0 0E
-                    cmp #$50 ; bottom half      ; 9304 C9 50
-                    if_ne                       ; 9306 F0 0A
-                        ldy L47_TEMP            ; 9308 A4 47
-                        lda ($57),y             ; 930A B1 57
-                        and #$0F                ; 930C 29 0F
-                        ora #$80 ; small round  ; 930E 09 80
-                        sta ($57),y             ; 9310 91 57
-                    end_if
+                cmp #$50 ; bottom half          ; 9304 C9 50
+                if_ne                           ; 9306 F0 0A
+                    ldy L47_TEMP                ; 9308 A4 47
+                    lda ($57),y                 ; 930A B1 57
+                    and #$0F                    ; 930C 29 0F
+                    ora #$80 ; small round      ; 930E 09 80
+                    sta ($57),y                 ; 9310 91 57
                 end_if
                 jmp break                       ; 9312 4C F9 93
             end_if
@@ -3089,16 +3086,13 @@ L92DB_7_FIX_SPLIT_PILLS:
                 tay                             ; 931E A8
                 lda ($57),y                     ; 931F B1 57
                 and #$F0                        ; 9321 29 F0
-                cmp #$90 ; mid-vertical         ; 9323 C9 90
-                if_ne                           ; 9325 F0 0E
-                    cmp #$40 ; top half         ; 9327 C9 40
-                    if_ne                       ; 9329 F0 0A
-                        ldy L47_TEMP            ; 932B A4 47
-                        lda ($57),y             ; 932D B1 57
-                        and #$0F                ; 932F 29 0F
-                        ora #$80 ; small round  ; 9331 09 80
-                        sta ($57),y             ; 9333 91 57
-                    end_if
+                cmp #$40 ; top half             ; 9327 C9 40
+                if_ne                           ; 9329 F0 0A
+                    ldy L47_TEMP                ; 932B A4 47
+                    lda ($57),y                 ; 932D B1 57
+                    and #$0F                    ; 932F 29 0F
+                    ora #$80 ; small round      ; 9331 09 80
+                    sta ($57),y                 ; 9333 91 57
                 end_if
                 jmp break                       ; 9335 4C F9 93
             end_if
@@ -3110,16 +3104,13 @@ L92DB_7_FIX_SPLIT_PILLS:
                 tay                             ; 9341 A8
                 lda ($57),y                     ; 9342 B1 57
                 and #$F0                        ; 9344 29 F0
-                cmp #$A0 ; mid-horizontal       ; 9346 C9 A0
-                if_ne                           ; 9348 F0 0E
-                    cmp #$70 ; right half       ; 934A C9 70
-                    if_ne                       ; 934C F0 0A
-                        ldy L47_TEMP            ; 934E A4 47
-                        lda ($57),y             ; 9350 B1 57
-                        and #$0F                ; 9352 29 0F
-                        ora #$80 ; small round  ; 9354 09 80
-                        sta ($57),y             ; 9356 91 57
-                    end_if
+                cmp #$70 ; right half           ; 934A C9 70
+                if_ne                           ; 934C F0 0A
+                    ldy L47_TEMP                ; 934E A4 47
+                    lda ($57),y                 ; 9350 B1 57
+                    and #$0F                    ; 9352 29 0F
+                    ora #$80 ; small round      ; 9354 09 80
+                    sta ($57),y                 ; 9356 91 57
                 end_if
                 jmp break                       ; 9358 4C F9 93
             end_if
@@ -3131,93 +3122,15 @@ L92DB_7_FIX_SPLIT_PILLS:
                 tay                             ; 9364 A8
                 lda ($57),y                     ; 9365 B1 57
                 and #$F0                        ; 9367 29 F0
-                cmp #$A0 ; mid-horizontal       ; 9369 C9 A0
-                if_ne                           ; 936B F0 0E
-                    cmp #$60 ; left half        ; 936D C9 60
-                    if_ne                       ; 936F F0 0A
-                        ldy L47_TEMP            ; 9371 A4 47
-                        lda ($57),y             ; 9373 B1 57
-                        and #$0F                ; 9375 29 0F
-                        ora #$80 ; small round  ; 9377 09 80
-                        sta ($57),y             ; 9379 91 57
-                    end_if
+                cmp #$60 ; left half            ; 936D C9 60
+                if_ne                           ; 936F F0 0A
+                    ldy L47_TEMP                ; 9371 A4 47
+                    lda ($57),y                 ; 9373 B1 57
+                    and #$0F                    ; 9375 29 0F
+                    ora #$80 ; small round      ; 9377 09 80
+                    sta ($57),y                 ; 9379 91 57
                 end_if
                 jmp break                       ; 937B 4C F9 93
-            end_if
-            cmp #$90 ; mid-vertical             ; 937E C9 90
-            if_eq                               ; 9380 D0 3B
-                ; consider tile above
-                lda L47_TEMP                    ; 9382 A5 47
-                sub #$08                        ; 9384 38 E9 08
-                tay                             ; 9387 A8
-                lda ($57),y                     ; 9388 B1 57
-                and #$F0                        ; 938A 29 F0
-                cmp #$90 ; mid-vertical         ; 938C C9 90
-                if_ne                           ; 938E F0 0E
-                    cmp #$40 ; top half         ; 9390 C9 40
-                    if_ne                       ; 9392 F0 0A
-                        ldy L47_TEMP            ; 9394 A4 47
-                        lda ($57),y             ; 9396 B1 57
-                        and #$0F                ; 9398 29 0F
-                        ora #$40 ; top half     ; 939A 09 40
-                        sta ($57),y             ; 939C 91 57
-                    end_if
-                end_if
-                ; consider tile below
-                lda L47_TEMP                    ; 939E A5 47
-                add #$08                        ; 93A0 18 69 08
-                tay                             ; 93A3 A8
-                lda ($57),y                     ; 93A4 B1 57
-                and #$F0                        ; 93A6 29 F0
-                cmp #$90 ; mid-vertical         ; 93A8 C9 90
-                if_ne                           ; 93AA F0 0E
-                    cmp #$50 ; bottom half      ; 93AC C9 50
-                    if_ne                       ; 93AE F0 0A
-                        ldy L47_TEMP            ; 93B0 A4 47
-                        lda ($57),y             ; 93B2 B1 57
-                        and #$0F                ; 93B4 29 0F
-                        ora #$50 ; bottom half  ; 93B6 09 50
-                        sta ($57),y             ; 93B8 91 57
-                    end_if
-                end_if
-                jmp break                       ; 93BA 4C F9 93
-            end_if
-            cmp #$A0 ; mid-horizontal           ; 93BD C9 A0
-            if_eq                               ; 93BF D0 38
-                ; consider tile to left
-                lda L47_TEMP                    ; 93C1 A5 47
-                sub #$01                        ; 93C3 38 E9 01
-                tay                             ; 93C6 A8
-                lda ($57),y                     ; 93C7 B1 57
-                and #$F0                        ; 93C9 29 F0
-                cmp #$A0 ; mid-horizontal       ; 93CB C9 A0
-                if_ne                           ; 93CD F0 0E
-                    cmp #$60 ; left half        ; 93CF C9 60
-                    if_ne                       ; 93D1 F0 0A
-                        ldy L47_TEMP            ; 93D3 A4 47
-                        lda ($57),y             ; 93D5 B1 57
-                        and #$0F                ; 93D7 29 0F
-                        ora #$60 ; left half    ; 93D9 09 60
-                        sta ($57),y             ; 93DB 91 57
-                    end_if
-                end_if
-                ; consider tile to right
-                lda L47_TEMP                    ; 93DD A5 47
-                add #$01                        ; 93DF 18 69 01
-                tay                             ; 93E2 A8
-                lda ($57),y                     ; 93E3 B1 57
-                and #$F0                        ; 93E5 29 F0
-                cmp #$A0 ; mid-horizontal       ; 93E7 C9 A0
-                if_ne                           ; 93E9 F0 0E
-                    cmp #$70 ; right half       ; 93EB C9 70
-                    if_ne                       ; 93ED F0 0A
-                        ldy L47_TEMP            ; 93EF A4 47
-                        lda ($57),y             ; 93F1 B1 57
-                        and #$0F                ; 93F3 29 0F
-                        ora #$70 ; right half   ; 93F5 09 70
-                        sta ($57),y             ; 93F7 91 57
-                    end_if
-                end_if
             end_if
         end
         dec L47_TEMP                            ; 93F9 C6 47
