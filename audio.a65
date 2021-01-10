@@ -222,21 +222,11 @@ LD3FB:
 LD404:
 ; input A: jump to vector at LD200 + $E0 + (A-1)<<1
         sta $EF                                 ; D404 85 EF
-        sta $E2                                 ; D406 85 E2
         ldy #>LD200                             ; D408 A0 D2
         sty $E1                                 ; D40A 84 E1
-        and #$07                                ; D40C 29 07
-        tay                                     ; D40E A8
-        lda LD42D,y                             ; D40F B9 2D D4
-        tay                                     ; D412 A8
-        dec $E2                                 ; D413 C6 E2
-        lda $E2                                 ; D415 A5 E2
-        and #$F8                                ; D417 29 F8
-        sta $E2                                 ; D419 85 E2
-        asl $E2                                 ; D41B 06 E2
-        tya                                     ; D41D 98
-        ora $E2                                 ; D41E 05 E2
-        tay                                     ; D420 A8
+        sub #$01
+        asl a
+        tay
         ; now Y = (A-1)<<1
         lda ($E0),y                             ; D421 B1 E0
         sta $E2                                 ; D423 85 E2
@@ -244,9 +234,6 @@ LD404:
         lda ($E0),y                             ; D426 B1 E0
         sta $E3                                 ; D428 85 E3
         jmp ($E2)                               ; D42A 6C E2 00
-
-LD42D:  .byte $0E, $00, $02, $04                ; D42D 0E 00 02 04
-        .byte $06, $08, $0A, $0C                ; D431 06 08 0A 0C
 
 LD435:
 ; input X,Y: if $06F8,X is zero then rts, else $E0=Y and LD404
