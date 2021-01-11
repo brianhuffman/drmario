@@ -3,25 +3,34 @@
 
 ; noise vectors
 .align $100
-LD200:  .word VD5DC, VD698, VD619, VD5BA
-        .word VD67A, VD570, VD693, VD294
-LD210:  .word VD5EE, VD69F, VD66A, VD5D1
-        .word VD681, VD577, VD294, VD294
+LD200:
+    .word VD5DC, VD698, VD619, VD5BA
+    .word VD67A, VD570, VD693, VD294
+LD210:
+    .word VD5EE, VD69F, VD66A, VD5D1
+    .word VD681, VD577, VD294, VD294
 ; pulse 1 vectors
-LD220:  .word VD8D1, VD93B, VD88D, VD959
-        .word VD8E7, VDA24, VD877, VD86D
-        .word VD923, VD9B8, VD99A
-LD236:  .word VD8BA, VD950, VD8A3, VD970
-        .word VD8FD, VDA08, VD8A3, VD83D
-        .word VD92E, VD9BF, VD9A1
+LD220:
+    .word VD8D1, VD93B, VD88D, VD959
+    .word VD8E7, VDA24, VD877, VD86D
+    .word VD923, VD9B8, VD99A
+LD236:
+    .word VD8BA, VD950, VD8A3, VD970
+    .word VD8FD, VDA08, VD8A3, VD83D
+    .word VD92E, VD9BF, VD9A1
 ; triangle vectors
-LD24C:  .word VDAB0, VDA71, VDACB, VDACF
-LD254:  .word VDA8E, VDA78, VDA8E, VDA8E
+LD24C:
+    .word VDAB0, VDA71, VDACB, VDACF
+LD254:
+    .word VDA8E, VDA78, VDA8E, VDA8E
 ; voice 4 vectors
-LD25C:  .word VD727, VD6DB, VD7A3
-LD262:  .word VD734, VD6EA, VD7AF
+LD25C:
+    .word VD727, VD6DB, VD7A3
+LD262:
+    .word VD734, VD6EA, VD7AF
 ; pulse 2 vectors
-LD268:  .word RD4E5, VDA50, VDA48
+LD268:
+    .word RD4E5, VDA50, VDA48
 
 ; ----------------------------------------------------------------------------
 ; Copy 4 bytes from $D300+Y to $4000 (Pulse channel 1)
@@ -169,49 +178,57 @@ LD388:  .byte $03,$7F,$3D,$18 ; registers for triangle channel
 
 ; ----------------------------------------------------------------------------
 ; 4-byte lookup table
-LD38C:  .byte $14,$93,$94,$D3
+LD38C:
+    .byte $14,$93,$94,$D3
 ; ----------------------------------------------------------------------------
 ; used by RD6BA
-LD390:  .byte $FE,$FE,$FF,$EF,$FE,$EF,$FE,$EF,$EF,$FE,$EF,$FE,$EF,$FF,$EE,$EE
-        .byte $FF,$EF,$FF,$FF,$FF,$EF,$EF,$FF,$FD,$EF,$EF,$EF,$FE,$EF,$EF,$FF
+LD390:
+    .byte $FE,$FE,$FF,$EF,$FE,$EF,$FE,$EF,$EF,$FE,$EF,$FE,$EF,$FF,$EE,$EE
+    .byte $FF,$EF,$FF,$FF,$FF,$EF,$EF,$FF,$FD,$EF,$EF,$EF,$FE,$EF,$EF,$FF
 ; ----------------------------------------------------------------------------
 ; used by RD6BA
-LD3B0:  .byte $F1,$FF,$E1,$EF,$EF,$EF,$DF,$FB,$FB,$AE,$AA,$99,$98,$87,$76,$66
-        .byte $55,$44,$44,$44,$44,$43,$33,$33,$22,$22,$22,$22,$21,$11,$11,$11
+LD3B0:
+    .byte $F1,$FF,$E1,$EF,$EF,$EF,$DF,$FB,$FB,$AE,$AA,$99,$98,$87,$76,$66
+    .byte $55,$44,$44,$44,$44,$43,$33,$33,$22,$22,$22,$22,$21,$11,$11,$11
 
 ; ----------------------------------------------------------------------------
 ; called from one place
 ; may call one of 3 vectors from LD268 depending on $06f2 and $06fa.
-RD3D0:  ldx #$02 ;voice 2 (pulse 2)             ; D3D0 A2 02
-        lda #<LD268                             ; D3D2 A9 68
-        ldy #<LD268                             ; D3D4 A0 68
-        bne LD3FB ;always                       ; D3D6 D0 23
+RD3D0:
+    ldx #$02 ;voice 2 (pulse 2)                 ; D3D0 A2 02
+    lda #<LD268                                 ; D3D2 A9 68
+    ldy #<LD268                                 ; D3D4 A0 68
+    bne LD3FB ;always                           ; D3D6 D0 23
 ; called from one place
 ; may call a vector from LD24C or LD254 depending on $06f3 and $06fb.
-RD3D8:  ldx #$03 ;voice 3 (triangle)            ; D3D8 A2 03
-        lda #<LD24C                             ; D3DA A9 4C
-        ldy #<LD254                             ; D3DC A0 54
-        bne LD3FB ;always                       ; D3DE D0 1B
+RD3D8:
+    ldx #$03 ;voice 3 (triangle)                ; D3D8 A2 03
+    lda #<LD24C                                 ; D3DA A9 4C
+    ldy #<LD254                                 ; D3DC A0 54
+    bne LD3FB ;always                           ; D3DE D0 1B
 ; called from one place
 ; may call a vector from LD25C or LD262 depending on $06f4 and $06fc.
-RD3E0:  ldx #$04 ;voice 4 (?)                   ; D3E0 A2 04
-        lda #<LD25C                             ; D3E2 A9 5C
-        ldy #<LD262                             ; D3E4 A0 62
-        bne LD3FB ;always                       ; D3E6 D0 13
+RD3E0:
+    ldx #$04 ;voice 4 (?)                       ; D3E0 A2 04
+    lda #<LD25C                                 ; D3E2 A9 5C
+    ldy #<LD262                                 ; D3E4 A0 62
+    bne LD3FB ;always                           ; D3E6 D0 13
 ; called from one place
 ; may call a vector from LD220 or LD236 depending on $06f1 and $06f9.
 ; but not if $06fc is non-zero
-RD3E8:  lda $06FC                               ; D3E8 AD FC 06
-        bne LD43E ; rts                         ; D3EB D0 51
-        ldx #$01 ;voice 1 (pulse 1)             ; D3ED A2 01
-        lda #<LD220                             ; D3EF A9 20
-        ldy #<LD236                             ; D3F1 A0 36
-        bne LD3FB ;always                       ; D3F3 D0 06
+RD3E8:
+    lda $06FC                                   ; D3E8 AD FC 06
+    bne LD43E ; rts                             ; D3EB D0 51
+    ldx #$01 ;voice 1 (pulse 1)                 ; D3ED A2 01
+    lda #<LD220                                 ; D3EF A9 20
+    ldy #<LD236                                 ; D3F1 A0 36
+    bne LD3FB ;always                           ; D3F3 D0 06
 ; called from one place
 ; may call a vector from LD200 or LD210 depending on $06f0 and $06f8.
-RD3F5:  ldx #$00 ;voice 0 (noise)               ; D3F5 A2 00
-        lda #<LD200                             ; D3F7 A9 00
-        ldy #<LD210                             ; D3F9 A0 10
+RD3F5:
+    ldx #$00 ;voice 0 (noise)                   ; D3F5 A2 00
+    lda #<LD200                                 ; D3F7 A9 00
+    ldy #<LD210                                 ; D3F9 A0 10
 
 LD3FB:
 ; input A,X,Y
@@ -220,55 +237,58 @@ LD3FB:
 ; if J > 0 then jump to (J-1)th vector at LD200+A
 ; if J = 0 and K > 0 then jump to (K-1)th vector at LD200+Y
 ; if J = 0 and K = 0 then rts
-        sta $E0                                 ; D3FB 85 E0
-        stx $ED                                 ; D3FD 86 ED
-        lda $06F0,x                             ; D3FF BD F0 06
-        beq LD435                               ; D402 F0 31
+    sta $E0                                     ; D3FB 85 E0
+    stx $ED                                     ; D3FD 86 ED
+    lda $06F0,x                                 ; D3FF BD F0 06
+    beq LD435                                   ; D402 F0 31
 
 LD404:
 ; input A: jump to vector at LD200 + $E0 + (A-1)<<1
-        sta $EF                                 ; D404 85 EF
-        sta $E2                                 ; D406 85 E2
-        ldy #>LD200                             ; D408 A0 D2
-        sty $E1                                 ; D40A 84 E1
-        and #$07                                ; D40C 29 07
-        tay                                     ; D40E A8
-        lda LD42D,y                             ; D40F B9 2D D4
-        tay                                     ; D412 A8
-        dec $E2                                 ; D413 C6 E2
-        lda $E2                                 ; D415 A5 E2
-        and #$F8                                ; D417 29 F8
-        sta $E2                                 ; D419 85 E2
-        asl $E2                                 ; D41B 06 E2
-        tya                                     ; D41D 98
-        ora $E2                                 ; D41E 05 E2
-        tay                                     ; D420 A8
-        ; now Y = (A-1)<<1
-        lda ($E0),y                             ; D421 B1 E0
-        sta $E2                                 ; D423 85 E2
-        iny                                     ; D425 C8
-        lda ($E0),y                             ; D426 B1 E0
-        sta $E3                                 ; D428 85 E3
-        jmp ($E2)                               ; D42A 6C E2 00
+    sta $EF                                     ; D404 85 EF
+    sta $E2                                     ; D406 85 E2
+    ldy #>LD200                                 ; D408 A0 D2
+    sty $E1                                     ; D40A 84 E1
+    and #$07                                    ; D40C 29 07
+    tay                                         ; D40E A8
+    lda LD42D,y                                 ; D40F B9 2D D4
+    tay                                         ; D412 A8
+    dec $E2                                     ; D413 C6 E2
+    lda $E2                                     ; D415 A5 E2
+    and #$F8                                    ; D417 29 F8
+    sta $E2                                     ; D419 85 E2
+    asl $E2                                     ; D41B 06 E2
+    tya                                         ; D41D 98
+    ora $E2                                     ; D41E 05 E2
+    tay                                         ; D420 A8
+    ; now Y = (A-1)<<1
+    lda ($E0),y                                 ; D421 B1 E0
+    sta $E2                                     ; D423 85 E2
+    iny                                         ; D425 C8
+    lda ($E0),y                                 ; D426 B1 E0
+    sta $E3                                     ; D428 85 E3
+    jmp ($E2)                                   ; D42A 6C E2 00
 
-LD42D:  .byte $0E, $00, $02, $04                ; D42D 0E 00 02 04
-        .byte $06, $08, $0A, $0C                ; D431 06 08 0A 0C
+LD42D:
+    .byte $0E, $00, $02, $04                    ; D42D 0E 00 02 04
+    .byte $06, $08, $0A, $0C                    ; D431 06 08 0A 0C
 
 LD435:
 ; input X,Y: if $06F8,X is zero then rts, else $E0=Y and LD404
-        lda $06F8,x                             ; D435 BD F8 06
-        beq LD43E                               ; D438 F0 04
-        sty $E0                                 ; D43A 84 E0
-        bne LD404                               ; D43C D0 C6
-LD43E:  rts                                     ; D43E 60
+    lda $06F8,x                                 ; D435 BD F8 06
+    beq LD43E                                   ; D438 F0 04
+    sty $E0                                     ; D43A 84 E0
+    bne LD404                                   ; D43C D0 C6
+LD43E:
+    rts                                         ; D43E 60
 
 ; ----------------------------------------------------------------------------
 ; case L0682 = 0
-LD43F:  inc $0682                               ; D43F EE 82 06
-        jsr RD515                               ; D442 20 15 D5
-        ; RD515 sets A = 0
-        sta $0683                               ; D445 8D 83 06
-        rts                                     ; D448 60
+LD43F:
+    inc $0682                                   ; D43F EE 82 06
+    jsr RD515                                   ; D442 20 15 D5
+    ; RD515 sets A = 0
+    sta $0683                                   ; D445 8D 83 06
+    rts                                         ; D448 60
 
 ; case L068D = 5
 LD449:
@@ -359,12 +379,14 @@ LD4C8:
 ; ----------------------------------------------------------------------------
 ; vector
 ; RFFD3 jumps directly here
-RD4E5:  jsr RD4F4                               ; D4E5 20 F4 D4
-RD4E8:  jsr RD515 ; silence/reset APU           ; D4E8 20 15 D5 ; called once
-        lda #$00                                ; D4EB A9 00
-        sta $4011                               ; D4ED 8D 11 40
-        sta $069C                               ; D4F0 8D 9C 06
-        rts                                     ; D4F3 60
+RD4E5:
+    jsr RD4F4                                   ; D4E5 20 F4 D4
+RD4E8:
+    jsr RD515 ; silence/reset APU               ; D4E8 20 15 D5 ; called once
+    lda #$00                                    ; D4EB A9 00
+    sta $4011                                   ; D4ED 8D 11 40
+    sta $069C                                   ; D4F0 8D 9C 06
+    rts                                         ; D4F3 60
 
 ; ----------------------------------------------------------------------------
 ; no inputs
@@ -424,82 +446,90 @@ RD515:
 ; Copy 4 bytes from $D300+Y to registers for selected voice ($ED)
 RD52B:
 .scope
-        ldx $ED     ;voice number               ; D52B A6 ED
-        sta $06D5,x                             ; D52D 9D D5 06
-        txa                                     ; D530 8A
-        sta $06C7,x                             ; D531 9D C7 06
-        tya                                     ; D534 98
-        beq LD559                               ; D535 F0 22
-        txa                                     ; D537 8A
-        beq case0                               ; D538 F0 1C
-        cmp #$01                                ; D53A C9 01
-        beq case1                               ; D53C F0 09
-        cmp #$02                                ; D53E C9 02
-        beq case2                               ; D540 F0 0A
-        cmp #$03                                ; D542 C9 03
-        beq case3                               ; D544 F0 0B
-        rts                                     ; D546 60
+    ldx $ED     ;voice number                   ; D52B A6 ED
+    sta $06D5,x                                 ; D52D 9D D5 06
+    txa                                         ; D530 8A
+    sta $06C7,x                                 ; D531 9D C7 06
+    tya                                         ; D534 98
+    beq LD559                                   ; D535 F0 22
+    txa                                         ; D537 8A
+    beq case0                                   ; D538 F0 1C
+    cmp #$01                                    ; D53A C9 01
+    beq case1                                   ; D53C F0 09
+    cmp #$02                                    ; D53E C9 02
+    beq case2                                   ; D540 F0 0A
+    cmp #$03                                    ; D542 C9 03
+    beq case3                                   ; D544 F0 0B
+    rts                                         ; D546 60
 
-case1:  ;4 bytes from $D300+Y to $4000 (Pulse channel 1)
-        jsr RD26E                               ; D547 20 6E D2
-        ;always branch
-        beq LD559                               ; D54A F0 0D
+case1:
+    ;4 bytes from $D300+Y to $4000 (Pulse channel 1)
+    jsr RD26E                                   ; D547 20 6E D2
+    beq LD559 ; always                          ; D54A F0 0D
 
-case2:  ;4 bytes from $D300+Y to $4004 (Pulse channel 2)
-        jsr RD27A                               ; D54C 20 7A D2
-        ;always branch
-        beq LD559                               ; D54F F0 08
+case2:
+    ;4 bytes from $D300+Y to $4004 (Pulse channel 2)
+    jsr RD27A                                   ; D54C 20 7A D2
+    beq LD559 ; always                          ; D54F F0 08
 
-case3:  ;4 bytes from $D300+Y to $4008 (Triangle channel)
-        jsr RD272                               ; D551 20 72 D2
-        ;always branch
-        beq LD559                               ; D554 F0 03
+case3:
+    ;4 bytes from $D300+Y to $4008 (Triangle channel)
+    jsr RD272                                   ; D551 20 72 D2
+    beq LD559 ; always                          ; D554 F0 03
 
-case0:  ;4 bytes from $D300+Y to $400C (Noise channel)
-        jsr RD276                               ; D556 20 76 D2
+case0:
+    ;4 bytes from $D300+Y to $400C (Noise channel)
+    jsr RD276                                   ; D556 20 76 D2
 
 ; case Y=0
-LD559:  lda $EF                                 ; D559 A5 EF
-        sta $06F8,x                             ; D55B 9D F8 06
-        lda #$00                                ; D55E A9 00
-        sta $06DA,x                             ; D560 9D DA 06
+LD559:
+    lda $EF                                     ; D559 A5 EF
+    sta $06F8,x                                 ; D55B 9D F8 06
+    lda #$00                                    ; D55E A9 00
+    sta $06DA,x                                 ; D560 9D DA 06
 .endscope
-LD563:  sta $06DF,x                             ; D563 9D DF 06
-        sta $06E3,x                             ; D566 9D E3 06
-        sta $06E7,x                             ; D569 9D E7 06
-        sta $068A                               ; D56C 8D 8A 06
-LD56F:  rts                                     ; D56F 60
+LD563:
+    sta $06DF,x                                 ; D563 9D DF 06
+    sta $06E3,x                                 ; D566 9D E3 06
+    sta $06E7,x                                 ; D569 9D E7 06
+    sta $068A                                   ; D56C 8D 8A 06
+LD56F:
+    rts                                         ; D56F 60
 
 ; ----------------------------------------------------------------------------
 ; noise vector 6
-VD570:  lda     #$02                            ; D570 A9 02
-        ldy     #<LD304                         ; D572 A0 04
-        jsr     RD52B                           ; D574 20 2B D5
+VD570:
+    lda #$02                                    ; D570 A9 02
+    ldy #<LD304                                 ; D572 A0 04
+    jsr RD52B                                   ; D574 20 2B D5
 ; noise vector 6'
-VD577:  jsr     RD2AC                           ; D577 20 AC D2
-        bne     LD56F                           ; D57A D0 F3
-        lda     $06DF                           ; D57C AD DF 06
-        and     #$0F                            ; D57F 29 0F
-        tay                                     ; D581 A8
-        inc     $06DF                           ; D582 EE DF 06
-        lda     LD592,y                         ; D585 B9 92 D5
-        sta     $400E                           ; D588 8D 0E 40
-        lda     LD5A2,y                         ; D58B B9 A2 D5
-        sta     $400C                           ; D58E 8D 0C 40
-        rts                                     ; D591 60
+VD577:
+    jsr RD2AC                                   ; D577 20 AC D2
+    bne LD56F                                   ; D57A D0 F3
+    lda $06DF                                   ; D57C AD DF 06
+    and #$0F                                    ; D57F 29 0F
+    tay                                         ; D581 A8
+    inc $06DF                                   ; D582 EE DF 06
+    lda LD592,y                                 ; D585 B9 92 D5
+    sta $400E                                   ; D588 8D 0E 40
+    lda LD5A2,y                                 ; D58B B9 A2 D5
+    sta $400C                                   ; D58E 8D 0C 40
+    rts                                         ; D591 60
 
 ; ----------------------------------------------------------------------------
 ; 16-byte lookup table
-LD592:  .byte $81,$81,$82,$82,$83,$83,$84,$84,$83,$83,$82,$82,$81,$81,$82,$82
+LD592:
+    .byte $81,$81,$82,$82,$83,$83,$84,$84,$83,$83,$82,$82,$81,$81,$82,$82
 ; ----------------------------------------------------------------------------
 ; 16-byte lookup table
-LD5A2:  .byte $33,$34,$35,$36,$37,$38,$39,$38,$39,$38,$37,$36,$35,$34,$33,$32
+LD5A2:
+    .byte $33,$34,$35,$36,$37,$38,$39,$38,$39,$38,$37,$36,$35,$34,$33,$32
 ; ----------------------------------------------------------------------------
 ; unreachable
-        lda     #$07                            ; D5B2 A9 07
-        ldy     #<LD314                         ; D5B4 A0 14
-        jsr     RD52B                           ; D5B6 20 2B D5
-        rts                                     ; D5B9 60
+    lda #$07                                    ; D5B2 A9 07
+    ldy #<LD314                                 ; D5B4 A0 14
+    jsr RD52B                                   ; D5B6 20 2B D5
+    rts                                         ; D5B9 60
 
 ; ----------------------------------------------------------------------------
 ; noise vector 4
@@ -556,60 +586,65 @@ LD5F6:
     jmp LD66F                                   ; D612 4C 6F D6
 
 ; ----------------------------------------------------------------------------
-LD615:  jsr     RDA7D                           ; D615 20 7D DA
-LD618:  rts                                     ; D618 60
+LD615:
+    jsr RDA7D                                   ; D615 20 7D DA
+LD618:
+    rts                                         ; D618 60
 
 ; ----------------------------------------------------------------------------
 ; noise vector 3
-VD619:  lda     #$04                            ; D619 A9 04
-        ldy     #<LD31C                         ; D61B A0 1C
-        jsr     RD52B                           ; D61D 20 2B D5
-        ; set random noise frequency 0-7
-        lda     $EB                             ; D620 A5 EB
-        and     #$07                            ; D622 29 07
-        sta     $400E                           ; D624 8D 0E 40
-        rts                                     ; D627 60
+VD619:
+    lda #$04                                    ; D619 A9 04
+    ldy #<LD31C                                 ; D61B A0 1C
+    jsr RD52B                                   ; D61D 20 2B D5
+    ; set random noise frequency 0-7
+    lda $EB                                     ; D620 A5 EB
+    and #$07                                    ; D622 29 07
+    sta $400E                                   ; D624 8D 0E 40
+    rts                                         ; D627 60
 
 ; ----------------------------------------------------------------------------
-LD628:  sta     $400E                           ; D628 8D 0E 40
-        rts                                     ; D62B 60
+LD628:
+    sta $400E                                   ; D628 8D 0E 40
+    rts                                         ; D62B 60
 
 ; ----------------------------------------------------------------------------
 ; Input: X
 ; called from one place, with X=#$90
-RD62C:  jsr     RD6BA                           ; D62C 20 BA D6
-        jmp     LD628                           ; D62F 4C 28 D6
+RD62C:
+    jsr RD6BA                                   ; D62C 20 BA D6
+    jmp LD628                                   ; D62F 4C 28 D6
 
 ; ----------------------------------------------------------------------------
 ; unreachable
-        lda     #$07                            ; D632 A9 07
-        ldy     #<LD308                         ; D634 A0 08
-        jmp     RD52B                           ; D636 4C 2B D5
+    lda #$07                                    ; D632 A9 07
+    ldy #<LD308                                 ; D634 A0 08
+    jmp RD52B                                   ; D636 4C 2B D5
 
 ; ----------------------------------------------------------------------------
 ; Unreachable
-        jsr     RD2AC                           ; D639 20 AC D2
-        if_eq                                   ; D63C D0 27
-        lda     $06E3                           ; D63E AD E3 06
+    jsr RD2AC                                   ; D639 20 AC D2
+    if_eq                                       ; D63C D0 27
+        lda $06E3                               ; D63E AD E3 06
         if_ne                                   ; D641 F0 05
-        dec     $06DF                           ; D643 CE DF 06
-        beq     LD66F                           ; D646 F0 27
+            dec $06DF                           ; D643 CE DF 06
+            beq LD66F                           ; D646 F0 27
         end_if
-        inc     $06DF                           ; D648 EE DF 06
+        inc $06DF                               ; D648 EE DF 06
         ; set random noise frequency + loop mode
-        lda     $EB                             ; D64B A5 EB
-        and     #$07                            ; D64D 29 07
-        ora     #$80                            ; D64F 09 80
-        sta     $400E                           ; D651 8D 0E 40
-        lda     $06DF                           ; D654 AD DF 06
-        cmp     #$0B                            ; D657 C9 0B
-        beq     LD666                           ; D659 F0 0B
-        ora     #$10                            ; D65B 09 10
-        sta     $400C                           ; D65D 8D 0C 40
-        lda     #$08                            ; D660 A9 08
-        sta     $400F                           ; D662 8D 0F 40
-        end_if
-        rts                                     ; D665 60
+        lda $EB                                 ; D64B A5 EB
+        and #$07                                ; D64D 29 07
+        ora #$80                                ; D64F 09 80
+        sta $400E                               ; D651 8D 0E 40
+        lda $06DF                               ; D654 AD DF 06
+        cmp #$0B                                ; D657 C9 0B
+        beq LD666                               ; D659 F0 0B
+        ora #$10                                ; D65B 09 10
+        sta $400C                               ; D65D 8D 0C 40
+        lda #$08                                ; D660 A9 08
+        sta $400F                               ; D662 8D 0F 40
+    end_if
+    rts                                         ; D665 60
 
 ; ----------------------------------------------------------------------------
 ; unreachable
@@ -618,56 +653,65 @@ LD666:  inc     $06E3                           ; D666 EE E3 06
 
 ; ----------------------------------------------------------------------------
 ; noise vector 3'
-VD66A:  jsr     RD2AC                           ; D66A 20 AC D2
-        bne     LD679                           ; D66D D0 0A
-LD66F:  lda     #$00                            ; D66F A9 00
-        sta     $06F8                           ; D671 8D F8 06
-        lda     #$10                            ; D674 A9 10
-        sta     $400C                           ; D676 8D 0C 40
-LD679:  rts                                     ; D679 60
+VD66A:
+    jsr RD2AC                                   ; D66A 20 AC D2
+    bne LD679                                   ; D66D D0 0A
+LD66F:
+    lda #$00                                    ; D66F A9 00
+    sta $06F8                                   ; D671 8D F8 06
+    lda #$10                                    ; D674 A9 10
+    sta $400C                                   ; D676 8D 0C 40
+LD679:
+    rts                                         ; D679 60
 
 ; ----------------------------------------------------------------------------
 ; noise vector 5
-VD67A:  lda     #$40                            ; D67A A9 40
-        ldy     #<LD318                         ; D67C A0 18
-        jmp     RD52B                           ; D67E 4C 2B D5
+VD67A:
+    lda #$40                                    ; D67A A9 40
+    ldy #<LD318                                 ; D67C A0 18
+    jmp RD52B                                   ; D67E 4C 2B D5
 
 ; ----------------------------------------------------------------------------
 ; noise vector 5'
-VD681:  lda     $06E3                           ; D681 AD E3 06
-        bne     LD679                           ; D684 D0 F3
-        jsr     RD2AC                           ; D686 20 AC D2
-        bne     LD6A7                           ; D689 D0 1C
-        inc     $06E3                           ; D68B EE E3 06
-        ldy     #<LD314                         ; D68E A0 14
-        jmp     RD276                           ; D690 4C 76 D2
+VD681:
+    lda $06E3                                   ; D681 AD E3 06
+    bne LD679                                   ; D684 D0 F3
+    jsr RD2AC                                   ; D686 20 AC D2
+    bne LD6A7                                   ; D689 D0 1C
+    inc $06E3                                   ; D68B EE E3 06
+    ldy #<LD314                                 ; D68E A0 14
+    jmp RD276                                   ; D690 4C 76 D2
 
 ; ----------------------------------------------------------------------------
 ; noise vector 7
-VD693:  ldy     #<LD314                         ; D693 A0 14
-        jmp     RD52B                           ; D695 4C 2B D5
+VD693:
+    ldy #<LD314                                 ; D693 A0 14
+    jmp RD52B                                   ; D695 4C 2B D5
 
 ; ----------------------------------------------------------------------------
 ; noise vector 2
-VD698:  lda     #$40                            ; D698 A9 40
-        ldy     #<LD318                         ; D69A A0 18
-        jmp     RD52B                           ; D69C 4C 2B D5
+VD698:
+    lda #$40                                    ; D698 A9 40
+    ldy #<LD318                                 ; D69A A0 18
+    jmp RD52B                                   ; D69C 4C 2B D5
 
 ; ----------------------------------------------------------------------------
 ; noise vector 2'
-VD69F:  jsr     RD2AC                           ; D69F 20 AC D2
-        bne     LD6A7                           ; D6A2 D0 03
-        jmp     LD66F                           ; D6A4 4C 6F D6
+VD69F:
+    jsr RD2AC                                   ; D69F 20 AC D2
+    bne LD6A7                                   ; D6A2 D0 03
+    jmp LD66F                                   ; D6A4 4C 6F D6
 
 ; ----------------------------------------------------------------------------
-LD6A7:  ldx     #<LD390                         ; D6A7 A2 90
-        jsr     RD62C                           ; D6A9 20 2C D6
-        ldx     #<LD3B0                         ; D6AC A2 B0
-        jsr     RD6BA                           ; D6AE 20 BA D6
-        ora     #$10                            ; D6B1 09 10
-        sta     $400C                           ; D6B3 8D 0C 40
-        inc     $06DF                           ; D6B6 EE DF 06
-        rts                                     ; D6B9 60
+LD6A7:
+    ldx #<LD390                                 ; D6A7 A2 90
+    jsr RD62C                                   ; D6A9 20 2C D6
+    ldx #<LD3B0                                 ; D6AC A2 B0
+    jsr RD6BA                                   ; D6AE 20 BA D6
+    ora #$10                                    ; D6B1 09 10
+    sta $400C                                   ; D6B3 8D 0C 40
+    inc $06DF                                   ; D6B6 EE DF 06
+    rts                                         ; D6B9 60
 
 ; ----------------------------------------------------------------------------
 ; Input in X
@@ -707,7 +751,8 @@ VD6DB:
     jmp LD769                                   ; D6E4 4C 69 D7
 
 ; ----------------------------------------------------------------------------
-LD6E7:  jmp     LD78A                           ; D6E7 4C 8A D7
+LD6E7:
+    jmp LD78A                                   ; D6E7 4C 8A D7
 
 ; ----------------------------------------------------------------------------
 ; voice 4 vector
@@ -732,8 +777,9 @@ LD70C:
     .byte $01,$01,$01,$D4,$01,$00
 ; ----------------------------------------------------------------------------
 ; lookup table
-LD71A:  .byte $8E,$01,$7F,$8E,$01,$A0,$01,$A9
-        .byte $01,$01,$01,$D5,$01
+LD71A:
+    .byte $8E,$01,$7F,$8E,$01,$A0,$01,$A9
+    .byte $01,$01,$01,$D5,$01
 ; ----------------------------------------------------------------------------
 VD727:
     ldy #<LD370                                 ; D727 A0 70
@@ -743,7 +789,8 @@ VD727:
     jmp LD769                                   ; D730 4C 69 D7
 
 ; ----------------------------------------------------------------------------
-LD733:  rts                                     ; D733 60
+LD733:
+    rts                                         ; D733 60
 
 ; ----------------------------------------------------------------------------
 VD734:
@@ -847,8 +894,9 @@ LD7E0:
     rts                                         ; D7E5 60
 
 ; ----------------------------------------------------------------------------
-LD7E6:  ora     #$B0                            ; D7E6 09 B0
-        jmp     LD7CC                           ; D7E8 4C CC D7
+LD7E6:
+    ora #$B0                                    ; D7E6 09 B0
+    jmp LD7CC                                   ; D7E8 4C CC D7
 
 ; ----------------------------------------------------------------------------
 RD7EB:
@@ -868,8 +916,9 @@ RD7EB:
 
 ; ----------------------------------------------------------------------------
 ; lookup table
-LD809:  .byte $00,$00,$01,$02,$01,$01,$00,$00
-        .byte $00,$FF,$FE,$FF,$FF,$00,$00,$00
+LD809:
+    .byte $00,$00,$01,$02,$01,$01,$00,$00
+    .byte $00,$FF,$FE,$FF,$FF,$00,$00,$00
 ; ----------------------------------------------------------------------------
 RD819:
     lda $06F9                                   ; D819 AD F9 06
@@ -948,41 +997,47 @@ VD877:
 
 ; ----------------------------------------------------------------------------
 ; pulse 1 vector 3
-VD88D:  jsr RD819 ; lda $06F9, cmp 10/11        ; D88D 20 19 D8
-        beq LD8B8 ; rts                         ; D890 F0 26
-        jsr RD82D ; lda $06F9, cmp 2/4/6        ; D892 20 2D D8
-        beq LD8B8 ; rts                         ; D895 F0 21
-        jsr RD825 ; lda $06F9, cmp 9            ; D897 20 25 D8
-        beq LD8B8 ; rts                         ; D89A F0 1C
-        lda #$02                                ; D89C A9 02
-        ldy #<LD36C                             ; D89E A0 6C
-        jmp RD52B                               ; D8A0 4C 2B D5
+VD88D:
+    jsr RD819 ; lda $06F9, cmp 10/11            ; D88D 20 19 D8
+    beq LD8B8 ; rts                             ; D890 F0 26
+    jsr RD82D ; lda $06F9, cmp 2/4/6            ; D892 20 2D D8
+    beq LD8B8 ; rts                             ; D895 F0 21
+    jsr RD825 ; lda $06F9, cmp 9                ; D897 20 25 D8
+    beq LD8B8 ; rts                             ; D89A F0 1C
+    lda #$02                                    ; D89C A9 02
+    ldy #<LD36C                                 ; D89E A0 6C
+    jmp RD52B                                   ; D8A0 4C 2B D5
 
 ; ----------------------------------------------------------------------------
-VD8A3:  jsr     RD2AC                           ; D8A3 20 AC D2
-        bne     LD8B8 ; rts                     ; D8A6 D0 10
-RD8A8:  lda     #$10                            ; D8A8 A9 10
-        sta     $4000                           ; D8AA 8D 00 40
-        lda     #$00                            ; D8AD A9 00
-        sta     $06C8                           ; D8AF 8D C8 06
-        sta     $06F9                           ; D8B2 8D F9 06
-        inc     $068A                           ; D8B5 EE 8A 06
-LD8B8:  rts                                     ; D8B8 60
+VD8A3:
+    jsr RD2AC                                   ; D8A3 20 AC D2
+    bne LD8B8 ; rts                             ; D8A6 D0 10
+RD8A8:
+    lda #$10                                    ; D8A8 A9 10
+    sta $4000                                   ; D8AA 8D 00 40
+    lda #$00                                    ; D8AD A9 00
+    sta $06C8                                   ; D8AF 8D C8 06
+    sta $06F9                                   ; D8B2 8D F9 06
+    inc $068A                                   ; D8B5 EE 8A 06
+LD8B8:
+    rts                                         ; D8B8 60
 
 ; ----------------------------------------------------------------------------
-LD8B9:  rts                                     ; D8B9 60
+LD8B9:
+    rts                                         ; D8B9 60
 
 ; ----------------------------------------------------------------------------
-VD8BA:  jsr RD2AC                               ; D8BA 20 AC D2
-        bne LD8B9                               ; D8BD D0 FA
-        inc $06E0                               ; D8BF EE E0 06
-        lda $06E0                               ; D8C2 AD E0 06
-        cmp #$02                                ; D8C5 C9 02
-        if_eq                                   ; D8C7 D0 03
-            jmp RD8A8                           ; D8C9 4C A8 D8
-        end_if
-        ldy #<LD34C                             ; D8CC A0 4C
-        jmp RD26E                               ; D8CE 4C 6E D2
+VD8BA:
+    jsr RD2AC                                   ; D8BA 20 AC D2
+    bne LD8B9                                   ; D8BD D0 FA
+    inc $06E0                                   ; D8BF EE E0 06
+    lda $06E0                                   ; D8C2 AD E0 06
+    cmp #$02                                    ; D8C5 C9 02
+    if_eq                                       ; D8C7 D0 03
+        jmp RD8A8                               ; D8C9 4C A8 D8
+    end_if
+    ldy #<LD34C                                 ; D8CC A0 4C
+    jmp RD26E                                   ; D8CE 4C 6E D2
 
 ; ----------------------------------------------------------------------------
 ; pulse 1 vector 1
@@ -1002,152 +1057,179 @@ LD8E6:
 
 ; ----------------------------------------------------------------------------
 ; pulse 1 vector 5
-VD8E7:  jsr RD819 ; lda $06F9, cmp 10/11        ; D8E7 20 19 D8
-        beq LD8E6                               ; D8EA F0 FA
-        jsr RD82D ; lda $06F9, cmp 2/4/6        ; D8EC 20 2D D8
-        beq LD8E6                               ; D8EF F0 F5
-        jsr RD825 ; lda $06F9, cmp 9            ; D8F1 20 25 D8
-        beq LD8E6                               ; D8F4 F0 F0
-        lda #$03                                ; D8F6 A9 03
-        ldy #<LD338                             ; D8F8 A0 38
-        jsr RD937                               ; D8FA 20 37 D9
-VD8FD:  jsr RD2AC                               ; D8FD 20 AC D2
-        bne LD8E6                               ; D900 D0 E4
-        lda $06E0                               ; D902 AD E0 06
-        inc $06E0                               ; D905 EE E0 06
-        beq LD91E                               ; D908 F0 14
-        cmp #$01                                ; D90A C9 01
-        beq LD919                               ; D90C F0 0B
-        cmp #$02                                ; D90E C9 02
-        beq LD91E                               ; D910 F0 0C
-        cmp #$03                                ; D912 C9 03
-        bne LD8E6                               ; D914 D0 D0
-        jmp RD8A8                               ; D916 4C A8 D8
+VD8E7:
+    jsr RD819 ; lda $06F9, cmp 10/11            ; D8E7 20 19 D8
+    beq LD8E6                                   ; D8EA F0 FA
+    jsr RD82D ; lda $06F9, cmp 2/4/6            ; D8EC 20 2D D8
+    beq LD8E6                                   ; D8EF F0 F5
+    jsr RD825 ; lda $06F9, cmp 9                ; D8F1 20 25 D8
+    beq LD8E6                                   ; D8F4 F0 F0
+    lda #$03                                    ; D8F6 A9 03
+    ldy #<LD338                                 ; D8F8 A0 38
+    jsr RD937                                   ; D8FA 20 37 D9
+VD8FD:
+    jsr RD2AC                                   ; D8FD 20 AC D2
+    bne LD8E6                                   ; D900 D0 E4
+    lda $06E0                                   ; D902 AD E0 06
+    inc $06E0                                   ; D905 EE E0 06
+    beq LD91E                                   ; D908 F0 14
+    cmp #$01                                    ; D90A C9 01
+    beq LD919                                   ; D90C F0 0B
+    cmp #$02                                    ; D90E C9 02
+    beq LD91E                                   ; D910 F0 0C
+    cmp #$03                                    ; D912 C9 03
+    bne LD8E6                                   ; D914 D0 D0
+    jmp RD8A8                                   ; D916 4C A8 D8
 
 ; ----------------------------------------------------------------------------
-LD919:  ldy     #<LD338                         ; D919 A0 38
-        jmp     RD26E                           ; D91B 4C 6E D2
+LD919:
+    ldy #<LD338                                 ; D919 A0 38
+    jmp RD26E                                   ; D91B 4C 6E D2
 
 ; ----------------------------------------------------------------------------
-LD91E:  ldy     #<LD33C                         ; D91E A0 3C
-        jmp     RD26E                           ; D920 4C 6E D2
+LD91E:
+    ldy #<LD33C                                 ; D91E A0 3C
+    jmp RD26E                                   ; D920 4C 6E D2
 
 ; ----------------------------------------------------------------------------
 ; pulse 1 vector 9
-VD923:  lda #$03                                ; D923 A9 03
-        ldy #<LD358                             ; D925 A0 58
-        jsr RD937                               ; D927 20 37 D9
-        lda #$18                                ; D92A A9 18
-        bne LD96C                               ; D92C D0 3E
-VD92E:  jsr RD2AC                               ; D92E 20 AC D2
-        bne LD96F                               ; D931 D0 3C
-        ldy #<LD358                             ; D933 A0 58
-        bne LD977 ;always                       ; D935 D0 40
-RD937:  jmp RD52B                               ; D937 4C 2B D5
+VD923:
+    lda #$03                                    ; D923 A9 03
+    ldy #<LD358                                 ; D925 A0 58
+    jsr RD937                                   ; D927 20 37 D9
+    lda #$18                                    ; D92A A9 18
+    bne LD96C                                   ; D92C D0 3E
+VD92E:
+    jsr RD2AC                                   ; D92E 20 AC D2
+    bne LD96F                                   ; D931 D0 3C
+    ldy #<LD358                                 ; D933 A0 58
+    bne LD977 ;always                           ; D935 D0 40
+RD937:
+    jmp RD52B                                   ; D937 4C 2B D5
 
 ; ----------------------------------------------------------------------------
-LD93A:  rts                                     ; D93A 60
+LD93A:
+    rts                                         ; D93A 60
 
 ; ----------------------------------------------------------------------------
 ; pulse 1 vector 2
-VD93B:  jsr RD819 ; lda $06F9, cmp 10/11        ; D93B 20 19 D8
-        beq LD93A                               ; D93E F0 FA
-        jsr RD825 ; lda $06F9, cmp 9            ; D940 20 25 D8
-        beq LD93A                               ; D943 F0 F5
-        lda #$02                                ; D945 A9 02
-        ldy #$5C                                ; D947 A0 5C
-        jsr RD937                               ; D949 20 37 D9
-        lda #$0C                                ; D94C A9 0C
-        bne LD96C                               ; D94E D0 1C
-VD950:  jsr RD2AC                               ; D950 20 AC D2
-        bne LD96F                               ; D953 D0 1A
-        ldy #$5C                                ; D955 A0 5C
-        bne LD977                               ; D957 D0 1E
+VD93B:
+    jsr RD819 ; lda $06F9, cmp 10/11            ; D93B 20 19 D8
+    beq LD93A                                   ; D93E F0 FA
+    jsr RD825 ; lda $06F9, cmp 9                ; D940 20 25 D8
+    beq LD93A                                   ; D943 F0 F5
+    lda #$02                                    ; D945 A9 02
+    ldy #$5C                                    ; D947 A0 5C
+    jsr RD937                                   ; D949 20 37 D9
+    lda #$0C                                    ; D94C A9 0C
+    bne LD96C                                   ; D94E D0 1C
+VD950:
+    jsr RD2AC                                   ; D950 20 AC D2
+    bne LD96F                                   ; D953 D0 1A
+    ldy #$5C                                    ; D955 A0 5C
+    bne LD977                                   ; D957 D0 1E
 ; pulse 1 vector 4
-VD959:  jsr RD819 ; lda $06F9, cmp 10/11        ; D959 20 19 D8
-        beq LD96F                               ; D95C F0 11
-        jsr RD825 ; lda $06F9, cmp 9            ; D95E 20 25 D8
-        beq LD96F                               ; D961 F0 0C
-        lda #$02                                ; D963 A9 02
-        ldy #$60                                ; D965 A0 60
-        jsr RD937                               ; D967 20 37 D9
-LD96A:  lda #$00                                ; D96A A9 00
-LD96C:  sta $06E4                               ; D96C 8D E4 06
-LD96F:  rts                                     ; D96F 60
+VD959:
+    jsr RD819 ; lda $06F9, cmp 10/11            ; D959 20 19 D8
+    beq LD96F                                   ; D95C F0 11
+    jsr RD825 ; lda $06F9, cmp 9                ; D95E 20 25 D8
+    beq LD96F                                   ; D961 F0 0C
+    lda #$02                                    ; D963 A9 02
+    ldy #$60                                    ; D965 A0 60
+    jsr RD937                                   ; D967 20 37 D9
+LD96A:
+    lda #$00                                    ; D96A A9 00
+LD96C:
+    sta $06E4                                   ; D96C 8D E4 06
+LD96F:
+    rts                                         ; D96F 60
 
 ; ----------------------------------------------------------------------------
-VD970:  jsr     RD2AC                           ; D970 20 AC D2
-        bne     LD96F                           ; D973 D0 FA
-        ldy     #<LD360                         ; D975 A0 60
-LD977:  jsr     RD26E                           ; D977 20 6E D2
-        clc                                     ; D97A 18
-        lda     $06E4                           ; D97B AD E4 06
-        adc     $06E0                           ; D97E 6D E0 06
-        tay                                     ; D981 A8
-        lda     LD9E4,y                         ; D982 B9 E4 D9
-        sta     $4002                           ; D985 8D 02 40
-        ldy     $06E0                           ; D988 AC E0 06
-        lda     LD9D7,y                         ; D98B B9 D7 D9
-        sta     $4000                           ; D98E 8D 00 40
-        bne     LD996                           ; D991 D0 03
-        jmp     RD8A8                           ; D993 4C A8 D8
+VD970:
+    jsr RD2AC                                   ; D970 20 AC D2
+    bne LD96F                                   ; D973 D0 FA
+    ldy #<LD360                                 ; D975 A0 60
+LD977:
+    jsr RD26E                                   ; D977 20 6E D2
+    clc                                         ; D97A 18
+    lda $06E4                                   ; D97B AD E4 06
+    adc $06E0                                   ; D97E 6D E0 06
+    tay                                         ; D981 A8
+    lda LD9E4,y                                 ; D982 B9 E4 D9
+    sta $4002                                   ; D985 8D 02 40
+    ldy $06E0                                   ; D988 AC E0 06
+    lda LD9D7,y                                 ; D98B B9 D7 D9
+    sta $4000                                   ; D98E 8D 00 40
+    bne LD996                                   ; D991 D0 03
+    jmp RD8A8                                   ; D993 4C A8 D8
 
 ; ----------------------------------------------------------------------------
-LD996:  inc     $06E0                           ; D996 EE E0 06
-LD999:  rts                                     ; D999 60
+LD996:
+    inc $06E0                                   ; D996 EE E0 06
+LD999:
+    rts                                         ; D999 60
 
 ; ----------------------------------------------------------------------------
 ; pulse 1 vector 11
-VD99A:  lda     #$12                            ; D99A A9 12
-        ldy     #<LD354                         ; D99C A0 54
-        jmp     RD52B                           ; D99E 4C 2B D5
+VD99A:
+    lda #$12                                    ; D99A A9 12
+    ldy #<LD354                                 ; D99C A0 54
+    jmp RD52B                                   ; D99E 4C 2B D5
 
 ; ----------------------------------------------------------------------------
-VD9A1:  jsr     RD2AC                           ; D9A1 20 AC D2
-        bne     LD999                           ; D9A4 D0 F3
-        inc     $06E0                           ; D9A6 EE E0 06
-        lda     $06E0                           ; D9A9 AD E0 06
-        cmp     #$03                            ; D9AC C9 03
-        bne     LD9B3                           ; D9AE D0 03
-        jmp     RD8A8                           ; D9B0 4C A8 D8
+VD9A1:
+    jsr RD2AC                                   ; D9A1 20 AC D2
+    bne LD999                                   ; D9A4 D0 F3
+    inc $06E0                                   ; D9A6 EE E0 06
+    lda $06E0                                   ; D9A9 AD E0 06
+    cmp #$03                                    ; D9AC C9 03
+    bne LD9B3                                   ; D9AE D0 03
+    jmp RD8A8                                   ; D9B0 4C A8 D8
 
 ; ----------------------------------------------------------------------------
-LD9B3:  ldy     #<LD354                         ; D9B3 A0 54
-        jmp     RD26E                           ; D9B5 4C 6E D2
+LD9B3:
+    ldy #<LD354                                 ; D9B3 A0 54
+    jmp RD26E                                   ; D9B5 4C 6E D2
 
 ; ----------------------------------------------------------------------------
 ; pulse 1 vector 10
-VD9B8:  lda     #$07                            ; D9B8 A9 07
-        ldy     #<LD350                         ; D9BA A0 50
-        jmp     RD52B                           ; D9BC 4C 2B D5
+VD9B8:
+    lda #$07                                    ; D9B8 A9 07
+    ldy #<LD350                                 ; D9BA A0 50
+    jmp RD52B                                   ; D9BC 4C 2B D5
 
 ; ----------------------------------------------------------------------------
-VD9BF:  jsr     RD2AC                           ; D9BF 20 AC D2
-        bne     LD999                           ; D9C2 D0 D5
-        inc     $06E0                           ; D9C4 EE E0 06
-        lda     $06E0                           ; D9C7 AD E0 06
-        cmp     #$05                            ; D9CA C9 05
-        bne     LD9D1                           ; D9CC D0 03
-        jmp     RD8A8                           ; D9CE 4C A8 D8
+VD9BF:
+    jsr RD2AC                                   ; D9BF 20 AC D2
+    bne LD999                                   ; D9C2 D0 D5
+    inc $06E0                                   ; D9C4 EE E0 06
+    lda $06E0                                   ; D9C7 AD E0 06
+    cmp #$05                                    ; D9CA C9 05
+    bne LD9D1                                   ; D9CC D0 03
+    jmp RD8A8                                   ; D9CE 4C A8 D8
 
 ; ----------------------------------------------------------------------------
-LD9D1:  ldy     #<LD350                         ; D9D1 A0 50
-        jmp     RD26E                           ; D9D3 4C 6E D2
+LD9D1:
+    ldy #<LD350                                 ; D9D1 A0 50
+    jmp RD26E                                   ; D9D3 4C 6E D2
 
 ; ----------------------------------------------------------------------------
-LD9D6:  rts                                     ; D9D6 60
+LD9D6:
+    rts                                         ; D9D6 60
 
 ; ----------------------------------------------------------------------------
 ; lookup table
-LD9D7:  .byte $BD,$BB,$BA,$B9,$B8,$B7,$B6,$B4
-        .byte $B3,$B2,$B2,$B1,$00
+LD9D7:
+    .byte $BD,$BB,$BA,$B9,$B8,$B7,$B6,$B4
+    .byte $B3,$B2,$B2,$B1,$00
 ; ----------------------------------------------------------------------------
 ; lookup table
-LD9E4:  .byte $F0,$60,$E0,$70,$D0,$80,$C0,$90
-        .byte $F0,$60,$E0,$70,$60,$80,$60,$80
-        .byte $60,$80,$60,$80,$60,$80,$60,$80
-        .byte $E0,$D0,$C0,$B0,$A0,$90,$80,$70
-        .byte $60,$50,$50,$40
+LD9E4:
+    .byte $F0,$60,$E0,$70,$D0,$80,$C0,$90
+    .byte $F0,$60,$E0,$70,$60,$80,$60,$80
+    .byte $60,$80,$60,$80,$60,$80,$60,$80
+    .byte $E0,$D0,$C0,$B0,$A0,$90,$80,$70
+    .byte $60,$50,$50,$40
 
 ; ----------------------------------------------------------------------------
 VDA08:
@@ -1168,16 +1250,18 @@ LDA21:
 
 ; ----------------------------------------------------------------------------
 ; pulse 1 vector 6
-VDA24:  jsr RD819 ; lda $06F9, cmp 10/11        ; DA24 20 19 D8
-        beq     LD9D6                           ; DA27 F0 AD
-        jsr     RD825 ; lda $06F9, cmp 9        ; DA29 20 25 D8
-        beq     LD9D6                           ; DA2C F0 A8
-        lda     #$05                            ; DA2E A9 05
-        ldy     #<LD340                         ; DA30 A0 40
-        jmp     RD52B                           ; DA32 4C 2B D5
+VDA24:
+    jsr RD819 ; lda $06F9, cmp 10/11            ; DA24 20 19 D8
+    beq LD9D6                                   ; DA27 F0 AD
+    jsr RD825 ; lda $06F9, cmp 9                ; DA29 20 25 D8
+    beq LD9D6                                   ; DA2C F0 A8
+    lda #$05                                    ; DA2E A9 05
+    ldy #<LD340                                 ; DA30 A0 40
+    jmp RD52B                                   ; DA32 4C 2B D5
 
 ; ----------------------------------------------------------------------------
-LDA35:  .byte $A8,$8D,$A8,$D4,$00               ; DA35 A8 8D A8 D4 00
+LDA35:
+    .byte $A8,$8D,$A8,$D4,$00                   ; DA35 A8 8D A8 D4 00
 ; ----------------------------------------------------------------------------
 ; called from one place
 RDA3A:
@@ -1235,117 +1319,129 @@ LDA8D:
 
 ; ----------------------------------------------------------------------------
 ; triangle vector 1'
-VDA8E:  jsr     RD2AC                           ; DA8E 20 AC D2
-        beq     LDAA3                           ; DA91 F0 10
-        sta     $400A                           ; DA93 8D 0A 40
-        lda     $06E6                           ; DA96 AD E6 06
-        adc     $06E1                           ; DA99 6D E1 06
-        sta     $06E6                           ; DA9C 8D E6 06
-        sta     $400A                           ; DA9F 8D 0A 40
-        rts                                     ; DAA2 60
+VDA8E:
+    jsr RD2AC                                   ; DA8E 20 AC D2
+    beq LDAA3                                   ; DA91 F0 10
+    sta $400A                                   ; DA93 8D 0A 40
+    lda $06E6                                   ; DA96 AD E6 06
+    adc $06E1                                   ; DA99 6D E1 06
+    sta $06E6                                   ; DA9C 8D E6 06
+    sta $400A                                   ; DA9F 8D 0A 40
+    rts                                         ; DAA2 60
 
 ; ----------------------------------------------------------------------------
-LDAA3:  lda     $06E2                           ; DAA3 AD E2 06
-        sta     $06E6                           ; DAA6 8D E6 06
-        ldy     $06EA                           ; DAA9 AC EA 06
-        jsr     RD272                           ; DAAC 20 72 D2
-        rts                                     ; DAAF 60
+LDAA3:
+    lda $06E2                                   ; DAA3 AD E2 06
+    sta $06E6                                   ; DAA6 8D E6 06
+    ldy $06EA                                   ; DAA9 AC EA 06
+    jsr RD272                                   ; DAAC 20 72 D2
+    rts                                         ; DAAF 60
 
 ; ----------------------------------------------------------------------------
 ; triangle vector 1
-VDAB0:  lda     #$1B                            ; DAB0 A9 1B
-        ldy     #<LD384                         ; DAB2 A0 84
-        jsr     RD52B                           ; DAB4 20 2B D5
-        lda     LD384+2                         ; DAB7 AD 86 D3
-        sta     $06E6                           ; DABA 8D E6 06
-        sta     $06E2                           ; DABD 8D E2 06
-        lda     #$84                            ; DAC0 A9 84
-        sta     $06EA                           ; DAC2 8D EA 06
-        lda     #$FC                            ; DAC5 A9 FC
-        sta     $06E1                           ; DAC7 8D E1 06
-        rts                                     ; DACA 60
+VDAB0:
+    lda #$1B                                    ; DAB0 A9 1B
+    ldy #<LD384                                 ; DAB2 A0 84
+    jsr RD52B                                   ; DAB4 20 2B D5
+    lda LD384+2                                 ; DAB7 AD 86 D3
+    sta $06E6                                   ; DABA 8D E6 06
+    sta $06E2                                   ; DABD 8D E2 06
+    lda #$84                                    ; DAC0 A9 84
+    sta $06EA                                   ; DAC2 8D EA 06
+    lda #$FC                                    ; DAC5 A9 FC
+    sta $06E1                                   ; DAC7 8D E1 06
+    rts                                         ; DACA 60
 
 ; ----------------------------------------------------------------------------
 ; triangle vector 3
-VDACB:  lda     #$1B                            ; DACB A9 1B
-        bne LDAD1 ;always                       ; DACD D0 02
+VDACB:
+    lda #$1B                                    ; DACB A9 1B
+    bne LDAD1 ;always                           ; DACD D0 02
 ; triangle vector 4
-VDACF:  lda     #$23                            ; DACF A9 23
-LDAD1:  ldy     #<LD380                         ; DAD1 A0 80
-        jsr     RD52B                           ; DAD3 20 2B D5
-        lda     LD380+2                         ; DAD6 AD 82 D3
-        sta     $06E6                           ; DAD9 8D E6 06
-        sta     $06E2                           ; DADC 8D E2 06
-        lda     #$80                            ; DADF A9 80
-        sta     $06EA                           ; DAE1 8D EA 06
-        lda     #$05                            ; DAE4 A9 05
-        sta     $06E1                           ; DAE6 8D E1 06
-        rts                                     ; DAE9 60
+VDACF:
+    lda #$23                                    ; DACF A9 23
+LDAD1:
+    ldy #<LD380                                 ; DAD1 A0 80
+    jsr RD52B                                   ; DAD3 20 2B D5
+    lda LD380+2                                 ; DAD6 AD 82 D3
+    sta $06E6                                   ; DAD9 8D E6 06
+    sta $06E2                                   ; DADC 8D E2 06
+    lda #$80                                    ; DADF A9 80
+    sta $06EA                                   ; DAE1 8D EA 06
+    lda #$05                                    ; DAE4 A9 05
+    sta $06E1                                   ; DAE6 8D E1 06
+    rts                                         ; DAE9 60
 
 ; ============================================================================
 .scope RDAFB
 
-LDAEA:  jmp RD4E5                               ; DAEA 4C E5 D4
+LDAEA:
+    jmp RD4E5                                   ; DAEA 4C E5 D4
 
-LDAED:  pha                                     ; DAED 48
-        lda $06FD                               ; DAEE AD FD 06
-        cmp #$06                                ; DAF1 C9 06
-        bne LDAF7                               ; DAF3 D0 02
-        pla                                     ; DAF5 68
-        rts                                     ; DAF6 60
+LDAED:
+    pha                                         ; DAED 48
+    lda $06FD                                   ; DAEE AD FD 06
+    cmp #$06                                    ; DAF1 C9 06
+    bne LDAF7                                   ; DAF3 D0 02
+    pla                                         ; DAF5 68
+    rts                                         ; DAF6 60
 
-LDAF7:  pla                                     ; DAF7 68
-        jmp LDB0B                               ; DAF8 4C 0B DB
+LDAF7:
+    pla                                         ; DAF7 68
+    jmp LDB0B                                   ; DAF8 4C 0B DB
 
 ; called from one place
 RDAFB:
-        lda $06F5                               ; DAFB AD F5 06
-        tay                                     ; DAFE A8
-        cmp #$FF                                ; DAFF C9 FF
-        beq LDAEA ; jmp RD4E5                   ; DB01 F0 E7
-        cmp #$00                                ; DB03 C9 00
-        beq LDB27                               ; DB05 F0 20
-        cmp #$06                                ; DB07 C9 06
-        beq LDAED                               ; DB09 F0 E2
-LDB0B:  sta $EF                                 ; DB0B 85 EF
-        sta $06CC                               ; DB0D 8D CC 06
-        dec $06CC                               ; DB10 CE CC 06
-        lda LDB2D,y                             ; DB13 B9 2D DB
-        sta $067E                               ; DB16 8D 7E 06
-        lda #$7F                                ; DB19 A9 7F
-        sta $06C0                               ; DB1B 8D C0 06
-        sta $06C1                               ; DB1E 8D C1 06
-        jsr RDC83 ; initialize variables        ; DB21 20 83 DC
-LDB24:  jmp LDDEF                               ; DB24 4C EF DD
+    lda $06F5                                   ; DAFB AD F5 06
+    tay                                         ; DAFE A8
+    cmp #$FF                                    ; DAFF C9 FF
+    beq LDAEA ; jmp RD4E5                       ; DB01 F0 E7
+    cmp #$00                                    ; DB03 C9 00
+    beq LDB27                                   ; DB05 F0 20
+    cmp #$06                                    ; DB07 C9 06
+    beq LDAED                                   ; DB09 F0 E2
+LDB0B:
+    sta $EF                                     ; DB0B 85 EF
+    sta $06CC                                   ; DB0D 8D CC 06
+    dec $06CC                                   ; DB10 CE CC 06
+    lda LDB2D,y                                 ; DB13 B9 2D DB
+    sta $067E                                   ; DB16 8D 7E 06
+    lda #$7F                                    ; DB19 A9 7F
+    sta $06C0                                   ; DB1B 8D C0 06
+    sta $06C1                                   ; DB1E 8D C1 06
+    jsr RDC83 ; initialize variables            ; DB21 20 83 DC
+LDB24:
+    jmp LDDEF                                   ; DB24 4C EF DD
 
 ; [$06F5] == 0
-LDB27:  lda $06FD                               ; DB27 AD FD 06
-        bne LDB24                               ; DB2A D0 F8
-        rts                                     ; DB2C 60
+LDB27:
+    lda $06FD                                   ; DB27 AD FD 06
+    bne LDB24                                   ; DB2A D0 F8
+    rts                                         ; DB2C 60
 
 ; ----------------------------------------------------------------------------
 ; lookup table
-LDB2D:  .byte $00,$00,$0D,$0A,$0B,$04,$0B,$00
-        .byte $00,$00,$00,$00,$00
+LDB2D:
+    .byte $00,$00,$0D,$0A,$0B,$04,$0B,$00
+    .byte $00,$00,$00,$00,$00
 ; ----------------------------------------------------------------------------
 ; interleaved lookup table with 3-byte entries
 ; used by RDF9D
 ; triples copied to $400C, $400E, $400F
-LDB3A:  .byte $00
-        .byte $10
-        .byte $01
-        .byte $18,$00,$01
-        .byte $38,$00,$03
-        .byte $40,$00,$06
-        .byte $58,$00,$0A
-        .byte $38,$02,$04
-        .byte $40,$13,$05
-        .byte $40,$14,$0A
-        .byte $40,$14,$08
-        .byte $40,$12,$0E
-        .byte $08,$16,$0E
-        .byte $28,$16,$0B
-        .byte $18
+LDB3A:
+    .byte $00,$10,$01
+    .byte $18,$00,$01
+    .byte $38,$00,$03
+    .byte $40,$00,$06
+    .byte $58,$00,$0A
+    .byte $38,$02,$04
+    .byte $40,$13,$05
+    .byte $40,$14,$0A
+    .byte $40,$14,$08
+    .byte $40,$12,$0E
+    .byte $08,$16,$0E
+    .byte $28,$16,$0B
+    .byte $18
 
 ; ----------------------------------------------------------------------------
 ; input in X
@@ -1356,240 +1452,256 @@ LDB3A:  .byte $00
 ; RDBBF is called if: X!=3, {$069A,X} has top 3 bits not all zero, {$06C3,X}!=2.
 RDB5F:
 .scope
-        txa                                     ; DB5F 8A
-        cmp #$03                                ; DB60 C9 03
-        if_ne                                   ; DB62 F0 1D
-            lda $069A,x                         ; DB64 BD 9A 06
-            and #$E0                            ; DB67 29 E0
-            if_ne                               ; DB69 F0 16
-                sta $E0                         ; DB6B 85 E0
-                lda $06C3,x                     ; DB6D BD C3 06
-                cmp #$02                        ; DB70 C9 02
-                if_ne                           ; DB72 F0 0A
-                    ldy $EE                     ; DB74 A4 EE
-                    lda $0680,y                 ; DB76 B9 80 06
-                    sta $E1                     ; DB79 85 E1
-                    jsr RDBBF                   ; DB7B 20 BF DB
-                end_if
-                inc $06D1,x                     ; DB7E FE D1 06
+    txa                                         ; DB5F 8A
+    cmp #$03                                    ; DB60 C9 03
+    if_ne                                       ; DB62 F0 1D
+        lda $069A,x                             ; DB64 BD 9A 06
+        and #$E0                                ; DB67 29 E0
+        if_ne                                   ; DB69 F0 16
+            sta $E0                             ; DB6B 85 E0
+            lda $06C3,x                         ; DB6D BD C3 06
+            cmp #$02                            ; DB70 C9 02
+            if_ne                               ; DB72 F0 0A
+                ldy $EE                         ; DB74 A4 EE
+                lda $0680,y                     ; DB76 B9 80 06
+                sta $E1                         ; DB79 85 E1
+                jsr RDBBF                       ; DB7B 20 BF DB
             end_if
+            inc $06D1,x                         ; DB7E FE D1 06
         end_if
-        rts                                     ; DB81 60
+    end_if
+    rts                                         ; DB81 60
 
 e0_80:
 e0_c0:
 .scope
-        lda $E2                                 ; DB82 A5 E2
-        cmp #$31                                ; DB84 C9 31
-        if_eq                                   ; DB86 D0 02
-            lda #$27                            ; DB88 A9 27
-        end_if
-        tay                                     ; DB8A A8
-        lda LDC11,y                             ; DB8B B9 11 DC
-        pha                                     ; DB8E 48
-            lda $06C3,x                         ; DB8F BD C3 06
-            cmp #$46                            ; DB92 C9 46
-            bne LDB9B                           ; DB94 D0 05
-        pla                                     ; DB96 68
-        lda #$00                                ; DB97 A9 00
-        ; always taken
-        beq LDBF9                               ; DB99 F0 5E
-LDB9B:  pla                                     ; DB9B 68
-        jmp LDBF9                               ; DB9C 4C F9 DB
+    lda $E2                                     ; DB82 A5 E2
+    cmp #$31                                    ; DB84 C9 31
+    if_eq                                       ; DB86 D0 02
+        lda #$27                                ; DB88 A9 27
+    end_if
+    tay                                         ; DB8A A8
+    lda LDC11,y                                 ; DB8B B9 11 DC
+    pha                                         ; DB8E 48
+        lda $06C3,x                             ; DB8F BD C3 06
+        cmp #$46                                ; DB92 C9 46
+        bne LDB9B                               ; DB94 D0 05
+    pla                                         ; DB96 68
+    lda #$00                                    ; DB97 A9 00
+    ; always taken
+    beq LDBF9                                   ; DB99 F0 5E
+LDB9B:
+    pla                                         ; DB9B 68
+    jmp LDBF9                                   ; DB9C 4C F9 DB
 .endscope
 
-e0_40:  lda $E2                                 ; DB9F A5 E2
-        tay                                     ; DBA1 A8
-        cmp #$10                                ; DBA2 C9 10
-        if_cc                                   ; DBA4 B0 06
-            lda LDC6C,y                         ; DBA6 B9 6C DC
-            jmp LDBFF                           ; DBA9 4C FF DB
-        end_if
-        lda #$F6                                ; DBAC A9 F6
-        bne LDBFF ;always                       ; DBAE D0 4F
+e0_40:
+    lda $E2                                     ; DB9F A5 E2
+    tay                                         ; DBA1 A8
+    cmp #$10                                    ; DBA2 C9 10
+    if_cc                                       ; DBA4 B0 06
+        lda LDC6C,y                             ; DBA6 B9 6C DC
+        jmp LDBFF                               ; DBA9 4C FF DB
+    end_if
+    lda #$F6                                    ; DBAC A9 F6
+    bne LDBFF ;always                           ; DBAE D0 4F
 
-e0_60:  lda $06C3,x                             ; DBB0 BD C3 06
-        cmp #$4C                                ; DBB3 C9 4C
-        if_cs                                   ; DBB5 90 04
-            lda #$FE                            ; DBB7 A9 FE
-            bne LDBFF ;always                   ; DBB9 D0 44
-        end_if
-        lda #$FE                                ; DBBB A9 FE
-        bne LDBFF ;always                       ; DBBD D0 40
+e0_60:
+    lda $06C3,x                                 ; DBB0 BD C3 06
+    cmp #$4C                                    ; DBB3 C9 4C
+    if_cs                                       ; DBB5 90 04
+        lda #$FE                                ; DBB7 A9 FE
+        bne LDBFF ;always                       ; DBB9 D0 44
+    end_if
+    lda #$FE                                    ; DBBB A9 FE
+    bne LDBFF ;always                           ; DBBD D0 40
 
 ; input in X
 ; ie2 = i6d1[x]
-RDBBF:  lda $06D1,x                             ; DBBF BD D1 06
-        sta $E2                                 ; DBC2 85 E2
-        lda $E0                                 ; DBC4 A5 E0
-        cmp #$20                                ; DBC6 C9 20
-        beq e0_20                               ; DBC8 F0 14
-        cmp #$A0                                ; DBCA C9 A0
-        beq e0_a0                               ; DBCC F0 1F
-        cmp #$60                                ; DBCE C9 60
-        beq e0_60                               ; DBD0 F0 DE
-        cmp #$40                                ; DBD2 C9 40
-        beq e0_40                               ; DBD4 F0 C9
-        cmp #$80                                ; DBD6 C9 80
-        beq e0_80                               ; DBD8 F0 A8
-        cmp #$C0                                ; DBDA C9 C0
-        beq e0_c0                               ; DBDC F0 A4
+RDBBF:
+    lda $06D1,x                                 ; DBBF BD D1 06
+    sta $E2                                     ; DBC2 85 E2
+    lda $E0                                     ; DBC4 A5 E0
+    cmp #$20                                    ; DBC6 C9 20
+    beq e0_20                                   ; DBC8 F0 14
+    cmp #$A0                                    ; DBCA C9 A0
+    beq e0_a0                                   ; DBCC F0 1F
+    cmp #$60                                    ; DBCE C9 60
+    beq e0_60                                   ; DBD0 F0 DE
+    cmp #$40                                    ; DBD2 C9 40
+    beq e0_40                                   ; DBD4 F0 C9
+    cmp #$80                                    ; DBD6 C9 80
+    beq e0_80                                   ; DBD8 F0 A8
+    cmp #$C0                                    ; DBDA C9 C0
+    beq e0_c0                                   ; DBDC F0 A4
 
-e0_20:  lda $E2                                 ; DBDE A5 E2
-        cmp #$0A                                ; DBE0 C9 0A
-        if_eq                                   ; DBE2 D0 02
-            lda #$00                            ; DBE4 A9 00
-        end_if
-        tay                                     ; DBE6 A8
-        lda LDC62,y                             ; DBE7 B9 62 DC
-        jmp LDBF9                               ; DBEA 4C F9 DB
+e0_20:
+    lda $E2                                     ; DBDE A5 E2
+    cmp #$0A                                    ; DBE0 C9 0A
+    if_eq                                       ; DBE2 D0 02
+        lda #$00                                ; DBE4 A9 00
+    end_if
+    tay                                         ; DBE6 A8
+    lda LDC62,y                                 ; DBE7 B9 62 DC
+    jmp LDBF9                                   ; DBEA 4C F9 DB
 
-e0_a0:  lda $E2                                 ; DBED A5 E2
-        cmp #$2B                                ; DBEF C9 2B
-        if_eq
-            lda #$21                            ; DBF3 A9 21
-        end_if
-        tay                                     ; DBF5 A8
-        lda LDC41,y                             ; DBF6 B9 41 DC
+e0_a0:
+    lda $E2                                     ; DBED A5 E2
+    cmp #$2B                                    ; DBEF C9 2B
+    if_eq
+        lda #$21                                ; DBF3 A9 21
+    end_if
+    tay                                         ; DBF5 A8
+    lda LDC41,y                                 ; DBF6 B9 41 DC
 ; write Y to $06D1+X
-LDBF9:  pha                                     ; DBF9 48
-            tya                                 ; DBFA 98
-            sta $06D1,x                         ; DBFB 9D D1 06
-        pla                                     ; DBFE 68
+LDBF9:
+    pha                                         ; DBF9 48
+        tya                                     ; DBFA 98
+        sta $06D1,x                             ; DBFB 9D D1 06
+    pla                                         ; DBFE 68
 
 ;input A X $e1 $ee $06c8,X
 ;if $06C8,X != 0 then return
 ;else $4002+[$EE] = A+[$E1]
-LDBFF:  pha                                     ; DBFF 48
-            lda $06C8,x                         ; DC00 BD C8 06
-            bne LDC0F                           ; DC03 D0 0A
-        pla                                     ; DC05 68
-        clc                                     ; DC06 18
-        adc $E1                                 ; DC07 65 E1
-        ldy $EE                                 ; DC09 A4 EE
-        sta $4002,y                             ; DC0B 99 02 40
-        rts                                     ; DC0E 60
+LDBFF:
+    pha                                         ; DBFF 48
+        lda $06C8,x                             ; DC00 BD C8 06
+        bne LDC0F                               ; DC03 D0 0A
+    pla                                         ; DC05 68
+    clc                                         ; DC06 18
+    adc $E1                                     ; DC07 65 E1
+    ldy $EE                                     ; DC09 A4 EE
+    sta $4002,y                                 ; DC0B 99 02 40
+    rts                                         ; DC0E 60
 
-LDC0F:  pla                                     ; DC0F 68
-        rts                                     ; DC10 60
+LDC0F:
+    pla                                         ; DC0F 68
+    rts                                         ; DC10 60
 
-
-; lookup table
-LDC11:  .byte $00,$00,$01,$01,$02,$02,$03,$03
-        .byte $04,$04,$05,$05,$06,$06,$07,$07
-        .byte $08,$08,$09,$09,$0A,$0A,$0B,$0B
-        .byte $0C,$0C,$0D,$0D,$0E,$0E,$0F,$0F
-        .byte $10,$10,$11,$11,$12,$12,$13,$13
-        .byte $14,$14,$15,$15,$16,$16,$17,$17
 
 ; lookup table
-LDC41:  .byte $00,$00,$00,$00,$00,$00,$00,$00   ; DC41 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$01   ; DC49 00 00 00 00 00 00 00 01
-        .byte $00,$00,$00,$00,$FF,$00,$00,$00   ; DC51 00 00 00 00 FF 00 00 00
-        .byte $00,$01,$01,$00,$00,$00,$FF,$FF   ; DC59 00 01 01 00 00 00 FF FF
-        .byte $00                               ; DC61 00
+LDC11:
+    .byte $00,$00,$01,$01,$02,$02,$03,$03
+    .byte $04,$04,$05,$05,$06,$06,$07,$07
+    .byte $08,$08,$09,$09,$0A,$0A,$0B,$0B
+    .byte $0C,$0C,$0D,$0D,$0E,$0E,$0F,$0F
+    .byte $10,$10,$11,$11,$12,$12,$13,$13
+    .byte $14,$14,$15,$15,$16,$16,$17,$17
+
+; lookup table
+LDC41:
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$01
+    .byte $00,$00,$00,$00,$FF,$00,$00,$00
+    .byte $00,$01,$01,$00,$00,$00,$FF,$FF
+    .byte $00
 
 ; 10-byte lookup table
-LDC62:  .byte $00,$01,$01,$02,$01,$00,$FF,$FF,$FE,$FF
+LDC62:
+    .byte $00,$01,$01,$02,$01,$00,$FF,$FF,$FE,$FF
 
 ; lookup table
-LDC6C:  .byte $00,$FF,$FE,$FD,$FC,$FB,$FA,$F9
-        .byte $F8,$F7,$F6,$F5,$F6,$F7,$F6,$F5
+LDC6C:
+    .byte $00,$FF,$FE,$FD,$FC,$FB,$FA,$F9
+    .byte $F8,$F7,$F6,$F5,$F6,$F7,$F6,$F5
 
 .endscope ;RDB5F
 
 ; ----------------------------------------------------------------------------
-LDC7C:  lda #$FF                                ; DC7C A9 FF
-        sta $06A0,x                             ; DC7E 9D A0 06
-        bne LDCD9 ;always                       ; DC81 D0 56
+LDC7C:
+    lda #$FF                                    ; DC7C A9 FF
+    sta $06A0,x                                 ; DC7E 9D A0 06
+    bne LDCD9 ;always                           ; DC81 D0 56
 
 ; input: $06CC=(0..11)
 ; initialize local state
-RDC83:  jsr RD4E8 ; initialize APU              ; DC83 20 E8 D4  ; called from one place
-        lda $EF                                 ; DC86 A5 EF
-        sta $06FD                               ; DC88 8D FD 06
-        lda $06CC                               ; DC8B AD CC 06
-        tay                                     ; DC8E A8
-        lda LE261,y                             ; DC8F B9 61 E2
-        tay                                     ; DC92 A8
-        ; copy 10 bytes: LE26E,y to $0690
-        ; i690, i691, p692[0-3]
-        ldx #$00                                ; DC93 A2 00
-        loop
-            lda LE26E,y                         ; DC95 B9 6E E2
-            sta $0690,x                         ; DC98 9D 90 06
-            iny                                 ; DC9B C8
-            inx                                 ; DC9C E8
-            txa                                 ; DC9D 8A
-            cmp #$0A                            ; DC9E C9 0A
-        while_ne                                ; DCA0 D0 F3
-        lda #$01                                ; DCA2 A9 01
-        sta $06B4                               ; DCA4 8D B4 06
-        sta $06B5                               ; DCA7 8D B5 06
-        sta $06B6                               ; DCAA 8D B6 06
-        sta $06B7                               ; DCAD 8D B7 06
-        ; zero $067F, $EA, $06A8-$06AF
-        lda #$00                                ; DCB0 A9 00
-        sta $067F                               ; DCB2 8D 7F 06
-        sta $EA                                 ; DCB5 85 EA
-        ldy #$08                                ; DCB7 A0 08
-        loop
-            sta $06A7,y                         ; DCB9 99 A7 06
-            dey                                 ; DCBC 88
-        while_ne                                ; DCBD D0 FA
-        tax                                     ; DCBF AA
-        ; for X=0,2,4,6
-        ; pe6 = p692[x]
-        ; if pe6==FFFF then p6a0[x] = FFFF
-        ; else p6a0[x] = pe6[0]:pe6[1]
-        LDCC0:
-            lda $0692,x                         ; DCC0 BD 92 06
-            sta $E6                             ; DCC3 85 E6
-            lda $0693,x                         ; DCC5 BD 93 06
-            ; if FF then output FFFF
-            cmp #$FF                            ; DCC8 C9 FF
-            beq LDC7C                           ; DCCA F0 B0
-            ;else
-                sta $E7                         ; DCCC 85 E7
-                ldy $06A8 ;always 0             ; DCCE AC A8 06
-                lda ($E6),y                     ; DCD1 B1 E6
-                sta $06A0,x                     ; DCD3 9D A0 06
-                iny                             ; DCD6 C8
-                lda ($E6),y                     ; DCD7 B1 E6
-            ;endif
-            LDCD9:
-            sta $06A1,x                         ; DCD9 9D A1 06
-            inx                                 ; DCDC E8
-            inx                                 ; DCDD E8
-            txa                                 ; DCDE 8A
-            cmp #$08                            ; DCDF C9 08
-        bne LDCC0                               ; DCE1 D0 DD
-        rts                                     ; DCE3 60
+RDC83:
+    jsr RD4E8 ; initialize APU                  ; DC83 20 E8 D4  ; called from one place
+    lda $EF                                     ; DC86 A5 EF
+    sta $06FD                                   ; DC88 8D FD 06
+    lda $06CC                                   ; DC8B AD CC 06
+    tay                                         ; DC8E A8
+    lda LE261,y                                 ; DC8F B9 61 E2
+    tay                                         ; DC92 A8
+    ; copy 10 bytes: LE26E,y to $0690
+    ; i690, i691, p692[0-3]
+    ldx #$00                                    ; DC93 A2 00
+    loop
+        lda LE26E,y                             ; DC95 B9 6E E2
+        sta $0690,x                             ; DC98 9D 90 06
+        iny                                     ; DC9B C8
+        inx                                     ; DC9C E8
+        txa                                     ; DC9D 8A
+        cmp #$0A                                ; DC9E C9 0A
+    while_ne                                    ; DCA0 D0 F3
+    lda #$01                                    ; DCA2 A9 01
+    sta $06B4                                   ; DCA4 8D B4 06
+    sta $06B5                                   ; DCA7 8D B5 06
+    sta $06B6                                   ; DCAA 8D B6 06
+    sta $06B7                                   ; DCAD 8D B7 06
+    ; zero $067F, $EA, $06A8-$06AF
+    lda #$00                                    ; DCB0 A9 00
+    sta $067F                                   ; DCB2 8D 7F 06
+    sta $EA                                     ; DCB5 85 EA
+    ldy #$08                                    ; DCB7 A0 08
+    loop
+        sta $06A7,y                             ; DCB9 99 A7 06
+        dey                                     ; DCBC 88
+    while_ne                                    ; DCBD D0 FA
+    tax                                         ; DCBF AA
+    ; for X=0,2,4,6
+    ; pe6 = p692[x]
+    ; if pe6==FFFF then p6a0[x] = FFFF
+    ; else p6a0[x] = pe6[0]:pe6[1]
+    LDCC0:
+        lda $0692,x                             ; DCC0 BD 92 06
+        sta $E6                                 ; DCC3 85 E6
+        lda $0693,x                             ; DCC5 BD 93 06
+        ; if FF then output FFFF
+        cmp #$FF                                ; DCC8 C9 FF
+        beq LDC7C                               ; DCCA F0 B0
+        ;else
+            sta $E7                             ; DCCC 85 E7
+            ldy $06A8 ;always 0                 ; DCCE AC A8 06
+            lda ($E6),y                         ; DCD1 B1 E6
+            sta $06A0,x                         ; DCD3 9D A0 06
+            iny                                 ; DCD6 C8
+            lda ($E6),y                         ; DCD7 B1 E6
+        ;endif
+        LDCD9:
+        sta $06A1,x                             ; DCD9 9D A1 06
+        inx                                     ; DCDC E8
+        inx                                     ; DCDD E8
+        txa                                     ; DCDE 8A
+        cmp #$08                                ; DCDF C9 08
+    bne LDCC0                                   ; DCE1 D0 DD
+    rts                                         ; DCE3 60
 
 ; ----------------------------------------------------------------------------
 ; called from one place (DDF2 in RDAFB)
 RDCE4:
-        lda $068A                               ; DCE4 AD 8A 06
-        if_ne                                   ; DCE7 F0 2B
-            cmp #$01                            ; DCE9 C9 01
-            if_ne
-                lda #$7F                        ; DCED A9 7F
-                sta $4005                       ; DCEF 8D 05 40
-                lda $0684                       ; DCF2 AD 84 06
-                sta $4006                       ; DCF5 8D 06 40
-                lda $0685                       ; DCF8 AD 85 06
-                sta $4007                       ; DCFB 8D 07 40
-            end_if
-            lda #$7F                            ; DCFE A9 7F
-            sta $4001                           ; DD00 8D 01 40
-            lda $0680                           ; DD03 AD 80 06
-            sta $4002                           ; DD06 8D 02 40
-            lda $0681                           ; DD09 AD 81 06
-            sta $4003                           ; DD0C 8D 03 40
-            lda #$00                            ; DD0F A9 00
-            sta $068A                           ; DD11 8D 8A 06
+    lda $068A                                   ; DCE4 AD 8A 06
+    if_ne                                       ; DCE7 F0 2B
+        cmp #$01                                ; DCE9 C9 01
+        if_ne
+            lda #$7F                            ; DCED A9 7F
+            sta $4005                           ; DCEF 8D 05 40
+            lda $0684                           ; DCF2 AD 84 06
+            sta $4006                           ; DCF5 8D 06 40
+            lda $0685                           ; DCF8 AD 85 06
+            sta $4007                           ; DCFB 8D 07 40
         end_if
-LDD14:  rts                                     ; DD14 60
+        lda #$7F                                ; DCFE A9 7F
+        sta $4001                               ; DD00 8D 01 40
+        lda $0680                               ; DD03 AD 80 06
+        sta $4002                               ; DD06 8D 02 40
+        lda $0681                               ; DD09 AD 81 06
+        sta $4003                               ; DD0C 8D 03 40
+        lda #$00                                ; DD0F A9 00
+        sta $068A                               ; DD11 8D 8A 06
+    end_if
+LDD14:
+    rts                                         ; DD14 60
 
 ; ----------------------------------------------------------------------------
 ; called from one place
@@ -1598,110 +1710,120 @@ LDD14:  rts                                     ; DD14 60
 ; if X >= 2 then return.
 RDD15:
 .scope
-        txa                                     ; DD15 8A
-        cmp #$02                                ; DD16 C9 02
-        bcs LDD14 ; if x >= 2 then rts          ; DD18 B0 FA
-        ; if i69a[x] & 1f == 0 then rts
-        lda $069A,x                             ; DD1A BD 9A 06
-        and #$1F                                ; DD1D 29 1F
-        beq LDD7A ;rts                          ; DD1F F0 59
-        sta $E1                                 ; DD21 85 E1
-        lda $06C3,x                             ; DD23 BD C3 06
-        cmp #$02                                ; DD26 C9 02
-        beq LDD84                               ; DD28 F0 5A
-        ldy #$00                                ; DD2A A0 00
-        loop
-            dec $E1                             ; DD2C C6 E1
-            beq break                           ; DD2E F0 04
-            iny                                 ; DD30 C8
-            iny                                 ; DD31 C8
-        while_ne                                ; DD32 D0 F8
-        lda LE018,y                             ; DD34 B9 18 E0
-        sta $E2                                 ; DD37 85 E2
-        lda LE018+1,y                           ; DD39 B9 19 E0
-        sta $E3                                 ; DD3C 85 E3
-        lda $06CD,x                             ; DD3E BD CD 06
-        lsr a                                   ; DD41 4A
-        tay                                     ; DD42 A8
-        lda ($E2),y                             ; DD43 B1 E2
-        sta $E4                                 ; DD45 85 E4
-        cmp #$FF                                ; DD47 C9 FF
-        beq LDD7B                               ; DD49 F0 30
-        cmp #$F0                                ; DD4B C9 F0
-        beq LDD80                               ; DD4D F0 31
-        lda $06CD,x                             ; DD4F BD CD 06
-        and #$01                                ; DD52 29 01
-        if_eq                                   ; DD54 D0 08
-            lsr $E4                             ; DD56 46 E4
-            lsr $E4                             ; DD58 46 E4
-            lsr $E4                             ; DD5A 46 E4
-            lsr $E4                             ; DD5C 46 E4
-        end_if
-        lda     $E4                             ; DD5E A5 E4
-        and     #$0F                            ; DD60 29 0F
-        sta     $E0                             ; DD62 85 E0
-        lda     $069D,x                         ; DD64 BD 9D 06
-        and     #$F0                            ; DD67 29 F0
-        ora     $E0                             ; DD69 05 E0
-        tay                                     ; DD6B A8
-LDD6C:  inc     $06CD,x                         ; DD6C FE CD 06
-LDD6F:  lda     $06C8,x                         ; DD6F BD C8 06
-        if_eq                                   ; DD72 D0 06
-            tya                                 ; DD74 98
-            ldy $EE                             ; DD75 A4 EE
-            sta $4000,y                         ; DD77 99 00 40
-        end_if
-LDD7A:  rts                                     ; DD7A 60
+    txa                                         ; DD15 8A
+    cmp #$02                                    ; DD16 C9 02
+    bcs LDD14 ; if x >= 2 then rts              ; DD18 B0 FA
+    ; if i69a[x] & 1f == 0 then rts
+    lda $069A,x                                 ; DD1A BD 9A 06
+    and #$1F                                    ; DD1D 29 1F
+    beq LDD7A ;rts                              ; DD1F F0 59
+    sta $E1                                     ; DD21 85 E1
+    lda $06C3,x                                 ; DD23 BD C3 06
+    cmp #$02                                    ; DD26 C9 02
+    beq LDD84                                   ; DD28 F0 5A
+    ldy #$00                                    ; DD2A A0 00
+    loop
+        dec $E1                                 ; DD2C C6 E1
+        beq break                               ; DD2E F0 04
+        iny                                     ; DD30 C8
+        iny                                     ; DD31 C8
+    while_ne                                    ; DD32 D0 F8
+    lda LE018,y                                 ; DD34 B9 18 E0
+    sta $E2                                     ; DD37 85 E2
+    lda LE018+1,y                               ; DD39 B9 19 E0
+    sta $E3                                     ; DD3C 85 E3
+    lda $06CD,x                                 ; DD3E BD CD 06
+    lsr a                                       ; DD41 4A
+    tay                                         ; DD42 A8
+    lda ($E2),y                                 ; DD43 B1 E2
+    sta $E4                                     ; DD45 85 E4
+    cmp #$FF                                    ; DD47 C9 FF
+    beq LDD7B                                   ; DD49 F0 30
+    cmp #$F0                                    ; DD4B C9 F0
+    beq LDD80                                   ; DD4D F0 31
+    lda $06CD,x                                 ; DD4F BD CD 06
+    and #$01                                    ; DD52 29 01
+    if_eq                                       ; DD54 D0 08
+        lsr $E4                                 ; DD56 46 E4
+        lsr $E4                                 ; DD58 46 E4
+        lsr $E4                                 ; DD5A 46 E4
+        lsr $E4                                 ; DD5C 46 E4
+    end_if
+    lda $E4                                     ; DD5E A5 E4
+    and #$0F                                    ; DD60 29 0F
+    sta $E0                                     ; DD62 85 E0
+    lda $069D,x                                 ; DD64 BD 9D 06
+    and #$F0                                    ; DD67 29 F0
+    ora $E0                                     ; DD69 05 E0
+    tay                                         ; DD6B A8
+LDD6C:
+    inc $06CD,x                                 ; DD6C FE CD 06
+LDD6F:
+    lda $06C8,x                                 ; DD6F BD C8 06
+    if_eq                                       ; DD72 D0 06
+        tya                                     ; DD74 98
+        ldy $EE                                 ; DD75 A4 EE
+        sta $4000,y                             ; DD77 99 00 40
+    end_if
+LDD7A:
+    rts                                         ; DD7A 60
 
-LDD7B:  ldy     $069D,x                         ; DD7B BC 9D 06
-        bne     LDD6F                           ; DD7E D0 EF
-LDD80:  ldy     #$10                            ; DD80 A0 10
-        bne     LDD6F ;always                   ; DD82 D0 EB
-LDD84:  ldy     #$10                            ; DD84 A0 10
-        bne     LDD6C ;always                   ; DD86 D0 E4
+LDD7B:
+    ldy $069D,x                                 ; DD7B BC 9D 06
+    bne LDD6F                                   ; DD7E D0 EF
+LDD80:
+    ldy #$10                                    ; DD80 A0 10
+    bne LDD6F ;always                           ; DD82 D0 EB
+LDD84:
+    ldy #$10                                    ; DD84 A0 10
+    bne LDD6C ;always                           ; DD86 D0 E4
 .endscope
 
 ; ----------------------------------------------------------------------------
 ; input X=(0,2,4,6) and Y
 ; pe6 = p692[x] = pe6[++y]:pe6[++y]
 ; y = i6a8[x] = 0
-LDD88:  iny                                     ; DD88 C8
-        lda ($E6),y                             ; DD89 B1 E6
-        sta $0692,x                             ; DD8B 9D 92 06
-        iny                                     ; DD8E C8
-        lda ($E6),y                             ; DD8F B1 E6
-        sta $0693,x                             ; DD91 9D 93 06
-        lda $0692,x                             ; DD94 BD 92 06
-        sta $E6                                 ; DD97 85 E6
-        lda $0693,x                             ; DD99 BD 93 06
-        sta $E7                                 ; DD9C 85 E7
-        txa                                     ; DD9E 8A
-        lsr a                                   ; DD9F 4A
-        tax                                     ; DDA0 AA
-        lda #$00                                ; DDA1 A9 00
-        tay                                     ; DDA3 A8
-        sta $06A8,x                             ; DDA4 9D A8 06
-        jmp LDDC7                               ; DDA7 4C C7 DD
+LDD88:
+    iny                                         ; DD88 C8
+    lda ($E6),y                                 ; DD89 B1 E6
+    sta $0692,x                                 ; DD8B 9D 92 06
+    iny                                         ; DD8E C8
+    lda ($E6),y                                 ; DD8F B1 E6
+    sta $0693,x                                 ; DD91 9D 93 06
+    lda $0692,x                                 ; DD94 BD 92 06
+    sta $E6                                     ; DD97 85 E6
+    lda $0693,x                                 ; DD99 BD 93 06
+    sta $E7                                     ; DD9C 85 E7
+    txa                                         ; DD9E 8A
+    lsr a                                       ; DD9F 4A
+    tax                                         ; DDA0 AA
+    lda #$00                                    ; DDA1 A9 00
+    tay                                         ; DDA3 A8
+    sta $06A8,x                                 ; DDA4 9D A8 06
+    jmp LDDC7                                   ; DDA7 4C C7 DD
 
-LDDAA:  jsr     RD4E5                           ; DDAA 20 E5 D4
-LDDAD:  rts                                     ; DDAD 60
+LDDAA:
+    jsr RD4E5                                   ; DDAA 20 E5 D4
+LDDAD:
+    rts                                         ; DDAD 60
 
 ; input X (0 to 3)
 ; pe6 = p692[x]
 ; y = i6a8[x] += 2;
-LDDAE:  txa                                     ; DDAE 8A
-        asl a                                   ; DDAF 0A
-        tax                                     ; DDB0 AA
-        lda $0692,x                             ; DDB1 BD 92 06
-        sta $E6                                 ; DDB4 85 E6
-        lda $0693,x                             ; DDB6 BD 93 06
-        sta $E7                                 ; DDB9 85 E7
-        txa                                     ; DDBB 8A
-        lsr a                                   ; DDBC 4A
-        tax                                     ; DDBD AA
-        inc $06A8,x                             ; DDBE FE A8 06
-        inc $06A8,x                             ; DDC1 FE A8 06
-        ldy $06A8,x                             ; DDC4 BC A8 06
+LDDAE:
+    txa                                         ; DDAE 8A
+    asl a                                       ; DDAF 0A
+    tax                                         ; DDB0 AA
+    lda $0692,x                                 ; DDB1 BD 92 06
+    sta $E6                                     ; DDB4 85 E6
+    lda $0693,x                                 ; DDB6 BD 93 06
+    sta $E7                                     ; DDB9 85 E7
+    txa                                         ; DDBB 8A
+    lsr a                                       ; DDBC 4A
+    tax                                         ; DDBD AA
+    inc $06A8,x                                 ; DDBE FE A8 06
+    inc $06A8,x                                 ; DDC1 FE A8 06
+    ldy $06A8,x                                 ; DDC4 BC A8 06
 ; input X (0 to 3) and Y
 ; precondition: pe6 = p692[x] and y = i6a8[x]
 ; p6a0[x] = pe6[y]:pe6[++y]
@@ -1709,286 +1831,312 @@ LDDAE:  txa                                     ; DDAE 8A
 ; if p6a0[x] == FFxx then LDD88
 ; i6ac[x] = 0
 ; i6b4[x] = 1
-LDDC7:  txa                                     ; DDC7 8A
-        asl a                                   ; DDC8 0A
-        tax                                     ; DDC9 AA
-        lda ($E6),y                             ; DDCA B1 E6
-        sta $06A0,x                             ; DDCC 9D A0 06
-        iny                                     ; DDCF C8
-        lda ($E6),y                             ; DDD0 B1 E6
-        sta $06A1,x                             ; DDD2 9D A1 06
-        cmp #$00                                ; DDD5 C9 00
-        beq LDDAA                               ; DDD7 F0 D1
-        cmp #$FF                                ; DDD9 C9 FF
-        beq LDD88                               ; DDDB F0 AB
-        txa                                     ; DDDD 8A
-        lsr a                                   ; DDDE 4A
-        tax                                     ; DDDF AA
-        lda #$00                                ; DDE0 A9 00
-        sta $06AC,x                             ; DDE2 9D AC 06
-        lda #$01                                ; DDE5 A9 01
-        sta $06B4,x                             ; DDE7 9D B4 06
-        bne LDE0C ;always                       ; DDEA D0 20
+LDDC7:
+    txa                                         ; DDC7 8A
+    asl a                                       ; DDC8 0A
+    tax                                         ; DDC9 AA
+    lda ($E6),y                                 ; DDCA B1 E6
+    sta $06A0,x                                 ; DDCC 9D A0 06
+    iny                                         ; DDCF C8
+    lda ($E6),y                                 ; DDD0 B1 E6
+    sta $06A1,x                                 ; DDD2 9D A1 06
+    cmp #$00                                    ; DDD5 C9 00
+    beq LDDAA                                   ; DDD7 F0 D1
+    cmp #$FF                                    ; DDD9 C9 FF
+    beq LDD88                                   ; DDDB F0 AB
+    txa                                         ; DDDD 8A
+    lsr a                                       ; DDDE 4A
+    tax                                         ; DDDF AA
+    lda #$00                                    ; DDE0 A9 00
+    sta $06AC,x                                 ; DDE2 9D AC 06
+    lda #$01                                    ; DDE5 A9 01
+    sta $06B4,x                                 ; DDE7 9D B4 06
+    bne LDE0C ;always                           ; DDEA D0 20
 
 ; case 00
-LDDEC:  jmp LDDAE                               ; DDEC 4C AE DD
+LDDEC:
+    jmp LDDAE                                   ; DDEC 4C AE DD
 
 ; continuation of RDAFB
 LDDEF:
-        inc $067F                               ; DDEF EE 7F 06
-        jsr RDCE4                               ; DDF2 20 E4 DC
-        lda #$00                                ; DDF5 A9 00
-        tax                                     ; DDF7 AA
-        sta $EE                                 ; DDF8 85 EE
-        beq LDE0C ;always                       ; DDFA F0 10
+    inc $067F                                   ; DDEF EE 7F 06
+    jsr RDCE4                                   ; DDF2 20 E4 DC
+    lda #$00                                    ; DDF5 A9 00
+    tax                                         ; DDF7 AA
+    sta $EE                                     ; DDF8 85 EE
+    beq LDE0C ;always                           ; DDFA F0 10
 
 ; next X
-LDDFC:  txa                                     ; DDFC 8A
-        lsr a                                   ; DDFD 4A
-        tax                                     ; DDFE AA
-LDDFF:  inx                                     ; DDFF E8
-        txa                                     ; DE00 8A
-        cmp #$04                                ; DE01 C9 04
-        beq LDDAD ;rts                          ; DE03 F0 A8
-        lda $EE                                 ; DE05 A5 EE
-        clc                                     ; DE07 18
-        adc #$04                                ; DE08 69 04
-        sta $EE                                 ; DE0A 85 EE
+LDDFC:
+    txa                                         ; DDFC 8A
+    lsr a                                       ; DDFD 4A
+    tax                                         ; DDFE AA
+LDDFF:
+    inx                                         ; DDFF E8
+    txa                                         ; DE00 8A
+    cmp #$04                                    ; DE01 C9 04
+    beq LDDAD ;rts                              ; DE03 F0 A8
+    lda $EE                                     ; DE05 A5 EE
+    clc                                         ; DE07 18
+    adc #$04                                    ; DE08 69 04
+    sta $EE                                     ; DE0A 85 EE
 ; input X=(0,1,2,3)
 ; pe6 = p6a0[x]
 ; if pe6 == $FFFF then LDDFC
-LDE0C:  txa                                     ; DE0C 8A
-        asl a                                   ; DE0D 0A
-        tax                                     ; DE0E AA
-        lda $06A0,x                             ; DE0F BD A0 06
-        sta $E6                                 ; DE12 85 E6
-        lda $06A1,x                             ; DE14 BD A1 06
-        sta $E7                                 ; DE17 85 E7
-        lda $06A1,x                             ; DE19 BD A1 06 ;redundant
-        cmp #$FF                                ; DE1C C9 FF
-        beq LDDFC ; next X                      ; DE1E F0 DC
-        txa                                     ; DE20 8A
-        lsr a                                   ; DE21 4A
-        tax                                     ; DE22 AA
+LDE0C:
+    txa                                         ; DE0C 8A
+    asl a                                       ; DE0D 0A
+    tax                                         ; DE0E AA
+    lda $06A0,x                                 ; DE0F BD A0 06
+    sta $E6                                     ; DE12 85 E6
+    lda $06A1,x                                 ; DE14 BD A1 06
+    sta $E7                                     ; DE17 85 E7
+    lda $06A1,x                                 ; DE19 BD A1 06 ;redundant
+    cmp #$FF                                    ; DE1C C9 FF
+    beq LDDFC ; next X                          ; DE1E F0 DC
+    txa                                         ; DE20 8A
+    lsr a                                       ; DE21 4A
+    tax                                         ; DE22 AA
 ; i6b4[x]--
 ; if i6b4[x] > 0 then LDE71
 .scope
-        dec $06B4,x                             ; DE23 DE B4 06
-        bne LDE71                               ; DE26 D0 49
+    dec $06B4,x                                 ; DE23 DE B4 06
+    bne LDE71                                   ; DE26 D0 49
 ; i6cd[x] = 0
 ; i6d1[x] = 0
-        lda #$00                                ; DE28 A9 00
-        sta $06CD,x                             ; DE2A 9D CD 06
-        sta $06D1,x                             ; DE2D 9D D1 06
+    lda #$00                                    ; DE28 A9 00
+    sta $06CD,x                                 ; DE2A 9D CD 06
+    sta $06D1,x                                 ; DE2D 9D D1 06
 ; loop start
 ; invariant: pe6 = p6a0[x]
-LDE30:  jsr RE00F ; A = pe6[i6ac[x]++]          ; DE30 20 0F E0
-        beq LDDEC ; jmp LDDAE                   ; DE33 F0 B7
-        cmp #$9F                                ; DE35 C9 9F
-        beq LDE80                               ; DE37 F0 47
-        cmp #$9E                                ; DE39 C9 9E
-        beq LDE98                               ; DE3B F0 5B
-        cmp #$9C                                ; DE3D C9 9C
-        beq LDEA1                               ; DE3F F0 60
-        tay                                     ; DE41 A8
-        cmp #$FF                                ; DE42 C9 FF
-        beq LDE4F                               ; DE44 F0 09
-        and #$C0                                ; DE46 29 C0
-        cmp #$C0                                ; DE48 C9 C0
-        beq LDE5F                               ; DE4A F0 13
-        jmp LDEAA                               ; DE4C 4C AA DE
+LDE30:
+    jsr RE00F ; A = pe6[i6ac[x]++]              ; DE30 20 0F E0
+    beq LDDEC ; jmp LDDAE                       ; DE33 F0 B7
+    cmp #$9F                                    ; DE35 C9 9F
+    beq LDE80                                   ; DE37 F0 47
+    cmp #$9E                                    ; DE39 C9 9E
+    beq LDE98                                   ; DE3B F0 5B
+    cmp #$9C                                    ; DE3D C9 9C
+    beq LDEA1                                   ; DE3F F0 60
+    tay                                         ; DE41 A8
+    cmp #$FF                                    ; DE42 C9 FF
+    beq LDE4F                                   ; DE44 F0 09
+    and #$C0                                    ; DE46 29 C0
+    cmp #$C0                                    ; DE48 C9 C0
+    beq LDE5F                                   ; DE4A F0 13
+    jmp LDEAA                                   ; DE4C 4C AA DE
 
 ; case ff
 ; loop-end instruction
-LDE4F:  lda $06BC,x                             ; DE4F BD BC 06
-        beq LDE6E                               ; DE52 F0 1A
-        dec $06BC,x                             ; DE54 DE BC 06
-        lda $06B0,x                             ; DE57 BD B0 06
-        sta $06AC,x                             ; DE5A 9D AC 06
-        bne LDE6E                               ; DE5D D0 0F
+LDE4F:
+    lda $06BC,x                                 ; DE4F BD BC 06
+    beq LDE6E                                   ; DE52 F0 1A
+    dec $06BC,x                                 ; DE54 DE BC 06
+    lda $06B0,x                                 ; DE57 BD B0 06
+    sta $06AC,x                                 ; DE5A 9D AC 06
+    bne LDE6E                                   ; DE5D D0 0F
 ; case c0-fe (opcode in y)
 ; loop-start instruction
-LDE5F:  tya                                     ; DE5F 98
-        and #$3F                                ; DE60 29 3F
-        sta $06BC,x                             ; DE62 9D BC 06
-        dec $06BC,x                             ; DE65 DE BC 06
-        lda $06AC,x                             ; DE68 BD AC 06
-        sta $06B0,x                             ; DE6B 9D B0 06
-LDE6E:  jmp LDE30 ; loop                        ; DE6E 4C 30 DE
+LDE5F:
+    tya                                         ; DE5F 98
+    and #$3F                                    ; DE60 29 3F
+    sta $06BC,x                                 ; DE62 9D BC 06
+    dec $06BC,x                                 ; DE65 DE BC 06
+    lda $06AC,x                                 ; DE68 BD AC 06
+    sta $06B0,x                                 ; DE6B 9D B0 06
+LDE6E:
+    jmp LDE30 ; loop                            ; DE6E 4C 30 DE
 
 ; wait count remaining (i6b4[x] > 0)
-LDE71:  jsr RDD15                               ; DE71 20 15 DD
-        jsr RDB5F                               ; DE74 20 5F DB
-        jmp LDDFF ; next X                      ; DE77 4C FF DD
+LDE71:
+    jsr RDD15                                   ; DE71 20 15 DD
+    jsr RDB5F                                   ; DE74 20 5F DB
+    jmp LDDFF ; next X                          ; DE77 4C FF DD
 
-LDE7A:  jmp LDF8E                               ; DE7A 4C 8E DF
+LDE7A:
+    jmp LDF8E                                   ; DE7A 4C 8E DF
 
-LDE7D:  jmp LDF64                               ; DE7D 4C 64 DF
+LDE7D:
+    jmp LDF64                                   ; DE7D 4C 64 DF
 
 ; case 9f
-LDE80:  jsr RE00F ; A = pe6[i6ac[x]++]          ; DE80 20 0F E0
-        sta $069A,x                             ; DE83 9D 9A 06
-        jsr RE00F ; A = pe6[i6ac[x]++]          ; DE86 20 0F E0
-        sta $069D,x                             ; DE89 9D 9D 06
-        jmp LDE30                               ; DE8C 4C 30 DE
+LDE80:
+    jsr RE00F ; A = pe6[i6ac[x]++]              ; DE80 20 0F E0
+    sta $069A,x                                 ; DE83 9D 9A 06
+    jsr RE00F ; A = pe6[i6ac[x]++]              ; DE86 20 0F E0
+    sta $069D,x                                 ; DE89 9D 9D 06
+    jmp LDE30                                   ; DE8C 4C 30 DE
 
 ;unreachable
-        jsr RE00F ; A = pe6[i6ac[x]++]          ; DE8F 20 0F E0
-        jsr RE00F ; A = pe6[i6ac[x]++]          ; DE92 20 0F E0
-        jmp LDE30                               ; DE95 4C 30 DE
+    jsr RE00F ; A = pe6[i6ac[x]++]              ; DE8F 20 0F E0
+    jsr RE00F ; A = pe6[i6ac[x]++]              ; DE92 20 0F E0
+    jmp LDE30                                   ; DE95 4C 30 DE
 
 ; case 9e
 ; set song tempo
-LDE98:  jsr RE00F ; A = pe6[i6ac[x]++]          ; DE98 20 0F E0
-        sta $0691                               ; DE9B 8D 91 06
-        jmp LDE30                               ; DE9E 4C 30 DE
+LDE98:
+    jsr RE00F ; A = pe6[i6ac[x]++]              ; DE98 20 0F E0
+    sta $0691                                   ; DE9B 8D 91 06
+    jmp LDE30                                   ; DE9E 4C 30 DE
 
 ; case 9c
-LDEA1:  jsr RE00F ; A = pe6[i6ac[x]++]          ; DEA1 20 0F E0
-        sta $0690                               ; DEA4 8D 90 06
-        jmp LDE30                               ; DEA7 4C 30 DE
+LDEA1:
+    jsr RE00F ; A = pe6[i6ac[x]++]              ; DEA1 20 0F E0
+    sta $0690                                   ; DEA4 8D 90 06
+    jmp LDE30                                   ; DEA7 4C 30 DE
 
 ; case 01-bf (opcode in y)
-LDEAA:  tya                                     ; DEAA 98
-        and #$B0                                ; DEAB 29 B0
-        cmp #$B0                                ; DEAD C9 B0
-        bne LDEC9                               ; DEAF D0 18
+LDEAA:
+    tya                                         ; DEAA 98
+    and #$B0                                    ; DEAB 29 B0
+    cmp #$B0                                    ; DEAD C9 B0
+    bne LDEC9                                   ; DEAF D0 18
 ; case b0-bf (opcode in y)
 ; set note duration
-        tya                                     ; DEB1 98
-        and #$0F                                ; DEB2 29 0F
-        clc                                     ; DEB4 18
-        adc $0691                               ; DEB5 6D 91 06
-        tay                                     ; DEB8 A8
-        lda LE204,y                             ; DEB9 B9 04 E2
-        sta $06B8,x                             ; DEBC 9D B8 06
-        tay                                     ; DEBF A8
-        txa                                     ; DEC0 8A
-        cmp #$02                                ; DEC1 C9 02
-        beq LDE7D ; jmp LDF64                   ; DEC3 F0 B8
+    tya                                         ; DEB1 98
+    and #$0F                                    ; DEB2 29 0F
+    clc                                         ; DEB4 18
+    adc $0691                                   ; DEB5 6D 91 06
+    tay                                         ; DEB8 A8
+    lda LE204,y                                 ; DEB9 B9 04 E2
+    sta $06B8,x                                 ; DEBC 9D B8 06
+    tay                                         ; DEBF A8
+    txa                                         ; DEC0 8A
+    cmp #$02                                    ; DEC1 C9 02
+    beq LDE7D ; jmp LDF64                       ; DEC3 F0 B8
 
-LDEC5:  jsr RE00F ; A = pe6[i6ac[x]++]          ; DEC5 20 0F E0
-        tay                                     ; DEC8 A8
+LDEC5:
+    jsr RE00F ; A = pe6[i6ac[x]++]              ; DEC5 20 0F E0
+    tay                                         ; DEC8 A8
 ; case 01-af (opcode in y)
-LDEC9:  tya                                     ; DEC9 98
-        sta $06C3,x                             ; DECA 9D C3 06
-        txa                                     ; DECD 8A
-        cmp #$03                                ; DECE C9 03
-        beq LDE7A ; jmp LDF8E                   ; DED0 F0 A8
-        ; x=0,1,2
-        pha                                     ; DED2 48
-            ldx $EE                             ; DED3 A6 EE
-            lda LE16A+1,y                         ; DED5 B9 6B E1
-            if_ne                               ; DED8 F0 24
-                lda $0690                       ; DEDA AD 90 06
-                if_mi                           ; DEDD 10 0B
-                    and #$7F                    ; DEDF 29 7F
-                    sta $E3                     ; DEE1 85 E3
-                    tya                         ; DEE3 98
-                    clc                         ; DEE4 18
-                    sbc $E3                     ; DEE5 E5 E3
-                else                            ; DEE7 4C EF DE
-                    tya                         ; DEEA 98
-                    clc                         ; DEEB 18
-                    adc $0690                   ; DEEC 6D 90 06
-                end_if
-                tay                             ; DEEF A8
-                lda LE16A+1,y                     ; DEF0 B9 6B E1
-                sta $0680,x                     ; DEF3 9D 80 06
-                lda LE16A,y                     ; DEF6 B9 6A E1
-                ora #$08                        ; DEF9 09 08
-                sta $0681,x                     ; DEFB 9D 81 06
+LDEC9:
+    tya                                         ; DEC9 98
+    sta $06C3,x                                 ; DECA 9D C3 06
+    txa                                         ; DECD 8A
+    cmp #$03                                    ; DECE C9 03
+    beq LDE7A ; jmp LDF8E                       ; DED0 F0 A8
+    ; x=0,1,2
+    pha                                         ; DED2 48
+        ldx $EE                                 ; DED3 A6 EE
+        lda LE16A+1,y                             ; DED5 B9 6B E1
+        if_ne                                   ; DED8 F0 24
+            lda $0690                           ; DEDA AD 90 06
+            if_mi                               ; DEDD 10 0B
+                and #$7F                        ; DEDF 29 7F
+                sta $E3                         ; DEE1 85 E3
+                tya                             ; DEE3 98
+                clc                             ; DEE4 18
+                sbc $E3                         ; DEE5 E5 E3
+            else                                ; DEE7 4C EF DE
+                tya                             ; DEEA 98
+                clc                             ; DEEB 18
+                adc $0690                       ; DEEC 6D 90 06
             end_if
-            tay                                 ; DEFE A8
-        pla                                     ; DEFF 68
-        tax                                     ; DF00 AA
-        tya                                     ; DF01 98
-        .scope
-        bne     LDF13                           ; DF02 D0 0F
-        lda     #$00                            ; DF04 A9 00
-        sta     $E0                             ; DF06 85 E0
-        txa                                     ; DF08 8A
-        cmp     #$02                            ; DF09 C9 02
-        beq     LDF18                           ; DF0B F0 0B
-        lda     #$10                            ; DF0D A9 10
-        sta     $E0                             ; DF0F 85 E0
-        bne     LDF18                           ; DF11 D0 05  ;always branch
-        LDF13:
-        lda     $069D,x                         ; DF13 BD 9D 06
-        sta     $E0                             ; DF16 85 E0
-        LDF18:
-        .endscope
-        txa                                     ; DF18 8A
-        dec     $06C8,x                         ; DF19 DE C8 06
-        cmp     $06C8,x                         ; DF1C DD C8 06
-        beq     LDF5E                           ; DF1F F0 3D
-        inc     $06C8,x                         ; DF21 FE C8 06
-        ldy     $EE                             ; DF24 A4 EE
-        txa                                     ; DF26 8A
-        cmp     #$02                            ; DF27 C9 02
-        .scope
-        beq     LDF3E                           ; DF29 F0 13
-        lda     $069A,x                         ; DF2B BD 9A 06
-        and     #$1F                            ; DF2E 29 1F
-        beq     LDF3E                           ; DF30 F0 0C
-        lda     $E0                             ; DF32 A5 E0
-        cmp     #$10                            ; DF34 C9 10
-        beq     LDF40                           ; DF36 F0 08
-        and     #$F0                            ; DF38 29 F0
-        ora     #$00                            ; DF3A 09 00
-        bne     LDF40                           ; DF3C D0 02
-        LDF3E:
-        lda     $E0                             ; DF3E A5 E0
-        LDF40:
-        .endscope
-        sta $4000,y                             ; DF40 99 00 40
-        lda $06C0,x                             ; DF43 BD C0 06
-        sta $4001,y                             ; DF46 99 01 40
-        lda $0680,y                             ; DF49 B9 80 06
-        sta $4002,y                             ; DF4C 99 02 40
-        lda $0681,y                             ; DF4F B9 81 06
-        sta $4003,y                             ; DF52 99 03 40
-LDF55:  lda $06B8,x                             ; DF55 BD B8 06
-        sta $06B4,x                             ; DF58 9D B4 06
-        jmp LDDFF                               ; DF5B 4C FF DD
+            tay                                 ; DEEF A8
+            lda LE16A+1,y                         ; DEF0 B9 6B E1
+            sta $0680,x                         ; DEF3 9D 80 06
+            lda LE16A,y                         ; DEF6 B9 6A E1
+            ora #$08                            ; DEF9 09 08
+            sta $0681,x                         ; DEFB 9D 81 06
+        end_if
+        tay                                     ; DEFE A8
+    pla                                         ; DEFF 68
+    tax                                         ; DF00 AA
+    tya                                         ; DF01 98
+    .scope
+    bne     LDF13                               ; DF02 D0 0F
+    lda     #$00                                ; DF04 A9 00
+    sta     $E0                                 ; DF06 85 E0
+    txa                                         ; DF08 8A
+    cmp     #$02                                ; DF09 C9 02
+    beq     LDF18                               ; DF0B F0 0B
+    lda     #$10                                ; DF0D A9 10
+    sta     $E0                                 ; DF0F 85 E0
+    bne     LDF18                               ; DF11 D0 05  ;always branch
+    LDF13:
+    lda     $069D,x                             ; DF13 BD 9D 06
+    sta     $E0                                 ; DF16 85 E0
+    LDF18:
+    .endscope
+    txa                                         ; DF18 8A
+    dec     $06C8,x                             ; DF19 DE C8 06
+    cmp     $06C8,x                             ; DF1C DD C8 06
+    beq     LDF5E                               ; DF1F F0 3D
+    inc     $06C8,x                             ; DF21 FE C8 06
+    ldy     $EE                                 ; DF24 A4 EE
+    txa                                         ; DF26 8A
+    cmp     #$02                                ; DF27 C9 02
+    .scope
+    beq     LDF3E                               ; DF29 F0 13
+    lda     $069A,x                             ; DF2B BD 9A 06
+    and     #$1F                                ; DF2E 29 1F
+    beq     LDF3E                               ; DF30 F0 0C
+    lda     $E0                                 ; DF32 A5 E0
+    cmp     #$10                                ; DF34 C9 10
+    beq     LDF40                               ; DF36 F0 08
+    and     #$F0                                ; DF38 29 F0
+    ora     #$00                                ; DF3A 09 00
+    bne     LDF40                               ; DF3C D0 02
+    LDF3E:
+    lda     $E0                                 ; DF3E A5 E0
+    LDF40:
+    .endscope
+    sta $4000,y                                 ; DF40 99 00 40
+    lda $06C0,x                                 ; DF43 BD C0 06
+    sta $4001,y                                 ; DF46 99 01 40
+    lda $0680,y                                 ; DF49 B9 80 06
+    sta $4002,y                                 ; DF4C 99 02 40
+    lda $0681,y                                 ; DF4F B9 81 06
+    sta $4003,y                                 ; DF52 99 03 40
+LDF55:
+    lda $06B8,x                                 ; DF55 BD B8 06
+    sta $06B4,x                                 ; DF58 9D B4 06
+    jmp LDDFF                                   ; DF5B 4C FF DD
 
-LDF5E:  inc     $06C8,x                         ; DF5E FE C8 06
-        jmp     LDF55                           ; DF61 4C 55 DF
+LDF5E:
+    inc $06C8,x                                 ; DF5E FE C8 06
+    jmp LDF55                                   ; DF61 4C 55 DF
 
 ; opcode b0-bf, x = 2, y = i68b[2] = LE204[i691 + (opcode - b0)]
-LDF64:  lda     $069C                           ; DF64 AD 9C 06
-        and     #$1F                            ; DF67 29 1F
-        bne     LDF88                           ; DF69 D0 1D
-        lda     $069C                           ; DF6B AD 9C 06
-        and     #$C0                            ; DF6E 29 C0
-        bne     LDF75                           ; DF70 D0 03
-LDF72:  tya                                     ; DF72 98
-        bne     LDF7D                           ; DF73 D0 08
-LDF75:  cmp     #$C0                            ; DF75 C9 C0
-        beq     LDF72                           ; DF77 F0 F9
-        lda     #$FF                            ; DF79 A9 FF
-        bne     LDF88 ; always                  ; DF7B D0 0B
+LDF64:
+    lda $069C                                   ; DF64 AD 9C 06
+    and #$1F                                    ; DF67 29 1F
+    bne LDF88                                   ; DF69 D0 1D
+    lda $069C                                   ; DF6B AD 9C 06
+    and #$C0                                    ; DF6E 29 C0
+    bne LDF75                                   ; DF70 D0 03
+LDF72:
+    tya                                         ; DF72 98
+    bne LDF7D                                   ; DF73 D0 08
+LDF75:
+    cmp #$C0                                    ; DF75 C9 C0
+    beq LDF72                                   ; DF77 F0 F9
+    lda #$FF                                    ; DF79 A9 FF
+    bne LDF88 ; always                          ; DF7B D0 0B
 
-LDF7D:  clc                                     ; DF7D 18
-        adc     #$FF                            ; DF7E 69 FF
-        asl     a                               ; DF80 0A
-        asl     a                               ; DF81 0A
-        cmp     #$3C                            ; DF82 C9 3C
-        if_cs                                   ; DF84 90 02
-            lda #$3C                            ; DF86 A9 3C
-        end_if
-LDF88:  sta     $069F                           ; DF88 8D 9F 06
-        jmp     LDEC5                           ; DF8B 4C C5 DE
+LDF7D:
+    clc                                         ; DF7D 18
+    adc #$FF                                    ; DF7E 69 FF
+    asl a                                       ; DF80 0A
+    asl a                                       ; DF81 0A
+    cmp #$3C                                    ; DF82 C9 3C
+    if_cs                                       ; DF84 90 02
+        lda #$3C                                ; DF86 A9 3C
+    end_if
+LDF88:
+    sta $069F                                   ; DF88 8D 9F 06
+    jmp LDEC5                                   ; DF8B 4C C5 DE
 
 ; case 01-af (opcode in y), x = 3
-LDF8E:  tya                                     ; DF8E 98
-        pha                                     ; DF8F 48
-            jsr RDFB5                           ; DF90 20 B5 DF
-        pla                                     ; DF93 68
-        and #$1F                                ; DF94 29 1F
-        tay                                     ; DF96 A8
-        jsr RDF9D                               ; DF97 20 9D DF
-        jmp LDF55                               ; DF9A 4C 55 DF
+LDF8E:
+    tya                                         ; DF8E 98
+    pha                                         ; DF8F 48
+        jsr RDFB5                               ; DF90 20 B5 DF
+    pla                                         ; DF93 68
+    and #$1F                                    ; DF94 29 1F
+    tay                                         ; DF96 A8
+    jsr RDF9D                                   ; DF97 20 9D DF
+    jmp LDF55                                   ; DF9A 4C 55 DF
 .endscope
 
 ; ----------------------------------------------------------------------------
@@ -1996,16 +2144,17 @@ LDF8E:  tya                                     ; DF8E 98
 ; input: Y
 ; READS $06f8 $db3a,Y $db3b,Y $db3c,Y WRITES $400c $400e $400f
 ; called from one place
-RDF9D:  lda $06F8                               ; DF9D AD F8 06
-        if_eq                                   ; DFA0 D0 12
-            lda LDB3A,y                         ; DFA2 B9 3A DB
-            sta $400C                           ; DFA5 8D 0C 40
-            lda LDB3A+1,y                       ; DFA8 B9 3B DB
-            sta $400E                           ; DFAB 8D 0E 40
-            lda LDB3A+2,y                       ; DFAE B9 3C DB
-            sta $400F                           ; DFB1 8D 0F 40
-        end_if
-        rts                                     ; DFB4 60
+RDF9D:
+    lda $06F8                                   ; DF9D AD F8 06
+    if_eq                                       ; DFA0 D0 12
+        lda LDB3A,y                             ; DFA2 B9 3A DB
+        sta $400C                               ; DFA5 8D 0C 40
+        lda LDB3A+1,y                           ; DFA8 B9 3B DB
+        sta $400E                               ; DFAB 8D 0E 40
+        lda LDB3A+2,y                           ; DFAE B9 3C DB
+        sta $400F                               ; DFB1 8D 0F 40
+    end_if
+    rts                                         ; DFB4 60
 
 ; ----------------------------------------------------------------------------
 ; DMC channel
@@ -2024,107 +2173,113 @@ RDF9D:  lda $06F8                               ; DF9D AD F8 06
 ; $4015 enable all channels (if $06f7 = 0))
 RDFB5:
 .scope
-        ; case on the top 3 bits of Y
-        tya                                     ; DFB5 98
-        and     #$E0                            ; DFB6 29 E0
-        cmp     #$40                            ; DFB8 C9 40
-        beq     case4                           ; DFBA F0 21
-        cmp     #$80                            ; DFBC C9 80
-        beq     case8                           ; DFBE F0 27
-        cmp     #$20                            ; DFC0 C9 20
-        beq     case2                           ; DFC2 F0 05
-        cmp     #$60                            ; DFC4 C9 60
-        beq     case6                           ; DFC6 F0 0B
-        ; 000,101,110,111 do nothing
-        rts                                     ; DFC8 60
+    ; case on the top 3 bits of Y
+    tya                                         ; DFB5 98
+    and #$E0                                    ; DFB6 29 E0
+    cmp #$40                                    ; DFB8 C9 40
+    beq case4                                   ; DFBA F0 21
+    cmp #$80                                    ; DFBC C9 80
+    beq case8                                   ; DFBE F0 27
+    cmp #$20                                    ; DFC0 C9 20
+    beq case2                                   ; DFC2 F0 05
+    cmp #$60                                    ; DFC4 C9 60
+    beq case6                                   ; DFC6 F0 0B
+    ; 000,101,110,111 do nothing
+    rts                                         ; DFC8 60
 
-case2:  lda #$0E                                ; DFC9 A9 0E
-        sta $E1                                 ; DFCB 85 E1
-        lda #$07                                ; DFCD A9 07
-        ldy #>(LFD00 << 2)                      ; DFCF A0 F4
-        bne final                               ; DFD1 D0 1C
-case6:  lda #$0F                                ; DFD3 A9 0F
-        sta $E1                                 ; DFD5 85 E1
-        lda #$0F                                ; DFD7 A9 0F
-        ldy #>(LFD80 << 2)                      ; DFD9 A0 F6
-        bne final                               ; DFDB D0 12
-case4:  lda #$07                                ; DFDD A9 07
-        sta $E1                                 ; DFDF 85 E1
-        lda #$07                                ; DFE1 A9 07
-        ldy #>(LFD00 << 2)                      ; DFE3 A0 F4
-        bne final                               ; DFE5 D0 08
-case8:  lda #$0E                                ; DFE7 A9 0E
-        sta $E1                                 ; DFE9 85 E1
-        lda #$0F                                ; DFEB A9 0F
-        ldy #>(LFD80 << 2)                      ; DFED A0 F6
-final:  sta $4013                               ; DFEF 8D 13 40
-        sty $4012                               ; DFF2 8C 12 40
-        lda $06F7                               ; DFF5 AD F7 06
-        if_eq                                   ; DFF8 D0 14
-            lda $E1                             ; DFFA A5 E1
-            sta $4010                           ; DFFC 8D 10 40
-            lda #$0F                            ; DFFF A9 0F
-            sta $4015                           ; E001 8D 15 40
-            lda #$00                            ; E004 A9 00
-            sta $4011                           ; E006 8D 11 40
-            lda #$1F                            ; E009 A9 1F
-            sta $4015                           ; E00B 8D 15 40
-        end_if
-        rts                                     ; E00E 60
+case2:
+    lda #$0E                                    ; DFC9 A9 0E
+    sta $E1                                     ; DFCB 85 E1
+    lda #$07                                    ; DFCD A9 07
+    ldy #>(LFD00 << 2)                          ; DFCF A0 F4
+    bne final                                   ; DFD1 D0 1C
+case6:
+    lda #$0F                                    ; DFD3 A9 0F
+    sta $E1                                     ; DFD5 85 E1
+    lda #$0F                                    ; DFD7 A9 0F
+    ldy #>(LFD80 << 2)                          ; DFD9 A0 F6
+    bne final                                   ; DFDB D0 12
+case4:
+    lda #$07                                    ; DFDD A9 07
+    sta $E1                                     ; DFDF 85 E1
+    lda #$07                                    ; DFE1 A9 07
+    ldy #>(LFD00 << 2)                          ; DFE3 A0 F4
+    bne final                                   ; DFE5 D0 08
+case8:
+    lda #$0E                                    ; DFE7 A9 0E
+    sta $E1                                     ; DFE9 85 E1
+    lda #$0F                                    ; DFEB A9 0F
+    ldy #>(LFD80 << 2)                          ; DFED A0 F6
+final:
+    sta $4013                                   ; DFEF 8D 13 40
+    sty $4012                                   ; DFF2 8C 12 40
+    lda $06F7                                   ; DFF5 AD F7 06
+    if_eq                                       ; DFF8 D0 14
+        lda $E1                                 ; DFFA A5 E1
+        sta $4010                               ; DFFC 8D 10 40
+        lda #$0F                                ; DFFF A9 0F
+        sta $4015                               ; E001 8D 15 40
+        lda #$00                                ; E004 A9 00
+        sta $4011                               ; E006 8D 11 40
+        lda #$1F                                ; E009 A9 1F
+        sta $4015                               ; E00B 8D 15 40
+    end_if
+    rts                                         ; E00E 60
 .endscope
 
 ; ----------------------------------------------------------------------------
 ; input X=(0,1,2,3)
 ; A = pe6[i6ac[x]++]
-RE00F:  ldy     $06AC,x                         ; E00F BC AC 06
-        inc     $06AC,x                         ; E012 FE AC 06
-        lda     ($E6),y                         ; E015 B1 E6
-        rts                                     ; E017 60
+RE00F:
+    ldy $06AC,x                             ; E00F BC AC 06
+    inc $06AC,x                             ; E012 FE AC 06
+    lda ($E6),y                             ; E015 B1 E6
+    rts                                     ; E017 60
 
 ; ----------------------------------------------------------------------------
 ; array of pointers, used in RDD15
 LE018:
 .scope
-        .word LE056,LE062,LE165,LE06C
-        .word LE07A,LE081,LE085,LE089
-        .word LE090,LE095,LE0B7,LE0C0
-        .word LE0C7,LE0D1,LE0D7,LE0F0
-        .word LE0FA,LE0FF,LE108,LE10D
-        .word LE112,LE118,LE122,LE12C
-        .word LE133,LE139,LE13F,LE14F
-        .word LE155,LE15B,LE160
+    .word LE056,LE062,LE165,LE06C
+    .word LE07A,LE081,LE085,LE089
+    .word LE090,LE095,LE0B7,LE0C0
+    .word LE0C7,LE0D1,LE0D7,LE0F0
+    .word LE0FA,LE0FF,LE108,LE10D
+    .word LE112,LE118,LE122,LE12C
+    .word LE133,LE139,LE13F,LE14F
+    .word LE155,LE15B,LE160
 
-LE056:  .byte $00,$B9,$99,$98,$88,$88,$77,$77,$77,$77,$11,$F0
-LE062:  .byte $00,$00,$00,$0B,$BA,$98,$88,$88,$89,$F0
-LE06C:  .byte $00,$98,$88,$88,$88,$88,$88,$88,$88,$88,$88,$88,$88,$F0
-LE07A:  .byte $0F,$FE,$BB,$BB,$AA,$AA,$F0
-LE081:  .byte $84,$31,$10,$F0
-LE085:  .byte $A9,$92,$22,$F0
-LE089:  .byte $97,$65,$43,$33,$21,$11,$F0
-LE090:  .byte $A8,$81,$11,$11,$F0
-LE095:  .byte $AA,$A1,$11,$11,$11,$11,$11,$22,$22,$33,$34,$44,$45,$55,$66,$67,$77,$76,$66,$55,$54,$44,$44,$33,$33,$33,$22,$22,$22,$11,$11,$11,$11,$F0
-LE0B7:  .byte $07,$74,$11,$11,$11,$11,$11,$11,$F0
-LE0C0:  .byte $77,$21,$33,$11,$11,$11,$F0
-LE0C7:  .byte $22,$33,$44,$55,$66,$77,$77,$88,$66,$FF
-LE0D1:  .byte $08,$77,$11,$11,$11,$F0
-LE0D7:  .byte $FE,$A9,$98,$77,$77,$66,$66,$55,$55,$44,$44,$33,$33,$22,$22,$22,$11,$11,$11,$11,$11,$11,$11,$11,$F0
-LE0F0:  .byte $B9,$11,$10,$74,$11,$10,$32,$11,$11,$FF
-LE0FA:  .byte $76,$54,$32,$21,$F0
-LE0FF:  .byte $00,$43,$22,$22,$22,$22,$22,$21,$F0
-LE108:  .byte $EB,$97,$53,$21,$FF
-LE10D:  .byte $76,$66,$65,$55,$FF
-LE112:  .byte $00,$03,$54,$44,$44,$FF
-LE118:  .byte $69,$87,$77,$76,$55,$55,$55,$55,$55,$FF
-LE122:  .byte $23,$33,$44,$33,$33,$33,$33,$33,$33,$FF
-LE12C:  .byte $00,$54,$32,$21,$11,$11,$F0
-LE133:  .byte $63,$32,$21,$11,$11,$F0
-LE139:  .byte $23,$22,$22,$22,$22,$FF
-LE13F:  .byte $76,$63,$31,$11,$11,$11,$11,$00,$00,$00,$54,$22,$21,$10,$00,$FF
-LE14F:  .byte $54,$32,$21,$11,$11,$F0
-LE155:  .byte $43,$32,$22,$11,$11,$F0
-LE15B:  .byte $32,$22,$21,$11,$F0
-LE160:  .byte $21,$11,$11,$10,$F0
-LE165:  .byte $11,$11,$11,$11,$F0
+LE056: .byte $00,$B9,$99,$98,$88,$88,$77,$77,$77,$77,$11,$F0
+LE062: .byte $00,$00,$00,$0B,$BA,$98,$88,$88,$89,$F0
+LE06C: .byte $00,$98,$88,$88,$88,$88,$88,$88,$88,$88,$88,$88,$88,$F0
+LE07A: .byte $0F,$FE,$BB,$BB,$AA,$AA,$F0
+LE081: .byte $84,$31,$10,$F0
+LE085: .byte $A9,$92,$22,$F0
+LE089: .byte $97,$65,$43,$33,$21,$11,$F0
+LE090: .byte $A8,$81,$11,$11,$F0
+LE095: .byte $AA,$A1,$11,$11,$11,$11,$11,$22,$22,$33,$34,$44,$45,$55,$66,$67,$77,$76,$66,$55,$54,$44,$44,$33,$33,$33,$22,$22,$22,$11,$11,$11,$11,$F0
+LE0B7: .byte $07,$74,$11,$11,$11,$11,$11,$11,$F0
+LE0C0: .byte $77,$21,$33,$11,$11,$11,$F0
+LE0C7: .byte $22,$33,$44,$55,$66,$77,$77,$88,$66,$FF
+LE0D1: .byte $08,$77,$11,$11,$11,$F0
+LE0D7: .byte $FE,$A9,$98,$77,$77,$66,$66,$55,$55,$44,$44,$33,$33,$22,$22,$22,$11,$11,$11,$11,$11,$11,$11,$11,$F0
+LE0F0: .byte $B9,$11,$10,$74,$11,$10,$32,$11,$11,$FF
+LE0FA: .byte $76,$54,$32,$21,$F0
+LE0FF: .byte $00,$43,$22,$22,$22,$22,$22,$21,$F0
+LE108: .byte $EB,$97,$53,$21,$FF
+LE10D: .byte $76,$66,$65,$55,$FF
+LE112: .byte $00,$03,$54,$44,$44,$FF
+LE118: .byte $69,$87,$77,$76,$55,$55,$55,$55,$55,$FF
+LE122: .byte $23,$33,$44,$33,$33,$33,$33,$33,$33,$FF
+LE12C: .byte $00,$54,$32,$21,$11,$11,$F0
+LE133: .byte $63,$32,$21,$11,$11,$F0
+LE139: .byte $23,$22,$22,$22,$22,$FF
+LE13F: .byte $76,$63,$31,$11,$11,$11,$11,$00,$00,$00,$54,$22,$21,$10,$00,$FF
+LE14F: .byte $54,$32,$21,$11,$11,$F0
+LE155: .byte $43,$32,$22,$11,$11,$F0
+LE15B: .byte $32,$22,$21,$11,$F0
+LE160: .byte $21,$11,$11,$10,$F0
+LE165: .byte $11,$11,$11,$11,$F0
 .endscope
 
 ; ----------------------------------------------------------------------------
@@ -2133,13 +2288,14 @@ LE165:  .byte $11,$11,$11,$11,$F0
 ; words are big-endian 11-bit note frequencies
 ; for use in $4002/$4003, $4006/$4007, or $400A/$400B
 
-LE16A:  .dbyt $07F0,$0000,$06AE,$064E,$05F3,$059E,$054D,$0501,$04B9,$0475,$0435,$03F8
-        .dbyt $03BF,$0389,$0357,$0327,$02F9,$02CF,$02A6,$0280,$025C,$023A,$021A,$01FC
-        .dbyt $01DF,$01C4,$01AB,$0193,$017C,$0167,$0152,$013F,$012D,$011C,$010C,$00FD
-        .dbyt $00EE,$00E1,$00D4,$00C8,$00BD,$00B2,$00A8,$009F,$0096,$008D,$0085,$007E
-        .dbyt $0076,$0070,$0069,$0063,$005E,$0058,$0053,$004F,$004A,$0046,$0042,$003E
-        .dbyt $003A,$0037,$0034,$0031,$002E,$002B,$0029,$0027,$0024,$0022,$0020,$001E
-        .dbyt $001C,$001A,$000A,$0010,$0019
+LE16A:
+    .dbyt $07F0,$0000,$06AE,$064E,$05F3,$059E,$054D,$0501,$04B9,$0475,$0435,$03F8
+    .dbyt $03BF,$0389,$0357,$0327,$02F9,$02CF,$02A6,$0280,$025C,$023A,$021A,$01FC
+    .dbyt $01DF,$01C4,$01AB,$0193,$017C,$0167,$0152,$013F,$012D,$011C,$010C,$00FD
+    .dbyt $00EE,$00E1,$00D4,$00C8,$00BD,$00B2,$00A8,$009F,$0096,$008D,$0085,$007E
+    .dbyt $0076,$0070,$0069,$0063,$005E,$0058,$0053,$004F,$004A,$0046,$0042,$003E
+    .dbyt $003A,$0037,$0034,$0031,$002E,$002B,$0029,$0027,$0024,$0022,$0020,$001E
+    .dbyt $001C,$001A,$000A,$0010,$0019
 
 ; ----------------------------------------------------------------------------
 ; lookup table: note durations
@@ -2150,17 +2306,18 @@ LE16A:  .dbyt $07F0,$0000,$06AE,$064E,$05F3,$059E,$054D,$0501,$04B9,$0475,$0435,
 ; Various offsets include the subsequence [1,2,4,8,16,6,12,3,8/3,4/3,1/2]
 ; respectively multiplied by a number from 4 to 10.
 
-LE204:  .byte $04,$08,$10,$20,$40,$18,$30,$0C,$0A,$05,$02,$01      ; LE204 + $00
-        .byte $05,$0A,$14,$28,$50,$1E,$3C,$0F,$0D,$06,$02,$01
-        .byte $06,$0C,$18,$30,$60,$24,$48,$12,$10,$08,$03,$01      ; LE204 + $18
-        .byte $04,$02,$00,$90
-        .byte $07,$0E,$1C,$38,$70,$2A,$54,$15,$12,$09,$03,$01      ; LE204 + $28
-        .byte $02
-        .byte $08,$10,$20,$40,$80,$30,$60,$18,$15,$0A,$04,$01      ; LE204 + $35
-        .byte $02,$C0
-        .byte $09,$12,$24,$48,$90,$36,$6C,$1B,$18,$0C,$04,$01
-        .byte $0A,$14,$28,$50,$A0,$3C,$78,$1E,$1A,$0D,$05,$01      ; LE204 + $4F
-        .byte $02,$17
+LE204:
+    .byte $04,$08,$10,$20,$40,$18,$30,$0C,$0A,$05,$02,$01      ; LE204 + $00
+    .byte $05,$0A,$14,$28,$50,$1E,$3C,$0F,$0D,$06,$02,$01
+    .byte $06,$0C,$18,$30,$60,$24,$48,$12,$10,$08,$03,$01      ; LE204 + $18
+    .byte $04,$02,$00,$90
+    .byte $07,$0E,$1C,$38,$70,$2A,$54,$15,$12,$09,$03,$01      ; LE204 + $28
+    .byte $02
+    .byte $08,$10,$20,$40,$80,$30,$60,$18,$15,$0A,$04,$01      ; LE204 + $35
+    .byte $02,$C0
+    .byte $09,$12,$24,$48,$90,$36,$6C,$1B,$18,$0C,$04,$01
+    .byte $0A,$14,$28,$50,$A0,$3C,$78,$1E,$1A,$0D,$05,$01      ; LE204 + $4F
+    .byte $02,$17
 
 ;  4,  6,  7,  8, 10  sixteenth note
 ;  8, 12, 14, 16, 20  eighth note
@@ -2179,7 +2336,8 @@ LE204:  .byte $04,$08,$10,$20,$40,$18,$30,$0C,$0A,$05,$02,$01      ; LE204 + $00
 ; indexed by $06CC
 ; values are indexes into LE26E.
 ; used in RDC83
-LE261:  .byte $5A,$1E,$28,$14,$3C,$50,$32,$6E,$00,$0A,$46,$64,$78
+LE261:
+    .byte $5A,$1E,$28,$14,$3C,$50,$32,$6E,$00,$0A,$46,$64,$78
 
 
 ; ----------------------------------------------------------------------------
@@ -2222,272 +2380,312 @@ LE26E:
     .word LFA4F,LFA59,LFA61,$FFFF
 
 ; array pointers, voice 0
-LE2F0:  .word LE346,LE3DC,LE43E,LE483
-        .word LE492,LE6F1,LE7D5,LE7E0
-        .word LE89F,LE57E,LE585,$FFFF   ; E300
-        .word LE2F0+2
+LE2F0:
+    .word LE346,LE3DC,LE43E,LE483
+    .word LE492,LE6F1,LE7D5,LE7E0
+    .word LE89F,LE57E,LE585,$FFFF   ; E300
+    .word LE2F0+2
 ; array pointers, voice 1
-LE30A:  .word LE367,LE4A9,LE50B
-        .word LE550,LE567,LE71B,LE7DD   ; E310
-        .word LE88A,LE582,$FFFF,LE30A+2
+LE30A:
+    .word LE367,LE4A9,LE50B
+    .word LE550,LE567,LE71B,LE7DD   ; E310
+    .word LE88A,LE582,$FFFF,LE30A+2
 ; array pointers, voice 2
-LE320:  .word LE388,LE636,LE666,LE675
-        .word LE743,LE8B3,LE600,$FFFF
-        .word LE320+2
+LE320:
+    .word LE388,LE636,LE666,LE675
+    .word LE743,LE8B3,LE600,$FFFF
+    .word LE320+2
 ; array pointers, voice 3
-LE332:  .word LE3BC,LE68C,LE6A6
-        .word LE6BD,LE6DD,LE788,LE8DB
-        .word LE5B8,$FFFF,LE332+2
+LE332:
+    .word LE3BC,LE68C,LE6A6
+    .word LE6BD,LE6DD,LE788,LE8DB
+    .word LE5B8,$FFFF,LE332+2
 ; array, voice 0
-LE346:  .byte $9F,$11
-        .byte $30,$B1,$02,$6C,$02,$02,$6C,$02
-        .byte $02,$02,$6A,$02,$02,$6A,$02,$02   ; E350
-        .byte $02,$02,$02,$68,$02,$02,$68,$02
-        .byte $02,$02,$64,$02,$B6,$02,$00
+LE346:
+    .byte $9F,$11
+    .byte $30,$B1,$02,$6C,$02,$02,$6C,$02
+    .byte $02,$02,$6A,$02,$02,$6A,$02,$02   ; E350
+    .byte $02,$02,$02,$68,$02,$02,$68,$02
+    .byte $02,$02,$64,$02,$B6,$02,$00
 ; array, voice 1
-LE367:  .byte $9F
-        .byte $09,$30,$B1,$02,$72,$02,$02,$72
-        .byte $02,$02,$02,$70,$02,$02,$70,$02   ; E370
-        .byte $02,$02,$02,$02,$6E,$02,$02,$6E
-        .byte $02,$02,$02,$6C,$02,$B6,$02,$00   ; E380
+LE367:
+    .byte $9F
+    .byte $09,$30,$B1,$02,$72,$02,$02,$72
+    .byte $02,$02,$02,$70,$02,$02,$70,$02   ; E370
+    .byte $02,$02,$02,$02,$6E,$02,$02,$6E
+    .byte $02,$02,$02,$6C,$02,$B6,$02,$00   ; E380
 ; array, voice 2
-LE388:  .byte $9F,$16,$00,$B1,$46,$46,$4C,$46
-        .byte $B0,$3C,$3C,$B1,$3C,$42,$44,$46   ; E390
-        .byte $46,$4C,$46,$3C,$02,$02,$02,$02
-        .byte $46,$4C,$46,$B0,$3C,$3C,$B1,$3C   ; E3A0
-        .byte $42,$3C,$B6,$46,$9F,$A0,$00,$BA
-        .byte $3C,$3A,$38,$36,$34,$32,$30,$2E   ; E3B0
-        .byte $02,$BB,$02,$00
+LE388:
+    .byte $9F,$16,$00,$B1,$46,$46,$4C,$46
+    .byte $B0,$3C,$3C,$B1,$3C,$42,$44,$46   ; E390
+    .byte $46,$4C,$46,$3C,$02,$02,$02,$02
+    .byte $46,$4C,$46,$B0,$3C,$3C,$B1,$3C   ; E3A0
+    .byte $42,$3C,$B6,$46,$9F,$A0,$00,$BA
+    .byte $3C,$3A,$38,$36,$34,$32,$30,$2E   ; E3B0
+    .byte $02,$BB,$02,$00
 ; array, voice 3
-LE3BC:  .byte $B2,$04,$44,$04
-        .byte $44,$04,$44,$B1,$04,$41,$44,$01   ; E3C0
-        .byte $B2,$04,$44,$04,$44,$B1,$07,$41
-        .byte $81,$B0,$01,$81,$B0,$81,$81,$B1   ; E3D0
-        .byte $01,$81,$01,$00
+LE3BC:
+    .byte $B2,$04,$44,$04
+    .byte $44,$04,$44,$B1,$04,$41,$44,$01   ; E3C0
+    .byte $B2,$04,$44,$04,$44,$B1,$07,$41
+    .byte $81,$B0,$01,$81,$B0,$81,$81,$B1   ; E3D0
+    .byte $01,$81,$01,$00
 ; array, voice 0
-LE3DC:  .byte $9F,$09,$30,$B1
-        .byte $02,$54,$02,$02,$54,$02,$02,$02   ; E3E0
-        .byte $54,$02,$02,$54,$02,$02,$02,$02
-        .byte $02,$54,$02,$02,$54,$02,$02,$02   ; E3F0
-        .byte $50,$02,$02,$54,$02,$02,$02,$02
-        .byte $02,$54,$02,$02,$54,$02,$02,$02   ; E400
-        .byte $54,$02,$02,$54,$02,$02,$02,$02
-        .byte $02,$54,$02,$02,$54,$02,$02,$02
-        .byte $9F,$06,$30,$BC,$24,$BA,$24,$22
-        .byte $22,$20,$BA,$20,$BC,$1E,$BA,$1E
-        .byte $1E,$1C,$BC,$1C,$BA,$1A,$1A,$18
-        .byte $18,$BA,$16,$16,$BC,$14,$BA,$14
-        .byte $12,$B1,$1A,$B5,$02,$00
+LE3DC:
+    .byte $9F,$09,$30,$B1
+    .byte $02,$54,$02,$02,$54,$02,$02,$02   ; E3E0
+    .byte $54,$02,$02,$54,$02,$02,$02,$02
+    .byte $02,$54,$02,$02,$54,$02,$02,$02   ; E3F0
+    .byte $50,$02,$02,$54,$02,$02,$02,$02
+    .byte $02,$54,$02,$02,$54,$02,$02,$02   ; E400
+    .byte $54,$02,$02,$54,$02,$02,$02,$02
+    .byte $02,$54,$02,$02,$54,$02,$02,$02
+    .byte $9F,$06,$30,$BC,$24,$BA,$24,$22
+    .byte $22,$20,$BA,$20,$BC,$1E,$BA,$1E
+    .byte $1E,$1C,$BC,$1C,$BA,$1A,$1A,$18
+    .byte $18,$BA,$16,$16,$BC,$14,$BA,$14
+    .byte $12,$B1,$1A,$B5,$02,$00
 ; array, voice 0
-LE43E:  .byte $9F,$6B
-        .byte $B1,$B1,$02,$54,$4C,$54,$4C,$B5
-        .byte $02,$B1,$46,$46,$4C,$46,$4C,$B5
-        .byte $02,$B1,$02,$54,$4C,$54,$5A,$02
-        .byte $58,$50,$9F,$8A,$B1,$B4,$56,$9F
-        .byte $6B,$B1,$B1,$02,$B0,$54,$54,$B1
-        .byte $4C,$54,$4C,$B5,$02,$B1,$46,$46
-        .byte $4C,$46,$3C,$B5,$02,$B1,$02,$54
-        .byte $4C,$54,$5A,$02,$58,$50,$54,$02
-        .byte $B6,$02,$00
+LE43E:
+    .byte $9F,$6B
+    .byte $B1,$B1,$02,$54,$4C,$54,$4C,$B5
+    .byte $02,$B1,$46,$46,$4C,$46,$4C,$B5
+    .byte $02,$B1,$02,$54,$4C,$54,$5A,$02
+    .byte $58,$50,$9F,$8A,$B1,$B4,$56,$9F
+    .byte $6B,$B1,$B1,$02,$B0,$54,$54,$B1
+    .byte $4C,$54,$4C,$B5,$02,$B1,$46,$46
+    .byte $4C,$46,$3C,$B5,$02,$B1,$02,$54
+    .byte $4C,$54,$5A,$02,$58,$50,$54,$02
+    .byte $B6,$02,$00
 ; array, voice 0
-LE483:  .byte $9F,$AD,$36,$B4,$16
-        .byte $12,$10,$B6,$0E,$B0,$0E,$02,$02
-        .byte $02,$00
+LE483:
+    .byte $9F,$AD,$36,$B4,$16
+    .byte $12,$10,$B6,$0E,$B0,$0E,$02,$02
+    .byte $02,$00
 ; array, voice 0
-LE492:  .byte $9F,$09,$F1,$C4,$B1,$02
-        .byte $76,$02,$02,$76,$02,$02,$02,$76
-        .byte $02,$02,$76,$02,$02,$02,$02,$FF
-        .byte $00
+LE492:
+    .byte $9F,$09,$F1,$C4,$B1,$02
+    .byte $76,$02,$02,$76,$02,$02,$02,$76
+    .byte $02,$02,$76,$02,$02,$02,$02,$FF
+    .byte $00
 ; array, voice 1
-LE4A9:  .byte $9F,$09,$30,$B1,$02,$5E,$02
-        .byte $02,$5E,$02,$02,$02,$5E,$02,$02
-        .byte $5E,$02,$02,$02,$02,$02,$5E,$02
-        .byte $02,$5E,$02,$02,$02,$5A,$02,$02
-        .byte $5E,$02,$02,$02,$02,$02,$5E,$02
-        .byte $02,$5E,$02,$02,$02,$5E,$02,$02
-        .byte $5E,$02,$02,$02,$02,$02,$5E,$02
-        .byte $02,$5E,$02,$02,$02,$9F,$06,$30
-        .byte $BC,$24,$BA,$24,$22,$22,$20,$BA
-        .byte $20,$BC,$1E,$BA,$1E,$1E,$1C,$BC
-        .byte $1C,$BA,$1A,$1A,$18,$18,$BA,$16
-        .byte $16,$BC,$14,$BA,$14,$12,$B1,$1A   ; E500
-        .byte $B5,$02,$00
+LE4A9:
+    .byte $9F,$09,$30,$B1,$02,$5E,$02
+    .byte $02,$5E,$02,$02,$02,$5E,$02,$02
+    .byte $5E,$02,$02,$02,$02,$02,$5E,$02
+    .byte $02,$5E,$02,$02,$02,$5A,$02,$02
+    .byte $5E,$02,$02,$02,$02,$02,$5E,$02
+    .byte $02,$5E,$02,$02,$02,$5E,$02,$02
+    .byte $5E,$02,$02,$02,$02,$02,$5E,$02
+    .byte $02,$5E,$02,$02,$02,$9F,$06,$30
+    .byte $BC,$24,$BA,$24,$22,$22,$20,$BA
+    .byte $20,$BC,$1E,$BA,$1E,$1E,$1C,$BC
+    .byte $1C,$BA,$1A,$1A,$18,$18,$BA,$16
+    .byte $16,$BC,$14,$BA,$14,$12,$B1,$1A   ; E500
+    .byte $B5,$02,$00
 ; array, voice 1
-LE50B:  .byte $9F,$0A,$B1,$B1,$02
-        .byte $54,$4C,$54,$4C,$B5,$02,$B1,$46
-        .byte $46,$4C,$46,$4C,$B5,$02,$B1,$02
-        .byte $54,$4C,$54,$5A,$02,$58,$50,$9F
-        .byte $8A,$B1,$B4,$56,$9F,$0A,$B1,$B1
-        .byte $02,$B0,$54,$54,$B1,$4C,$54,$4C
-        .byte $B5,$02,$B1,$46,$46,$4C,$46,$3C
-        .byte $B5,$02,$B1,$02,$54,$4C,$54,$5A
-        .byte $02,$58,$50,$54,$02,$B6,$02,$00
+LE50B:
+    .byte $9F,$0A,$B1,$B1,$02
+    .byte $54,$4C,$54,$4C,$B5,$02,$B1,$46
+    .byte $46,$4C,$46,$4C,$B5,$02,$B1,$02
+    .byte $54,$4C,$54,$5A,$02,$58,$50,$9F
+    .byte $8A,$B1,$B4,$56,$9F,$0A,$B1,$B1
+    .byte $02,$B0,$54,$54,$B1,$4C,$54,$4C
+    .byte $B5,$02,$B1,$46,$46,$4C,$46,$3C
+    .byte $B5,$02,$B1,$02,$54,$4C,$54,$5A
+    .byte $02,$58,$50,$54,$02,$B6,$02,$00
 ; array, voice 1
-LE550:  .byte $9F,$0C,$30,$C7,$B0,$46,$5E,$46
-        .byte $46,$5E,$46,$46,$5E,$FF,$46,$5E
-        .byte $46,$46,$5E,$02,$02,$02,$00
+LE550:
+    .byte $9F,$0C,$30,$C7,$B0,$46,$5E,$46
+    .byte $46,$5E,$46,$46,$5E,$FF,$46,$5E
+    .byte $46,$46,$5E,$02,$02,$02,$00
 ; array, voice 1
-LE567:  .byte $9F
-        .byte $09,$B0,$C4,$B1,$02,$7C,$76,$6C
-        .byte $7E,$02,$76,$6C,$80,$76,$6C,$7E
-        .byte $02,$02,$02,$02,$FF,$00
+LE567:
+    .byte $9F
+    .byte $09,$B0,$C4,$B1,$02,$7C,$76,$6C
+    .byte $7E,$02,$76,$6C,$80,$76,$6C,$7E
+    .byte $02,$02,$02,$02,$FF,$00
 ; array, voice 0
-LE57E:  .byte $9F,$19,$31,$00
+LE57E:
+    .byte $9F,$19,$31,$00
 ; array, voice 1
-LE582:  .byte $9F,$18,$31
+LE582:
+    .byte $9F,$18,$31
 ; array, voice 0
-LE585:  .byte $C8,$B1,$14
-        .byte $16,$16,$16,$FF,$C2,$B0,$16,$16
-        .byte $B1,$16,$1C,$20,$B0,$22,$22,$B1
-        .byte $22,$20,$1C,$16,$16,$1C,$02,$16
-        .byte $16,$1C,$02,$B0,$16,$16,$B1,$16
-        .byte $1C,$20,$B0,$22,$22,$B1,$22,$20
-        .byte $1C,$B2,$16,$02,$02,$02,$FF,$00
+LE585:
+    .byte $C8,$B1,$14
+    .byte $16,$16,$16,$FF,$C2,$B0,$16,$16
+    .byte $B1,$16,$1C,$20,$B0,$22,$22,$B1
+    .byte $22,$20,$1C,$16,$16,$1C,$02,$16
+    .byte $16,$1C,$02,$B0,$16,$16,$B1,$16
+    .byte $1C,$20,$B0,$22,$22,$B1,$22,$20
+    .byte $1C,$B2,$16,$02,$02,$02,$FF,$00
 ; array, voice 3
-LE5B8:  .byte $C3,$B1,$41,$01,$01,$41,$41,$01
-        .byte $01,$01,$FF,$41,$01,$01,$41,$B0
-        .byte $81,$81,$01,$41,$41,$81,$81,$81
-        .byte $C2,$B1,$44,$04,$84,$B0,$04,$07
-        .byte $B1,$44,$44,$84,$07,$44,$41,$81
-        .byte $B0,$01,$01,$B1,$41,$41,$81,$01
-        .byte $44,$04,$84,$B0,$04,$07,$B1,$44
-        .byte $44,$84,$07,$44,$01,$01,$B0,$41
-        .byte $04,$B1,$41,$01,$01,$01,$FF,$00
+LE5B8:
+    .byte $C3,$B1,$41,$01,$01,$41,$41,$01
+    .byte $01,$01,$FF,$41,$01,$01,$41,$B0
+    .byte $81,$81,$01,$41,$41,$81,$81,$81
+    .byte $C2,$B1,$44,$04,$84,$B0,$04,$07
+    .byte $B1,$44,$44,$84,$07,$44,$41,$81
+    .byte $B0,$01,$01,$B1,$41,$41,$81,$01
+    .byte $44,$04,$84,$B0,$04,$07,$B1,$44
+    .byte $44,$84,$07,$44,$01,$01,$B0,$41
+    .byte $04,$B1,$41,$01,$01,$01,$FF,$00
 ; array, voice 2
-LE600:  .byte $9F,$16,$00,$C8,$B1,$2C,$2E,$2E   ; E600
-        .byte $2E,$FF,$C2,$B0,$2E,$2E,$B1,$2E
-        .byte $34,$38,$B0,$3A,$3A,$B1,$3A,$38
-        .byte $34,$2E,$2E,$34,$02,$2E,$2E,$34
-        .byte $02,$B0,$2E,$2E,$B1,$2E,$34,$38
-        .byte $B0,$3A,$3A,$B1,$3A,$38,$34,$B2
-        .byte $2E,$02,$02,$02,$FF,$00
+LE600:
+    .byte $9F,$16,$00,$C8,$B1,$2C,$2E,$2E   ; E600
+    .byte $2E,$FF,$C2,$B0,$2E,$2E,$B1,$2E
+    .byte $34,$38,$B0,$3A,$3A,$B1,$3A,$38
+    .byte $34,$2E,$2E,$34,$02,$2E,$2E,$34
+    .byte $02,$B0,$2E,$2E,$B1,$2E,$34,$38
+    .byte $B0,$3A,$3A,$B1,$3A,$38,$34,$B2
+    .byte $2E,$02,$02,$02,$FF,$00
 ; array, voice 2
-LE636:  .byte $9F,$16
-        .byte $00,$C4,$B1,$2E,$2E,$34,$2E,$B0
-        .byte $24,$24,$B1,$24,$2A,$2C,$2E,$2E
-        .byte $34,$2E,$24,$02,$02,$02,$02,$2E
-        .byte $34,$2E,$B0,$24,$24,$B1,$24,$2A
-        .byte $24,$B0,$2E,$2E,$B1,$2E,$34,$2E
-        .byte $34,$02,$02,$02,$FF,$00
+LE636:
+    .byte $9F,$16
+    .byte $00,$C4,$B1,$2E,$2E,$34,$2E,$B0
+    .byte $24,$24,$B1,$24,$2A,$2C,$2E,$2E
+    .byte $34,$2E,$24,$02,$02,$02,$02,$2E
+    .byte $34,$2E,$B0,$24,$24,$B1,$24,$2A
+    .byte $24,$B0,$2E,$2E,$B1,$2E,$34,$2E
+    .byte $34,$02,$02,$02,$FF,$00
 ; array, voice 2
-LE666:  .byte $9F,$A0
-        .byte $00,$B4,$2E,$34,$38,$B6,$3A,$B0
-        .byte $3A,$02,$02,$02,$00
+LE666:
+    .byte $9F,$A0
+    .byte $00,$B4,$2E,$34,$38,$B6,$3A,$B0
+    .byte $3A,$02,$02,$02,$00
 ; array, voice 2
-LE675:  .byte $9F,$16,$00
-        .byte $C4,$B1,$2E,$2E,$34,$34,$2E,$02
-        .byte $02,$02,$02,$2E,$34,$34,$2E,$02
-        .byte $02,$02,$FF,$00
+LE675:
+    .byte $9F,$16,$00
+    .byte $C4,$B1,$2E,$2E,$34,$34,$2E,$02
+    .byte $02,$02,$02,$2E,$34,$34,$2E,$02
+    .byte $02,$02,$FF,$00
 ; array, voice 3
-LE68C:  .byte $C7,$B1,$44,$04
-        .byte $84,$04,$44,$04,$84,$04,$FF,$44
-        .byte $04,$84,$B0,$04,$81,$B0,$81,$81
-        .byte $81,$81,$B1,$81,$01,$00
+LE68C:
+    .byte $C7,$B1,$44,$04
+    .byte $84,$04,$44,$04,$84,$04,$FF,$44
+    .byte $04,$84,$B0,$04,$81,$B0,$81,$81
+    .byte $81,$81,$B1,$81,$01,$00
 ; array, voice 3
-LE6A6:  .byte $C7,$B1
-        .byte $44,$04,$84,$04,$44,$04,$84,$04
-        .byte $FF,$44,$04,$84,$07,$B0,$81,$81
-        .byte $B1,$04,$81,$01,$00
+LE6A6:
+    .byte $C7,$B1
+    .byte $44,$04,$84,$04,$44,$04,$84,$04
+    .byte $FF,$44,$04,$84,$07,$B0,$81,$81
+    .byte $B1,$04,$81,$01,$00
 ; array, voice 3
-LE6BD:  .byte $C2,$B1,$04
-        .byte $04,$44,$04,$04,$04,$44,$04,$FF
-        .byte $C4,$44,$04,$FF,$B1,$44,$44,$44
-        .byte $B0,$44,$81,$B0,$81,$81,$81,$81
-        .byte $81,$01,$01,$01,$00
+LE6BD:
+    .byte $C2,$B1,$04
+    .byte $04,$44,$04,$04,$04,$44,$04,$FF
+    .byte $C4,$44,$04,$FF,$B1,$44,$44,$44
+    .byte $B0,$44,$81,$B0,$81,$81,$81,$81
+    .byte $81,$01,$01,$01,$00
 ; array, voice 3
-LE6DD:  .byte $C4,$B1,$44
-        .byte $04,$84,$44,$44,$04,$84,$04,$44
-        .byte $04,$84,$41,$44,$01,$01,$01,$FF
-        .byte $00
+LE6DD:
+    .byte $C4,$B1,$44
+    .byte $04,$84,$44,$44,$04,$84,$04,$44
+    .byte $04,$84,$41,$44,$01,$01,$01,$FF
+    .byte $00
 ; array, voice 0
-LE6F1:  .byte $9F,$09,$31,$9C,$04,$C3,$B1
-        .byte $02,$50,$02,$02,$50,$02,$02,$02
-        .byte $50,$02,$02,$50,$02,$02,$B2,$5A   ; E700
-        .byte $FF,$B1,$02,$50,$02,$02,$50,$02
-        .byte $02,$5A,$50,$02,$02,$50,$02,$02
-        .byte $02,$02,$00
+LE6F1:
+    .byte $9F,$09,$31,$9C,$04,$C3,$B1
+    .byte $02,$50,$02,$02,$50,$02,$02,$02
+    .byte $50,$02,$02,$50,$02,$02,$B2,$5A   ; E700
+    .byte $FF,$B1,$02,$50,$02,$02,$50,$02
+    .byte $02,$5A,$50,$02,$02,$50,$02,$02
+    .byte $02,$02,$00
 ; array, voice 1
-LE71B:  .byte $9F,$09,$31,$C3,$B1
-        .byte $02,$5A,$02,$02,$5A,$02,$02,$02
-        .byte $5A,$02,$02,$5A,$02,$02,$B2,$4C
-        .byte $FF,$B1,$02,$5A,$02,$02,$5A,$02
-        .byte $02,$02,$5A,$02,$02,$5A,$02,$02
-        .byte $02,$02,$00
+LE71B:
+    .byte $9F,$09,$31,$C3,$B1
+    .byte $02,$5A,$02,$02,$5A,$02,$02,$02
+    .byte $5A,$02,$02,$5A,$02,$02,$B2,$4C
+    .byte $FF,$B1,$02,$5A,$02,$02,$5A,$02
+    .byte $02,$02,$5A,$02,$02,$5A,$02,$02
+    .byte $02,$02,$00
 ; array, voice 2
-LE743:  .byte $C3,$B4,$02,$FF,$9F
-        .byte $A0,$00,$B6,$02,$BA,$3C,$3A,$38
-        .byte $36,$34,$32,$30,$2E,$02,$BB,$02
-        .byte $9F,$14,$00,$B0,$2A,$2A,$B1,$2A
-        .byte $2A,$30,$2A,$2A,$2A,$20,$B0,$2A
-        .byte $2A,$B1,$2A,$2A,$30,$2A,$2C,$2A
-        .byte $2C,$B0,$2A,$2A,$B1,$2A,$2A,$30
-        .byte $2A,$2A,$2A,$20,$B0,$2A,$2A,$B1
-        .byte $2A,$2A,$30,$02,$02,$02,$02,$00
+LE743:
+    .byte $C3,$B4,$02,$FF,$9F
+    .byte $A0,$00,$B6,$02,$BA,$3C,$3A,$38
+    .byte $36,$34,$32,$30,$2E,$02,$BB,$02
+    .byte $9F,$14,$00,$B0,$2A,$2A,$B1,$2A
+    .byte $2A,$30,$2A,$2A,$2A,$20,$B0,$2A
+    .byte $2A,$B1,$2A,$2A,$30,$2A,$2C,$2A
+    .byte $2C,$B0,$2A,$2A,$B1,$2A,$2A,$30
+    .byte $2A,$2A,$2A,$20,$B0,$2A,$2A,$B1
+    .byte $2A,$2A,$30,$02,$02,$02,$02,$00
 ; array, voice 3
-LE788:  .byte $B1,$44,$04,$84,$04,$44,$04,$84
-        .byte $07,$44,$04,$84,$41,$41,$01,$B0
-        .byte $81,$81,$B1,$01,$44,$04,$84,$04
-        .byte $44,$04,$84,$07,$44,$04,$BA,$81
-        .byte $81,$BB,$01,$BA,$81,$81,$BB,$01
-        .byte $B1,$44,$B9,$01,$81,$81,$BB,$01
-        .byte $B9,$41,$41,$41,$BB,$01,$C3,$B0
-        .byte $41,$04,$B1,$01,$84,$04,$44,$04
-        .byte $81,$04,$FF,$B1,$44,$04,$84,$44
-        .byte $01,$01,$01,$01,$00
+LE788:
+    .byte $B1,$44,$04,$84,$04,$44,$04,$84
+    .byte $07,$44,$04,$84,$41,$41,$01,$B0
+    .byte $81,$81,$B1,$01,$44,$04,$84,$04
+    .byte $44,$04,$84,$07,$44,$04,$BA,$81
+    .byte $81,$BB,$01,$BA,$81,$81,$BB,$01
+    .byte $B1,$44,$B9,$01,$81,$81,$BB,$01
+    .byte $B9,$41,$41,$41,$BB,$01,$C3,$B0
+    .byte $41,$04,$B1,$01,$84,$04,$44,$04
+    .byte $81,$04,$FF,$B1,$44,$04,$84,$44
+    .byte $01,$01,$01,$01,$00
 ; array, voice 0
-LE7D5:  .byte $9F,$B7,$32
-        .byte $B8,$02,$BC,$02,$00
+LE7D5:
+    .byte $9F,$B7,$32
+    .byte $B8,$02,$BC,$02,$00
 ; array, voice 1
-LE7DD:  .byte $9F,$B6,$33
+LE7DD:
+    .byte $9F,$B6,$33
 ; array, voice 0
-LE7E0:  .byte $C8,$B0,$60,$5A,$FF,$B0,$64,$54
-        .byte $56,$58,$5A,$5E,$60,$5E,$02,$68
-        .byte $64,$60,$5E,$5A,$56,$54,$B1,$56
-        .byte $BA,$54,$50,$BB,$02,$BA,$4C,$42
-        .byte $BB,$02,$B2,$3E,$B0,$02,$48,$38   ; E800
-        .byte $3C,$3E,$42,$46,$42,$50,$46,$48
-        .byte $4C,$50,$54,$56,$54,$02,$5A,$48
-        .byte $4C,$50,$54,$56,$54,$5A,$5A,$02
-        .byte $46,$02,$48,$02,$4C,$50,$4C,$50
-        .byte $02,$B2,$54,$B0,$5A,$5A,$02,$46
-        .byte $02,$48,$02,$4C,$50,$4C,$50,$02
-        .byte $B2,$54,$B9,$54,$60,$64,$BB,$02
-        .byte $B9,$62,$60,$5E,$BB,$02,$B9,$5C
-        .byte $5A,$58,$BB,$02,$B9,$56,$54,$52
-        .byte $BB,$02,$B9,$50,$4E,$4C,$BB,$02
-        .byte $B9,$4A,$48,$46,$BB,$02,$B0,$44
-        .byte $42,$40,$3E,$BA,$3C,$3A,$BB,$02
-        .byte $BA,$38,$36,$BB,$02,$BA,$34,$32
-        .byte $BB,$02,$BA,$30,$2E,$BB,$02,$B7
-        .byte $5A,$B0,$64,$B1,$62,$5E,$5A,$5E
-        .byte $54,$56,$5A,$64,$62,$B3,$64,$B1
-        .byte $02,$00
+LE7E0:
+    .byte $C8,$B0,$60,$5A,$FF,$B0,$64,$54
+    .byte $56,$58,$5A,$5E,$60,$5E,$02,$68
+    .byte $64,$60,$5E,$5A,$56,$54,$B1,$56
+    .byte $BA,$54,$50,$BB,$02,$BA,$4C,$42
+    .byte $BB,$02,$B2,$3E,$B0,$02,$48,$38   ; E800
+    .byte $3C,$3E,$42,$46,$42,$50,$46,$48
+    .byte $4C,$50,$54,$56,$54,$02,$5A,$48
+    .byte $4C,$50,$54,$56,$54,$5A,$5A,$02
+    .byte $46,$02,$48,$02,$4C,$50,$4C,$50
+    .byte $02,$B2,$54,$B0,$5A,$5A,$02,$46
+    .byte $02,$48,$02,$4C,$50,$4C,$50,$02
+    .byte $B2,$54,$B9,$54,$60,$64,$BB,$02
+    .byte $B9,$62,$60,$5E,$BB,$02,$B9,$5C
+    .byte $5A,$58,$BB,$02,$B9,$56,$54,$52
+    .byte $BB,$02,$B9,$50,$4E,$4C,$BB,$02
+    .byte $B9,$4A,$48,$46,$BB,$02,$B0,$44
+    .byte $42,$40,$3E,$BA,$3C,$3A,$BB,$02
+    .byte $BA,$38,$36,$BB,$02,$BA,$34,$32
+    .byte $BB,$02,$BA,$30,$2E,$BB,$02,$B7
+    .byte $5A,$B0,$64,$B1,$62,$5E,$5A,$5E
+    .byte $54,$56,$5A,$64,$62,$B3,$64,$B1
+    .byte $02,$00
 ; array, voice 1
-LE88A:  .byte $B7,$5E,$B0,$6C,$B1,$68
-        .byte $66,$62,$66,$9F,$96,$33,$B2,$5A
-        .byte $5E,$68,$B3,$74,$9C,$00,$00
+LE88A:
+    .byte $B7,$5E,$B0,$6C,$B1,$68
+    .byte $66,$62,$66,$9F,$96,$33,$B2,$5A
+    .byte $5E,$68,$B3,$74,$9C,$00,$00
 ; array, voice 0
-LE89F:  .byte $B7
-        .byte $5E,$B0,$6C,$B1,$68,$66,$62,$66
-        .byte $9F,$97,$33,$B2,$5A,$5E,$68,$B8
-        .byte $74,$02,$00
+LE89F:
+    .byte $B7
+    .byte $5E,$B0,$6C,$B1,$68,$66,$62,$66
+    .byte $9F,$97,$33,$B2,$5A,$5E,$68,$B8
+    .byte $74,$02,$00
 ; array, voice 2
-LE8B3:  .byte $9F,$13,$00,$C6,$B0
-        .byte $34,$34,$02,$02,$02,$9F,$A0,$00
-        .byte $B7,$24,$B2,$26,$2A,$9F,$13,$00
-        .byte $B0,$30,$02,$2E,$02,$2A,$2E,$02
-        .byte $02,$02,$02,$3A,$3C,$02,$34,$02
-        .byte $1C,$FF,$00
+LE8B3:
+    .byte $9F,$13,$00,$C6,$B0
+    .byte $34,$34,$02,$02,$02,$9F,$A0,$00
+    .byte $B7,$24,$B2,$26,$2A,$9F,$13,$00
+    .byte $B0,$30,$02,$2E,$02,$2A,$2E,$02
+    .byte $02,$02,$02,$3A,$3C,$02,$34,$02
+    .byte $1C,$FF,$00
 ; array, voice 3
-LE8DB:  .byte $C6,$B0,$44,$44,$04
-        .byte $01,$84,$44,$B1,$04,$44,$04,$84
-        .byte $04,$44,$04,$84,$44,$B0,$44,$01
-        .byte $81,$81,$01,$81,$01,$81,$FF,$00
+LE8DB:
+    .byte $C6,$B0,$44,$44,$04
+    .byte $01,$84,$44,$B1,$04,$44,$04,$84
+    .byte $04,$44,$04,$84,$44,$B0,$44,$01
+    .byte $81,$81,$01,$81,$01,$81,$FF,$00
 
 ; array pointers, voice 0
-LE8F8:  .word LED15,LE948,LEAAD,LEC14
-        .word LEAD9,LECA8,LECA8,LED4A   ; E900
-        .word $FFFF,LE8F8+2
+LE8F8:
+    .word LED15,LE948,LEAAD,LEC14
+    .word LEAD9,LECA8,LECA8,LED4A   ; E900
+    .word $FFFF,LE8F8+2
 ; array pointers, voice 1
 LE90C:                                          ; L
     .word LED24                                 ; E90C
@@ -3445,152 +3643,154 @@ RDAFB = RDAFB::RDAFB
 
 ; ----------------------------------------------------------------------------
 .ifdef REV_A
-        .byte $FF,$FF,$FF,$FD,$FF,$FF,$FF,$FF   ; FB00 FF FF FF FD FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$CF,$F4   ; FB08 FF FF FF FF FF FF CF F4
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB10 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$CF,$7A,$FF,$FF   ; FB18 FF FF FF FF CF 7A FF FF
+    .byte $FF,$FF,$FF,$FD,$FF,$FF,$FF,$FF   ; FB00 FF FF FF FD FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$CF,$F4   ; FB08 FF FF FF FF FF FF CF F4
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB10 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$CF,$7A,$FF,$FF   ; FB18 FF FF FF FF CF 7A FF FF
 .else
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB00 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB08 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB10 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB18 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB00 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB08 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB10 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB18 FF FF FF FF FF FF FF FF
 .endif
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB20 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB28 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB30 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB38 00 00 00 00 00 00 00 00
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB40 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB48 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB50 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB58 FF FF FF FF FF FF FF FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB60 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB68 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB70 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB78 00 00 00 00 00 00 00 00
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB80 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB88 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB90 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB98 FF FF FF FF FF FF FF FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBA0 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBA8 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBB0 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBB8 00 00 00 00 00 00 00 00
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FBC0 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FBC8 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FBD0 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FBD8 FF FF FF FF FF FF FF FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBE0 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBE8 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBF0 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB20 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB28 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB30 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB38 00 00 00 00 00 00 00 00
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB40 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB48 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB50 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB58 FF FF FF FF FF FF FF FF
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB60 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB68 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB70 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FB78 00 00 00 00 00 00 00 00
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB80 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB88 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB90 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FB98 FF FF FF FF FF FF FF FF
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBA0 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBA8 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBB0 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBB8 00 00 00 00 00 00 00 00
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FBC0 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FBC8 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FBD0 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FBD8 FF FF FF FF FF FF FF FF
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBE0 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBE8 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBF0 00 00 00 00 00 00 00 00
 .ifdef REV_A
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBF8 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FBF8 00 00 00 00 00 00 00 00
 .else
-        .byte $00,$00,$00,$00,$00,$00,$81,$08   ; FBF8 00 00 00 00 00 00 81 08
+    .byte $00,$00,$00,$00,$00,$00,$81,$08   ; FBF8 00 00 00 00 00 00 81 08
 .endif
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC00 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC08 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC10 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC18 FF FF FF FF FF FF FF FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC20 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC28 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC30 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC38 00 00 00 00 00 00 00 00
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC40 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC48 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC50 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC58 FF FF FF FF FF FF FF FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC60 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC68 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC70 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC78 00 00 00 00 00 00 00 00
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC80 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC88 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC90 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC98 FF FF FF FF FF FF FF FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCA0 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCA8 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCB0 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCB8 00 00 00 00 00 00 00 00
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FCC0 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FCC8 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FCD0 FF FF FF FF FF FF FF FF
-        .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FCD8 FF FF FF FF FF FF FF FF
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCE0 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCE8 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCF0 00 00 00 00 00 00 00 00
-        .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCF8 00 00 00 00 00 00 00 00
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC00 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC08 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC10 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC18 FF FF FF FF FF FF FF FF
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC20 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC28 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC30 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC38 00 00 00 00 00 00 00 00
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC40 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC48 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC50 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC58 FF FF FF FF FF FF FF FF
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC60 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC68 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC70 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FC78 00 00 00 00 00 00 00 00
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC80 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC88 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC90 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FC98 FF FF FF FF FF FF FF FF
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCA0 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCA8 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCB0 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCB8 00 00 00 00 00 00 00 00
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FCC0 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FCC8 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FCD0 FF FF FF FF FF FF FF FF
+    .byte $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF   ; FCD8 FF FF FF FF FF FF FF FF
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCE0 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCE8 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCF0 00 00 00 00 00 00 00 00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00   ; FCF8 00 00 00 00 00 00 00 00
 
 ; ----------------------------------------------------------------------------
 ; APU audio sample 1, 112 bytes
 .align $40
-LFD00:  .byte $74,$FF,$FF,$03,$24,$01,$82,$54
-        .byte $01,$10,$FF,$FF,$FF,$FF,$0F,$00
-        .byte $00,$B0,$FF,$7F,$09,$00,$00,$B8
-        .byte $FF,$FF,$0F,$00,$E0,$FF,$FF,$02
-        .byte $01,$00,$C0,$FF,$FF,$FF,$01,$00
-        .byte $00,$FE,$FF,$FF,$01,$00,$C0,$FE
-        .byte $5F,$02,$00,$FC,$FF,$FF,$FF,$00
-        .byte $00,$00,$E0,$FF,$FF,$07,$00,$00
-        .byte $FF,$FF,$1F,$00,$00,$F4,$FF,$FF
-        .byte $03,$00,$00,$FC,$FF,$FF,$1F,$00
-        .byte $00,$E0,$FF,$FF,$03,$00,$80,$FF
-        .byte $FF,$3F,$00,$00,$F0,$FF,$FF,$0F
-        .byte $00,$00,$80,$FF,$FF,$7F,$00,$00
-        .byte $FE,$FF,$02,$00,$00,$F8,$FF,$FF
+LFD00:
+    .byte $74,$FF,$FF,$03,$24,$01,$82,$54
+    .byte $01,$10,$FF,$FF,$FF,$FF,$0F,$00
+    .byte $00,$B0,$FF,$7F,$09,$00,$00,$B8
+    .byte $FF,$FF,$0F,$00,$E0,$FF,$FF,$02
+    .byte $01,$00,$C0,$FF,$FF,$FF,$01,$00
+    .byte $00,$FE,$FF,$FF,$01,$00,$C0,$FE
+    .byte $5F,$02,$00,$FC,$FF,$FF,$FF,$00
+    .byte $00,$00,$E0,$FF,$FF,$07,$00,$00
+    .byte $FF,$FF,$1F,$00,$00,$F4,$FF,$FF
+    .byte $03,$00,$00,$FC,$FF,$FF,$1F,$00
+    .byte $00,$E0,$FF,$FF,$03,$00,$80,$FF
+    .byte $FF,$3F,$00,$00,$F0,$FF,$FF,$0F
+    .byte $00,$00,$80,$FF,$FF,$7F,$00,$00
+    .byte $FE,$FF,$02,$00,$00,$F8,$FF,$FF
 
-        .byte $3F,$01,$00,$C0,$FF,$FF,$3F,$00
-        .byte $00,$C0,$FF,$BF,$04,$25,$A9,$FF
+    .byte $3F,$01,$00,$C0,$FF,$FF,$3F,$00
+    .byte $00,$C0,$FF,$BF,$04,$25,$A9,$FF
 
 ; ----------------------------------------------------------------------------
 ; APU audio sample 2, 240 bytes
 .align $40
-LFD80:  .byte $ff,$02,$00,$00,$e0,$ff,$ff,$5f   ; FD80
-        .byte $00,$00,$e0,$ff,$ff,$97,$04,$00
-        .byte $ac,$55,$b7,$93,$44,$f7,$ef,$5f
-        .byte $41,$00,$00,$d5,$7d,$ef,$5e,$11
-        .byte $00,$f5,$7d,$df,$57,$02,$24,$5a
-        .byte $82,$6a,$35,$b5,$aa,$f6,$fd,$2f
-        .byte $25,$02,$00,$b5,$75,$7f,$4b,$42
-        .byte $04,$b4,$fd,$ff,$7e,$11,$00,$54
-        .byte $aa,$fa,$56,$82,$52,$db,$7d,$af
-        .byte $2a,$02,$80,$f6,$ff,$3f,$09,$00
-        .byte $00,$fb,$fd,$bf,$46,$00,$a5,$f6
-        .byte $ff,$2a,$00,$00,$e8,$fe,$ff,$2f
-        .byte $01,$00,$6a,$ff,$ff,$25,$00,$00
-        .byte $dc,$ff,$bf,$12,$00,$b0,$fb,$ff
-        .byte $5f,$04,$00,$00,$fb,$ff,$bf,$00
-        .byte $00,$e8,$ff,$ff,$13,$00,$00,$75
-        .byte $ff,$ff,$09,$00,$40,$ee,$ff,$7f   ; FE00
-        .byte $11,$00,$c0,$fd,$ff,$4b,$00,$00
-        .byte $b5,$fd,$ff,$2b,$00,$80,$f6,$fe
-        .byte $ff,$08,$02,$00,$f6,$ff,$5f,$49
-        .byte $00,$50,$f7,$7f,$af,$08,$00,$a4
-        .byte $f6,$ff,$2d,$04,$11,$da,$f7,$76
-        .byte $2b,$04,$90,$6b,$df,$ad,$12,$44
-        .byte $50,$fd,$fe,$6a,$25,$41,$52,$d5
-        .byte $f6,$aa,$24,$51,$69,$db,$de,$4a
-        .byte $92,$28,$55,$db,$b6,$aa,$52,$a1
-        .byte $52,$5b,$37,$55,$95,$54,$a9,$ad
-        .byte $5a,$55,$a5,$54,$55,$55,$ab,$55
-        .byte $25,$55,$a9,$d3,$d6,$4a,$95,$a4
-        .byte $aa,$5a,$ab,$4d,$95,$54,$b2,$da
+LFD80:
+    .byte $ff,$02,$00,$00,$e0,$ff,$ff,$5f   ; FD80
+    .byte $00,$00,$e0,$ff,$ff,$97,$04,$00
+    .byte $ac,$55,$b7,$93,$44,$f7,$ef,$5f
+    .byte $41,$00,$00,$d5,$7d,$ef,$5e,$11
+    .byte $00,$f5,$7d,$df,$57,$02,$24,$5a
+    .byte $82,$6a,$35,$b5,$aa,$f6,$fd,$2f
+    .byte $25,$02,$00,$b5,$75,$7f,$4b,$42
+    .byte $04,$b4,$fd,$ff,$7e,$11,$00,$54
+    .byte $aa,$fa,$56,$82,$52,$db,$7d,$af
+    .byte $2a,$02,$80,$f6,$ff,$3f,$09,$00
+    .byte $00,$fb,$fd,$bf,$46,$00,$a5,$f6
+    .byte $ff,$2a,$00,$00,$e8,$fe,$ff,$2f
+    .byte $01,$00,$6a,$ff,$ff,$25,$00,$00
+    .byte $dc,$ff,$bf,$12,$00,$b0,$fb,$ff
+    .byte $5f,$04,$00,$00,$fb,$ff,$bf,$00
+    .byte $00,$e8,$ff,$ff,$13,$00,$00,$75
+    .byte $ff,$ff,$09,$00,$40,$ee,$ff,$7f   ; FE00
+    .byte $11,$00,$c0,$fd,$ff,$4b,$00,$00
+    .byte $b5,$fd,$ff,$2b,$00,$80,$f6,$fe
+    .byte $ff,$08,$02,$00,$f6,$ff,$5f,$49
+    .byte $00,$50,$f7,$7f,$af,$08,$00,$a4
+    .byte $f6,$ff,$2d,$04,$11,$da,$f7,$76
+    .byte $2b,$04,$90,$6b,$df,$ad,$12,$44
+    .byte $50,$fd,$fe,$6a,$25,$41,$52,$d5
+    .byte $f6,$aa,$24,$51,$69,$db,$de,$4a
+    .byte $92,$28,$55,$db,$b6,$aa,$52,$a1
+    .byte $52,$5b,$37,$55,$95,$54,$a9,$ad
+    .byte $5a,$55,$a5,$54,$55,$55,$ab,$55
+    .byte $25,$55,$a9,$d3,$d6,$4a,$95,$a4
+    .byte $aa,$5a,$ab,$4d,$95,$54,$b2,$da
 
-        .byte $b6,$a9,$92,$54,$54,$eb,$da,$aa   ; FE70
-        .byte $92,$a4,$4a,$6b,$b7,$69,$92,$a4
+    .byte $b6,$a9,$92,$54,$54,$eb,$da,$aa   ; FE70
+    .byte $92,$a4,$4a,$6b,$b7,$69,$92,$a4
 
-        .byte $52,$6f,$b5,$a9,$24,$a4,$6a,$db   ; FE80
-        .byte $b6,$95,$22,$51,$6a,$fb,$56,$15
-        .byte $12,$29,$b5,$fb,$d6,$92,$90,$54
-        .byte $6d,$7b,$55,$91,$90,$a4,$77,$bf
-        .byte $a6,$02,$12,$a9,$f7,$db,$4a,$11
-        .byte $92,$b4,$ed,$5d,$55,$82,$a4,$b6
-        .byte $b7,$2b,$49,$90,$a4,$f6,$77,$5b
-        .byte $49,$40,$52,$bb,$77,$2b,$09,$a1
-        .byte $6c,$bb,$6d,$95,$48,$a8,$da,$de
-        .byte $b5,$92,$08,$91,$6d,$f7,$b6,$24
-        .byte $89,$52,$6d,$db,$aa,$24,$49,$55
-        .byte $af,$5e,$95,$14,$a1,$b2,$7b,$b7
-        .byte $92,$92,$48,$69,$db,$56,$95,$52
-        .byte $a9,$6a,$db,$aa,$92,$24,$d5,$6a
-        .byte $af,$44,$44,$55,$44,$44,$44,$44
-        .byte $33,$22,$55,$aa,$00,$55,$00,$00
+    .byte $52,$6f,$b5,$a9,$24,$a4,$6a,$db   ; FE80
+    .byte $b6,$95,$22,$51,$6a,$fb,$56,$15
+    .byte $12,$29,$b5,$fb,$d6,$92,$90,$54
+    .byte $6d,$7b,$55,$91,$90,$a4,$77,$bf
+    .byte $a6,$02,$12,$a9,$f7,$db,$4a,$11
+    .byte $92,$b4,$ed,$5d,$55,$82,$a4,$b6
+    .byte $b7,$2b,$49,$90,$a4,$f6,$77,$5b
+    .byte $49,$40,$52,$bb,$77,$2b,$09,$a1
+    .byte $6c,$bb,$6d,$95,$48,$a8,$da,$de
+    .byte $b5,$92,$08,$91,$6d,$f7,$b6,$24
+    .byte $89,$52,$6d,$db,$aa,$24,$49,$55
+    .byte $af,$5e,$95,$14,$a1,$b2,$7b,$b7
+    .byte $92,$92,$48,$69,$db,$56,$95,$52
+    .byte $a9,$6a,$db,$aa,$92,$24,$d5,$6a
+    .byte $af,$44,$44,$55,$44,$44,$44,$44
+    .byte $33,$22,$55,$aa,$00,$55,$00,$00
