@@ -87,7 +87,6 @@
 .define L9A_NEXT_COLOR_0 $9A
 .define L9B_NEXT_COLOR_1 $9B
 .define L9E_WINS         $9E
-.define LA0_TEMP         $A0
 .define LA2_NEXT_DIR     $A2
 .define LA3_NEXT_SIZE    $A3
 .define LA4_VIRUS_BCD    $A4
@@ -516,7 +515,6 @@ L8206_TOP_3:
     sta $54                                     ; 824B 85 54
     lda L0728_INITIAL_EXTRA_SPEED               ; 824D AD 28 07
     sta L8A_EXTRA_SPEED                         ; 8250 85 8A
-    sta LA0_TEMP ; redundant                    ; 8252 85 A0
     jsr R82A0_INIT_780                          ; 8254 20 A0 82
     jsr R8E8D_NEW_PILL                          ; 8257 20 8D 8E
     jsr R8E8D_NEW_PILL                          ; 825A 20 8D 8E
