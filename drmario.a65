@@ -87,6 +87,7 @@
 .define L9A_NEXT_COLOR_0 $9A
 .define L9B_NEXT_COLOR_1 $9B
 .define L9E_WINS         $9E
+.define LA0_TEMP         $A0
 .define LA2_NEXT_DIR     $A2
 .define LA3_NEXT_SIZE    $A3
 .define LA4_VIRUS_BCD    $A4
@@ -182,6 +183,7 @@ L073E_OLD_OPTIONS_2 := $073E ; previously-selected #players
 L073F_OLD_OPTIONS_3 := $073F ; previously-selected music
 L0740_CHECKSUM_FAIL := $0740
 L0741_DEMO_MODE     := $0741
+L0760_CLOUD_DATA    := $0760 ; 10 bytes
 
 L0780_PILL_SEQUENCE := $0780 ; 128-byte array
 
@@ -198,8 +200,9 @@ L4014_OAMDMA    := $4014
 .segment "CODE"
 
 ; ----------------------------------------------------------------------------
-L8000:  ldx     #$00                            ; 8000 A2 00
-        jmp     L8036                           ; 8002 4C 36 80
+L8000:
+    ldx #$00                                    ; 8000 A2 00
+    jmp L8036                                   ; 8002 4C 36 80
 
 ; ----------------------------------------------------------------------------
 ; NMI vector
@@ -513,7 +516,7 @@ L8206_TOP_3:
     sta $54                                     ; 824B 85 54
     lda L0728_INITIAL_EXTRA_SPEED               ; 824D AD 28 07
     sta L8A_EXTRA_SPEED                         ; 8250 85 8A
-    sta $A0                                     ; 8252 85 A0
+    sta LA0_TEMP ; redundant                    ; 8252 85 A0
     jsr R82A0_INIT_780                          ; 8254 20 A0 82
     jsr R8E8D_NEW_PILL                          ; 8257 20 8D 8E
     jsr R8E8D_NEW_PILL                          ; 825A 20 8D 8E
@@ -4687,7 +4690,7 @@ cutscene:
     sta $7F                                     ; 9EA1 85 7F
     lda #$FF                                    ; 9EA3 A9 FF
     sta $51                                     ; 9EA5 85 51
-    jsr R9F09 ; Initialize $0760                ; 9EA7 20 09 9F
+    jsr R9F09 ; Initialize L0760_CLOUD_DATA     ; 9EA7 20 09 9F
     jsr RB352 ; Initialize $0580                ; 9EAA 20 52 B3
     lda #$70                                    ; 9EAD A9 70
     sta L38_V1_X                                ; 9EAF 85 38
@@ -4736,13 +4739,13 @@ next_level:
 .endscope
 
 ; ----------------------------------------------------------------------------
-; Copy 9-byte string from LA0E5 to $0760-$0769.
-; $01,$D0,$36,$02,$30,$74,$03,$D8,$AB
+; Copy null-terminated 9-byte string from LA0E5 to L0760_CLOUD_DATA.
+; $01,$D0,$36,$02,$30,$74,$03,$D8,$AB,$00
 R9F09:
     ldx #$00                                    ; 9F09 A2 00
     loop
         lda LA0E5,x                             ; 9F0B BD E5 A0
-        sta $0760,x                             ; 9F0E 9D 60 07
+        sta L0760_CLOUD_DATA,x                  ; 9F0E 9D 60 07
         beq break                               ; 9F11 F0 04
         inx                                     ; 9F13 E8
     forever                                     ; 9F14 4C 0B 9F
@@ -4761,13 +4764,15 @@ R9F18:
     tax                                         ; 9F22 AA
     lda L9FF8,x                                 ; 9F23 BD F8 9F
     beq L9F6F ; rts                             ; 9F26 F0 47
-R9F28:
+
+; Draw cloud sprites for cutscenes.
+R9F28_CLOUD_SPRITES:
     lda #$00                                    ; 9F28 A9 00
     sta $49                                     ; 9F2A 85 49
     loop
         lda $49                                 ; 9F2C A5 49
         tax                                     ; 9F2E AA
-        lda $0760,x                             ; 9F2F BD 60 07
+        lda L0760_CLOUD_DATA,x                  ; 9F2F BD 60 07
         beq break                               ; 9F32 F0 3B
         sta $4A                                 ; 9F34 85 4A
         tax                                     ; 9F36 AA
@@ -4778,19 +4783,19 @@ R9F28:
         if_eq                                   ; 9F40 D0 0C
             lda $49                             ; 9F42 A5 49
             tax                                 ; 9F44 AA
-            lda $0761,x                         ; 9F45 BD 61 07
+            lda L0760_CLOUD_DATA+1,x            ; 9F45 BD 61 07
             sub #$01                            ; 9F48 38 E9 01
-            sta $0761,x                         ; 9F4B 9D 61 07
+            sta L0760_CLOUD_DATA+1,x            ; 9F4B 9D 61 07
         end_if
         lda $4A                                 ; 9F4E A5 4A
         tax                                     ; 9F50 AA
-        lda LA0E1,x                             ; 9F51 BD E1 A0
+        lda LA0E1,x ; cloud sprites             ; 9F51 BD E1 A0
         sta L53_SPRITE_NUM                      ; 9F54 85 53
         lda $49                                 ; 9F56 A5 49
         tax                                     ; 9F58 AA
-        lda $0761,x                             ; 9F59 BD 61 07
+        lda L0760_CLOUD_DATA+1,x                ; 9F59 BD 61 07
         sta L44_SPRITE_X                        ; 9F5C 85 44
-        lda $0762,x                             ; 9F5E BD 62 07
+        lda L0760_CLOUD_DATA+2,x                ; 9F5E BD 62 07
         sta L45_SPRITE_Y                        ; 9F61 85 45
         jsr R88F6_SPRITE                        ; 9F63 20 F6 88
         inc $49                                 ; 9F66 E6 49
@@ -4887,7 +4892,7 @@ L9F87_GAME_STATE_6:
 ; 10-byte lookup table, used by L8036
 ; Ascii string "!DR.MARIO!"
 L9FEE:
-    .byte $21,$44,$52,$2E,$4D,$41,$52,$49,$4F,$21
+    .byte '!','D','R','.','M','A','R','I','O','!'
 
 ; ----------------------------------------------------------------------------
 ; 96-byte lookup table, used by RB5B8 and others
@@ -4936,6 +4941,7 @@ LA07C:
 
 ; ----------------------------------------------------------------------------
 ; lookup table, used in RB43F, copied to L66_PALETTE.
+; Lightning flashes for final cutscene.
 LA085:
     .byte $85,$85,$85,$85,$85,$85,$8A,$85
     .byte $85,$85,$8A,$85,$85,$85,$85,$85
@@ -4954,35 +4960,50 @@ LA095:
 ; $21C8-$21D4 = row 14, col 8-20
 ; Indexed by $7F.
 LA098:
-    .byte $00,$28,$29,$2A,$2B,$2C,$2D,$2E
-    .byte $2F,$30,$31,$32,$33,$34,$35,$36
-    .byte $37,$88,$89,$8A,$8B,$8C,$8E,$8F
-    .byte $90,$91,$92,$95,$C8,$C9,$CA,$CB
-    .byte $CC,$D4,$D3
+    .byte $00
+    .byte $28,$29,$2A,$2B,$2C,$2D,$2E,$2F,$30,$31,$32,$33,$34,$35,$36,$37
+    .byte $88,$89,$8A,$8B,$8C
+    .byte $8E,$8F,$90,$91,$92
+    .byte $95
+    .byte $C8,$C9,$CA,$CB,$CC
+    .byte $D4,$D3
 
 ; ----------------------------------------------------------------------------
-; lookup table, used in R8661 and L86CD
+; Bytes for PPU nametable, used in R8661 and L86CD
 LA0BB:
-    .byte $00,$0C,$18,$17,$10,$1B,$0A,$1D,$1E,$15,$0A,$1D,$12,$18,$17,$1C
-    .byte $24,$1F,$12,$1B,$1E,$1C,$15,$0E,$1F,$0E,$15,$01,$1C,$19,$0E,$0E
-    .byte $0D,$00,$FF
+    .byte $00
+    ; "CONGRATULATIONS!"
+    .byte $0C,$18,$17,$10,$1B,$0A,$1D,$1E,$15,$0A,$1D,$12,$18,$17,$1C,$24
+    ; "VIRUS"
+    .byte $1F,$12,$1B,$1E,$1C
+    ; "LEVEL"
+    .byte $15,$0E,$1F,$0E,$15
+    .byte $01
+    ; "SPEED"
+    .byte $1C,$19,$0E,$0E,$0D
+    .byte $00,$FF
 
 ; ----------------------------------------------------------------------------
 ; lookup table, used in R9E4C, copied to L66_PALETTE.
 LA0DE:
     .byte $86,$84,$84
 ; ----------------------------------------------------------------------------
-; lookup table, used in R9F18/R9F28
+; Table of sprite numbers, used in R9F18/R9F28_CLOUD_SPRITES.
+; 1 = large cloud, 2 = medium cloud, 3 = small cloud.
 LA0E1:
     .byte $00,$16,$17,$18
 
 ; ----------------------------------------------------------------------------
-; 9-byte null-terminated string, used in R9F09, copied to $0760.
+; 9-byte null-terminated string, used in R9F09, copied to L0760_CLOUD_DATA.
+; Each 3 bytes is sprite index number (for LA0E1), X coordinate, Y coordinate.
 LA0E5:
-    .byte $01,$D0,$36,$02,$30,$74,$03,$D8,$AB,$00
+    .byte $01,$D0,$36
+    .byte $02,$30,$74
+    .byte $03,$D8,$AB
+    .byte $00
 
 ; ----------------------------------------------------------------------------
-; lookup table, used in R9F18/R9F28
+; lookup table, used in R9F18/R9F28_CLOUD_SPRITES
 LA0EF:
     .byte $00,$03,$07,$0F,$01,$16,$01,$17
     .byte $18,$19,$18,$1A,$1B,$1C,$1B,$20
@@ -5705,13 +5726,21 @@ LAC4F:
     .byte $00,$3C,$03,$00,$00,$3D,$03,$08,$00,$3C,$43,$10,$08,$4C,$03,$00
     .byte $08,$4D,$03,$08,$08,$4C,$43,$10,$10,$5C,$03,$00,$10,$5D,$03,$08
     .byte $10,$5C,$43,$10,$80
+; Sprite $16: big cloud
+; 20 21 22 23 24
+; 30 31 32 33 34
 LAC74:
     .byte $00,$20,$21,$00,$00,$21,$21,$08,$00,$22,$21,$10,$00,$23,$21,$18
     .byte $00,$24,$21,$20,$08,$30,$21,$00,$08,$31,$21,$08,$08,$32,$21,$10
     .byte $08,$33,$21,$18,$08,$34,$21,$20,$80
+; Sprite $17: medium clound
+; 03 04 05
+; 13 14 15
 LAC9D:
-    .byte $00,$03,$21,$00,$00,$04,$21,$08,$00,$05,$21,$10,$08,$13,$21,$00
-    .byte $08,$14,$21,$08,$08,$15,$21,$10,$80
+    .byte $00,$03,$21,$00,$00,$04,$21,$08,$00,$05,$21,$10
+    .byte $08,$13,$21,$00,$08,$14,$21,$08,$08,$15,$21,$10,$80
+; Sprite $18: small cloud
+; 44 45
 LACB6:
     .byte $00,$44,$21,$00,$00,$45,$21,$08,$80
 ; Sprite $19-$1D:
@@ -5846,7 +5875,7 @@ LAF44:
     .byte $00,$90,$00,$00,$00,$91,$00,$08,$00,$90,$40,$10,$08,$92,$00,$00
     .byte $08,$92,$40,$10,$10,$90,$80,$00,$10,$91,$80,$08,$10,$90,$C0,$10
     .byte $80
-; Sprite $34
+; Sprite $34: UFO top
 ;       0A 0B 0C 0D
 ; 18 19 1A 1B 1C 1D 1E 1F
 ; 28 29 2A 2B 2C 2D 2E 2F
@@ -5860,14 +5889,24 @@ LAF65:
     .byte $18,$38,$22,$00,$18,$39,$22,$08,$18,$3A,$22,$10,$18,$3B,$22,$18
     .byte $18,$3C,$22,$20,$18,$3D,$22,$28,$18,$3E,$22,$30,$18,$3F,$22,$38
     .byte $80
+; Sprite $35: UFO bottom 1 (page 7)
+; 4A 4B 4C 4D
 LAFD6:
     .byte $20,$4A,$22,$10,$20,$4B,$22,$18,$20,$4C,$22,$20,$20,$4D,$22,$28
     .byte $80
+; Sprite $36: UFO bottom 2 (page 7)
+; 5A 5B 5C 5D
 LAFE7:
     .byte $20,$5A,$22,$10,$20,$5B,$22,$18,$20,$5C,$22,$20,$20,$5D,$22,$28
     .byte $80
+; Sprite $37: UFO beam (page 7)
+;    07 07
+;    17 17
+; 26 27 27 26
+; 36 37 37 36
 LAFF8:
-    .byte $28,$07,$02,$18,$28,$07,$42,$20,$30,$17,$02,$18,$30,$17,$42,$20
+    .byte $28,$07,$02,$18,$28,$07,$42,$20
+    .byte $30,$17,$02,$18,$30,$17,$42,$20
     .byte $38,$26,$02,$10,$38,$27,$02,$18,$38,$27,$42,$20,$38,$26,$42,$28
     .byte $40,$36,$02,$10,$40,$37,$02,$18,$40,$37,$42,$20,$40,$36,$42,$28
     .byte $80
@@ -6254,34 +6293,34 @@ RB43F:
 .scope
     lda $5E                                     ; B43F A5 5E
     jsr RB8AC_JUMP_TABLE                        ; B441 20 AC B8
-    .word LB4E6 ; 0
-    .word LB4E6 ; 1
-    .word LB4E6 ; 2
-    .word LB4F6 ; 3
-    .word LB4E6 ; 4
-    .word LB4E6 ; 5
-    .word LB4FD ; 6
-    .word LB4E6 ; 7
-    .word LB4E6 ; 8
-    .word LB504 ; 9
+    .word clouds_256 ; 0
+    .word clouds_256 ; 1
+    .word clouds_256 ; 2
+    .word palette_88 ; 3
+    .word clouds_256 ; 4
+    .word clouds_256 ; 5
+    .word palette_89 ; 6
+    .word clouds_256 ; 7
+    .word clouds_256 ; 8
+    .word palette_85 ; 9
     .word LB4C1 ; 10
-    .word LB4EF ; 11
+    .word wait_256   ; 11
     .word LB483 ; 12
-    .word LB4CF ; 13
-    .word LB51C ; 14
-    .word LB4EC ; 15
+    .word lightning   ; 13
+    .word ufo_descend ; 14
+    .word ufo_256     ; 15
     .word LB512 ; 16
     .word LB496 ; 17
     .word LB4E0 ; 18
     .word LB589 ; 19
     .word LB4A6 ; 20
-    .word LB4EC ; 21
-    .word LB533 ; 22
+    .word ufo_256      ; 21
+    .word ufo_ascend_1 ; 22
     .word LB48B ; 23
-    .word LB54A ; 24
-    .word LB4EF ; 25
-    .word LB4CF ; 26
-    .word LB50B ; 27
+    .word ufo_ascend_2 ; 24
+    .word wait_256 ; 25
+    .word lightning  ; 26
+    .word palette_8B ; 27
     .word LB512 ; 28
     .word LB4B6 ; 29
     .word LB565 ; 30
@@ -6289,24 +6328,24 @@ RB43F:
 ; unreachable
     rts                                         ; B482 60
 
-; RB43F routine 12.
+; routine 12.
 LB483:
     lda #$03                                    ; B483 A9 03
     sta $06F4                                   ; B485 8D F4 06
     inc $5E                                     ; B488 E6 5E
     rts                                         ; B48A 60
 
-; RB43F routine 23.
+; routine 23.
 LB48B:
-    jsr RB569                                   ; B48B 20 69 B5
+    jsr ufo_sprite                              ; B48B 20 69 B5
     lda #$04                                    ; B48E A9 04
     sta $06F0                                   ; B490 8D F0 06
     inc $5E                                     ; B493 E6 5E
     rts                                         ; B495 60
 
-; RB43F routine 17.
+; routine 17.
 LB496:
-    jsr RB569                                   ; B496 20 69 B5
+    jsr ufo_sprite                              ; B496 20 69 B5
     lda #$01                                    ; B499 A9 01
     sta $06F3                                   ; B49B 8D F3 06
     lda #$06                                    ; B49E A9 06
@@ -6314,9 +6353,9 @@ LB496:
     inc $5E                                     ; B4A3 E6 5E
     rts                                         ; B4A5 60
 
-; RB43F routine 20.
+; routine 20.
 LB4A6:
-    jsr RB569                                   ; B4A6 20 69 B5
+    jsr ufo_sprite                              ; B4A6 20 69 B5
     lda #$03                                    ; B4A9 A9 03
     sta $06F3                                   ; B4AB 8D F3 06
     lda #$07                                    ; B4AE A9 07
@@ -6324,93 +6363,92 @@ LB4A6:
     inc $5E                                     ; B4B3 E6 5E
     rts                                         ; B4B5 60
 
-; RB43F routine 29.
+; routine 29.
 LB4B6:
-    jsr RB569                                   ; B4B6 20 69 B5
+    jsr ufo_sprite                              ; B4B6 20 69 B5
     lda #$0C                                    ; B4B9 A9 0C
     sta $06F5                                   ; B4BB 8D F5 06
     inc $5E                                     ; B4BE E6 5E
     rts                                         ; B4C0 60
 
-; RB43F routine 10.
+; routine 10.
 LB4C1:
     lda #$81                                    ; B4C1 A9 81
     sta $7F                                     ; B4C3 85 7F
     inc $5E                                     ; B4C5 E6 5E
     rts                                         ; B4C7 60
 
-; ----------------------------------------------------------------------------
-; RB43F routine 13.
-LB4CF:
+; routine 13.
+lightning:
     lda L43_CLOCK                               ; B4CF A5 43
     cmp #$C0                                    ; B4D1 C9 C0
-    bcc LB4EF                                   ; B4D3 90 1A
+    bcc wait_256                                ; B4D3 90 1A
     and #$0F                                    ; B4D5 29 0F
     tax                                         ; B4D7 AA
-    lda LA085,x                                 ; B4D8 BD 85 A0
+    lda LA085,x ; #$85 or #$8A                  ; B4D8 BD 85 A0
     sta L66_PALETTE                             ; B4DB 85 66
-    jmp LB4EF                                   ; B4DD 4C EF B4
+    jmp wait_256                                ; B4DD 4C EF B4
 
-; RB43F routine 18.
+; routine 18.
 LB4E0:
-    jsr RB5A7                                   ; B4E0 20 A7 B5
-    jmp LB4EF                                   ; B4E3 4C EF B4
+    jsr ufo_with_beam                           ; B4E0 20 A7 B5
+    jmp wait_256                                ; B4E3 4C EF B4
 
-; RB43F routine 0,1,2,4,5,7,8.
-LB4E6:
-    jsr R9F28                                   ; B4E6 20 28 9F
-    jmp LB4EF                                   ; B4E9 4C EF B4
+; routine 0,1,2,4,5,7,8.
+clouds_256:
+    jsr R9F28_CLOUD_SPRITES                     ; B4E6 20 28 9F
+    jmp wait_256                                ; B4E9 4C EF B4
 
-; RB43F routine 15.
-LB4EC:
-    jsr RB569                                   ; B4EC 20 69 B5
+; routine 15.
+ufo_256:
+    jsr ufo_sprite                              ; B4EC 20 69 B5
 
-; RB43F routine 11.
-LB4EF:
+; routine 11.
+wait_256:
     lda L43_CLOCK                               ; B4EF A5 43
     if_eq                                       ; B4F1 D0 02
         inc $5E                                 ; B4F3 E6 5E
     end_if
     rts                                         ; B4F5 60
 
-; RB43F routine 3.
-LB4F6:
+; routine 3.
+palette_88:
     lda #$88                                    ; B4F6 A9 88
     sta L66_PALETTE                             ; B4F8 85 66
     inc $5E                                     ; B4FA E6 5E
     rts                                         ; B4FC 60
 
-; RB43F routine 6.
-LB4FD:
+; routine 6.
+palette_89:
     lda #$89                                    ; B4FD A9 89
     sta L66_PALETTE                             ; B4FF 85 66
     inc $5E                                     ; B501 E6 5E
     rts                                         ; B503 60
 
-; RB43F routine 9.
-LB504:
+; routine 9.
+palette_85:
     lda #$85                                    ; B504 A9 85
     sta L66_PALETTE                             ; B506 85 66
     inc $5E                                     ; B508 E6 5E
     rts                                         ; B50A 60
 
-; RB43F routine 27.
-LB50B:
+; routine 27.
+palette_8B:
     lda #$8B                                    ; B50B A9 8B
     sta L66_PALETTE                             ; B50D 85 66
     inc $5E                                     ; B50F E6 5E
     rts                                         ; B511 60
 
-; RB43F routine 16 and 28.
+; routine 16 and 28.
 LB512:
-    jsr RB569                                   ; B512 20 69 B5
+    jsr ufo_sprite                              ; B512 20 69 B5
     lda #$87                                    ; B515 A9 87
     sta L66_PALETTE                             ; B517 85 66
     inc $5E                                     ; B519 E6 5E
     rts                                         ; B51B 60
 
-; RB43F routine 14.
-LB51C:
+; routine 14.
+ufo_descend:
     lda $50                                     ; B51C A5 50
     cmp #$44                                    ; B51E C9 44
     if_eq                                       ; B520 D0 05
@@ -6422,11 +6460,11 @@ LB51C:
             inc $50                             ; B52D E6 50
         end_if
     end_if
-    jsr RB569                                   ; B52F 20 69 B5
+    jsr ufo_sprite                              ; B52F 20 69 B5
     rts                                         ; B532 60
 
-; RB43F routine 22.
-LB533:
+; routine 22.
+ufo_ascend_1:
     lda $50                                     ; B533 A5 50
     cmp #$30                                    ; B535 C9 30
     if_eq                                       ; B537 D0 05
@@ -6438,11 +6476,11 @@ LB533:
             dec $50                             ; B544 C6 50
         end_if
     end_if
-    jsr RB569                                   ; B546 20 69 B5
+    jsr ufo_sprite                              ; B546 20 69 B5
     rts                                         ; B549 60
 
-; RB43F routine 24.
-LB54A:
+; routine 24.
+ufo_ascend_2:
     lda $4F                                     ; B54A A5 4F
     cmp #$E0                                    ; B54C C9 E0
     if_eq                                       ; B54E D0 05
@@ -6456,37 +6494,38 @@ LB54A:
             dec $50                             ; B55F C6 50
         end_if
     end_if
-    jsr RB569                                   ; B561 20 69 B5
+    jsr ufo_sprite                              ; B561 20 69 B5
     rts                                         ; B564 60
 
-; RB43F routine 30.
+; routine 30.
 LB565:
     jsr RB371                                   ; B565 20 71 B3
     rts                                         ; B568 60
 
-; Internal subroutine for RB43F routines.
-RB569:
+; Draw UFO sprite at coordinates ($4F, $50)
+; Toggle bottom part every 4 frames.
+ufo_sprite:
     lda $4F                                     ; B569 A5 4F
     if_ne                                       ; B56B F0 1B
         sta L44_SPRITE_X                        ; B56D 85 44
         lda $50                                 ; B56F A5 50
         sta L45_SPRITE_Y                        ; B571 85 45
-        lda #$34                                ; B573 A9 34
+        lda #$34 ; UFO top                      ; B573 A9 34
         sta L53_SPRITE_NUM                      ; B575 85 53
         jsr R88F6_SPRITE                        ; B577 20 F6 88
         lda L43_CLOCK                           ; B57A A5 43
         and #$04                                ; B57C 29 04
         lsr a                                   ; B57E 4A
         lsr a                                   ; B57F 4A
-        add #$35                                ; B580 18 69 35
+        add #$35 ; UFO bottom                   ; B580 18 69 35
         sta L53_SPRITE_NUM                      ; B583 85 53
         jsr R88F6_SPRITE                        ; B585 20 F6 88
     end_if
     rts                                         ; B588 60
 
-; RB43F routine 19.
+; routine 19.
 LB589:
-    jsr RB5A7                                   ; B589 20 A7 B5
+    jsr ufo_with_beam                           ; B589 20 A7 B5
     lda L39_V1_Y                                ; B58C A5 39
     sub #$24                                    ; B58E 38 E9 24
     cmp $50                                     ; B591 C5 50
@@ -6503,13 +6542,13 @@ LB589:
     end_if
     rts                                         ; B5A6 60
 
-; Internal subroutine for RB43F routines.
-RB5A7:
-    jsr RB569                                   ; B5A7 20 69 B5
+; Draw UFO sprite with flashing light beam below.
+ufo_with_beam:
+    jsr ufo_sprite                              ; B5A7 20 69 B5
     lda L43_CLOCK                               ; B5AA A5 43
     and #$01                                    ; B5AC 29 01
     if_ne                                       ; B5AE F0 07
-        lda #$37                                ; B5B0 A9 37
+        lda #$37 ; UFO beam                     ; B5B0 A9 37
         sta L53_SPRITE_NUM                      ; B5B2 85 53
         jsr R88F6_SPRITE                        ; B5B4 20 F6 88
     end_if
