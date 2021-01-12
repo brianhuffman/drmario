@@ -5212,7 +5212,7 @@ L9F87_GAME_STATE_6:
 ; 10-byte lookup table, used by L8036
 ; Ascii string "!DR.MARIO!"
 L9FEE:
-    .byte $21,$44,$52,$2E,$4D,$41,$52,$49,$4F,$21
+    .byte '!','D','R','.','M','A','R','I','O','!'
 
 ; ----------------------------------------------------------------------------
 ; 96-byte lookup table, used by RB5B8 and others
