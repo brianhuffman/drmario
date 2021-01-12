@@ -42,6 +42,9 @@
 .define L47_TEMP         $47
 .define L48_TEMP         $48
 .define L49_TEMP         $49
+.define L4A_TEMP         $4A
+.define L4B_TEMP         $4B
+.define L4C_TEMP         $4C
 .define L52_REDRAW_FLAGS $52
 .define L53_SPRITE_NUM   $53
 .define L55_ROUND_WINNER $55
@@ -568,7 +571,7 @@ R82A0_INIT_780:
     lda #$80                                    ; 82A0 A9 80
     sta L47_TEMP                                ; 82A2 85 47
     lda #$00                                    ; 82A4 A9 00
-    sta $48                                     ; 82A6 85 48
+    sta L48_TEMP                                ; 82A6 85 48
     loop
         ldx #$17                                ; 82A8 A2 17
         ldy #$02                                ; 82AA A0 02
@@ -577,10 +580,10 @@ R82A0_INIT_780:
         dex                                     ; 82B1 CA
         lda $17                                 ; 82B2 A5 17
         and #$0F                                ; 82B4 29 0F
-        add $48                                 ; 82B6 18 65 48
+        add L48_TEMP                            ; 82B6 18 65 48
         ; reduce modulo 9
         loop
-            sta $48                             ; 82B9 85 48
+            sta L48_TEMP                        ; 82B9 85 48
             cmp #$09                            ; 82BB C9 09
             bcc break                           ; 82BD 90 06
             sub #$09                            ; 82BF 38 E9 09
@@ -854,30 +857,30 @@ L846E:
         lda L031E_P1_WINS                       ; 8481 AD 1E 03
         if_ne                                   ; 8484 F0 3B
             ; look up PPU address from LA396
-            ; save a copy in $47/$48
+            ; save a copy in L47_TEMP/L48_TEMP
             asl a                               ; 8486 0A
             tax                                 ; 8487 AA
             dex                                 ; 8488 CA
             dex                                 ; 8489 CA
             lda LA396,x                         ; 848A BD 96 A3
             sta L2006_PPUADDR                   ; 848D 8D 06 20
-            sta $48                             ; 8490 85 48
+            sta L48_TEMP                        ; 8490 85 48
             lda LA396+1,x                       ; 8492 BD 97 A3
             sta L2006_PPUADDR                   ; 8495 8D 06 20
-            sta $47                             ; 8498 85 47
+            sta L47_TEMP                        ; 8498 85 47
             lda #$5C                            ; 849A A9 5C
             sta L2007_PPUDATA                   ; 849C 8D 07 20
             lda #$5D                            ; 849F A9 5D
             sta L2007_PPUDATA                   ; 84A1 8D 07 20
-            ; $47/$48 += #$0020
+            ; L47_TEMP/L48_TEMP += #$0020
             ; set PPU address one row down
-            lda $47                             ; 84A4 A5 47
+            lda L47_TEMP                        ; 84A4 A5 47
             add #$20                            ; 84A6 18 69 20
-            sta $47                             ; 84A9 85 47
+            sta L47_TEMP                        ; 84A9 85 47
             lda #$00                            ; 84AB A9 00
-            adc $48                             ; 84AD 65 48
+            adc L48_TEMP                        ; 84AD 65 48
             sta L2006_PPUADDR                   ; 84AF 8D 06 20
-            lda $47                             ; 84B2 A5 47
+            lda L47_TEMP                        ; 84B2 A5 47
             sta L2006_PPUADDR                   ; 84B4 8D 06 20
             lda #$6C                            ; 84B7 A9 6C
             sta L2007_PPUDATA                   ; 84B9 8D 07 20
@@ -887,30 +890,30 @@ L846E:
         lda L039E_P2_WINS                       ; 84C1 AD 9E 03
         if_ne                                   ; 84C4 F0 3B
             ; look up PPU address from LA39C
-            ; save a copy in $47/$48
+            ; save a copy in L47/L48
             asl a                               ; 84C6 0A
             tax                                 ; 84C7 AA
             dex                                 ; 84C8 CA
             dex                                 ; 84C9 CA
             lda LA39C,x                         ; 84CA BD 9C A3
             sta L2006_PPUADDR                   ; 84CD 8D 06 20
-            sta $48                             ; 84D0 85 48
+            sta L48_TEMP                        ; 84D0 85 48
             lda LA39C+1,x                       ; 84D2 BD 9D A3
             sta L2006_PPUADDR                   ; 84D5 8D 06 20
-            sta $47                             ; 84D8 85 47
+            sta L47_TEMP                        ; 84D8 85 47
             lda #$5C                            ; 84DA A9 5C
             sta L2007_PPUDATA                   ; 84DC 8D 07 20
             lda #$5D                            ; 84DF A9 5D
             sta L2007_PPUDATA                   ; 84E1 8D 07 20
-            ; $47/$48 += #$0020
+            ; L47_TEMP/L48_TEMP += #$0020
             ; set PPU address one row down
-            lda $47                             ; 84E4 A5 47
+            lda L47_TEMP                        ; 84E4 A5 47
             add #$20                            ; 84E6 18 69 20
-            sta $47                             ; 84E9 85 47
+            sta L47_TEMP                        ; 84E9 85 47
             lda #$00                            ; 84EB A9 00
-            adc $48                             ; 84ED 65 48
+            adc L48_TEMP                        ; 84ED 65 48
             sta L2006_PPUADDR                   ; 84EF 8D 06 20
-            lda $47                             ; 84F2 A5 47
+            lda L47_TEMP                        ; 84F2 A5 47
             sta L2006_PPUADDR                   ; 84F4 8D 06 20
             lda #$6C                            ; 84F7 A9 6C
             sta L2007_PPUDATA                   ; 84F9 8D 07 20
@@ -1531,11 +1534,6 @@ R88CB_NEXT_PILL_SPRITE:
     rts                                         ; 88F5 60
 
 ; ----------------------------------------------------------------------------
-; Normal -------D--/AXY-CZ--VN
-; READS L44_SPRITE_X L45_SPRITE_Y L53_SPRITE_NUM ($47),Y $a8c2,X
-; WRITES $47 $48 L0200_OAM,X
-; MODIFIES L42_OAM_OFFSET
-;
 ; input L53_SPRITE_NUM: index to a table of pointers at $A8C2
 ; input L42_OAM_OFFSET: target address in page $02
 ; input L44_SPRITE_X: offset to add to 4th byte (x position)
@@ -1554,29 +1552,29 @@ R88F6_SPRITE:
     rol a                                       ; 88F9 2A
     tax                                         ; 88FA AA
     lda LA8C2,x                                 ; 88FB BD C2 A8
-    sta $47                                     ; 88FE 85 47
+    sta L47_TEMP                                ; 88FE 85 47
     inx                                         ; 8900 E8
     lda LA8C2,x                                 ; 8901 BD C2 A8
-    sta $48                                     ; 8904 85 48
+    sta L48_TEMP                                ; 8904 85 48
     ldx L42_OAM_OFFSET                          ; 8906 A6 42
     ldy #$00                                    ; 8908 A0 00
     loop
-        lda ($47),y                             ; 890A B1 47
+        lda (L47_TEMP),y                        ; 890A B1 47
         cmp #$80                                ; 890C C9 80
         beq break                               ; 890E F0 2A
         add L45_SPRITE_Y                        ; 8910 18 65 45
         sta L0200_OAM,x                         ; 8913 9D 00 02
         inx                                     ; 8916 E8
         iny                                     ; 8917 C8
-        lda ($47),y                             ; 8918 B1 47
+        lda (L47_TEMP),y                        ; 8918 B1 47
         sta L0200_OAM,x                         ; 891A 9D 00 02
         inx                                     ; 891D E8
         iny                                     ; 891E C8
-        lda ($47),y                             ; 891F B1 47
+        lda (L47_TEMP),y                        ; 891F B1 47
         sta L0200_OAM,x                         ; 8921 9D 00 02
         inx                                     ; 8924 E8
         iny                                     ; 8925 C8
-        lda ($47),y                             ; 8926 B1 47
+        lda (L47_TEMP),y                        ; 8926 B1 47
         add L44_SPRITE_X                        ; 8928 18 65 44
         sta L0200_OAM,x                         ; 892B 9D 00 02
         inx                                     ; 892E E8
@@ -2126,9 +2124,9 @@ L8C94_3_TILES_FALL:
         sta $57                                 ; 8CA1 85 57
         ; loop from 127 down to 0 (bottom to top)
         ldy #$7F                                ; 8CA3 A0 7F
-        sty $49                                 ; 8CA5 84 49
+        sty L49_TEMP                            ; 8CA5 84 49
         loop
-            ldy $49                             ; 8CA7 A4 49
+            ldy L49_TEMP                        ; 8CA7 A4 49
             lda ($57),y                         ; 8CA9 B1 57
             cmp #$F0                            ; 8CAB C9 F0
             if_cc ; if < #$F0                   ; 8CAD B0 03
@@ -2136,10 +2134,10 @@ L8C94_3_TILES_FALL:
             end_if
             lda #$FF                            ; 8CB2 A9 FF
             sta ($57),y                         ; 8CB4 91 57
-            sta $48                             ; 8CB6 85 48
+            sta L48_TEMP                        ; 8CB6 85 48
             lda L0724_DEBUG_DISABLE_FALLING     ; 8CB8 AD 24 07
             bne next                            ; 8CBB D0 77
-            sty $49 ; redundant                 ; 8CBD 84 49
+            sty L49_TEMP ; redundant            ; 8CBD 84 49
             tya                                 ; 8CBF 98
             sub #$08                            ; 8CC0 38 E9 08
             tay                                 ; 8CC3 A8
@@ -2156,59 +2154,59 @@ L8C94_3_TILES_FALL:
             if_eq                               ; 8CD6 D0 40
                 ; check whether entire left-right
                 ; pill is unsupported underneath
-                sty $4A ; row above             ; 8CD8 84 4A
-                sty $4C ; row above             ; 8CDA 84 4C
-                lda $49 ; this row              ; 8CDC A5 49
-                sta $4B ; this row              ; 8CDE 85 4B
+                sty L4A_TEMP ; row above        ; 8CD8 84 4A
+                sty L4C_TEMP ; row above        ; 8CDA 84 4C
+                lda L49_TEMP ; this row         ; 8CDC A5 49
+                sta L4B_TEMP ; this row         ; 8CDE 85 4B
                 loop
-                    dec $4A                     ; 8CE0 C6 4A
-                    dec $4B                     ; 8CE2 C6 4B
-                    ldy $4B                     ; 8CE4 A4 4B
+                    dec L4A_TEMP                ; 8CE0 C6 4A
+                    dec L4B_TEMP                ; 8CE2 C6 4B
+                    ldy L4B_TEMP                ; 8CE4 A4 4B
                     lda ($57),y ; this row      ; 8CE6 B1 57
                     cmp #$F0                    ; 8CE8 C9 F0
                     bcc next                    ; 8CEA 90 48
-                    ldy $4A                     ; 8CEC A4 4A
+                    ldy L4A_TEMP                ; 8CEC A4 4A
                     lda ($57),y ; row above     ; 8CEE B1 57
                     and #$F0                    ; 8CF0 29 F0
                     cmp #$60 ; open-right tile  ; 8CF2 C9 60
                 while_ne                        ; 8CF4 D0 EA
                 loop
                     ; make entire pill fall
-                    ldy $4C                     ; 8CF6 A4 4C
+                    ldy L4C_TEMP                ; 8CF6 A4 4C
                     lda ($57),y ; row above     ; 8CF8 B1 57
-                    ldy $49                     ; 8CFA A4 49
+                    ldy L49_TEMP                ; 8CFA A4 49
                     sta ($57),y ; this row      ; 8CFC 91 57
                     lda #$FF                    ; 8CFE A9 FF
-                    ldy $4C                     ; 8D00 A4 4C
+                    ldy L4C_TEMP                ; 8D00 A4 4C
                     sta ($57),y ; row above     ; 8D02 91 57
-                    lda $49                     ; 8D04 A5 49
-                    cmp $4B                     ; 8D06 C5 4B
+                    lda L49_TEMP                ; 8D04 A5 49
+                    cmp L4B_TEMP                ; 8D06 C5 4B
                     beq next                    ; 8D08 F0 2A
-                    dec $49                     ; 8D0A C6 49
-                    dec $4C                     ; 8D0C C6 4C
+                    dec L49_TEMP                ; 8D0A C6 49
+                    dec L4C_TEMP                ; 8D0C C6 4C
                     inc L47_TEMP                ; 8D0E E6 47
                     lda #$07                    ; 8D10 A9 07
                     sta $06F1                   ; 8D12 8D F1 06
                 forever                         ; 8D15 4C F6 8C
             end_if
             ; any other tile type should fall
-            ldy $49                             ; 8D18 A4 49
+            ldy L49_TEMP                        ; 8D18 A4 49
             tya                                 ; 8D1A 98
             sub #$08 ; duplicated work          ; 8D1B 38 E9 08
             tay                                 ; 8D1E A8
             lda ($57),y ; row above             ; 8D1F B1 57
-            sta $48                             ; 8D21 85 48
+            sta L48_TEMP                        ; 8D21 85 48
             lda #$FF                            ; 8D23 A9 FF
             sta ($57),y                         ; 8D25 91 57
-            ldy $49                             ; 8D27 A4 49
-            lda $48                             ; 8D29 A5 48
+            ldy L49_TEMP                        ; 8D27 A4 49
+            lda L48_TEMP                        ; 8D29 A5 48
             sta ($57),y                         ; 8D2B 91 57
             inc L47_TEMP                        ; 8D2D E6 47
             lda #$07                            ; 8D2F A9 07
             sta $06F1                           ; 8D31 8D F1 06
         next:
-            dec $49                             ; 8D34 C6 49
-            ldy $49                             ; 8D36 A4 49
+            dec L49_TEMP                        ; 8D34 C6 49
+            ldy L49_TEMP                        ; 8D36 A4 49
             cpy #$FF                            ; 8D38 C0 FF
             beq break                           ; 8D3A F0 03
         forever                                 ; 8D3C 4C A7 8C
@@ -2253,9 +2251,6 @@ L8D56_GAME_STATE_0:
     rts                                         ; 8D6F 60
 
 ; ----------------------------------------------------------------------------
-; READS $43 $5c $85 $86 $8a $8b L92_DROP_TIMER $a5 $a6 ($57),Y $a38d,X $a455,X $a458,X $a45b,X $a474,X $a4c4,X $a795,X
-; WRITES $47 $48 $49 $4a $57 L80_UPDATE_ROW $86 L92_DROP_TIMER L97_GAME_STATE $a0 $06f1 ($57),Y
-; JSR $8f52 $90d3
 ; Called once, in L8D56.
 R8D70_DROP_PILL:
     begin
@@ -2373,9 +2368,9 @@ R8DBF_PILL_MOVE:
 ; Increment or decrement LA5_PILL_DIR (mod 4) depending on controller input.
 R8E2B_PILL_ROTATE:
     lda LA5_PILL_DIR                            ; 8E2B A5 A5
-    sta $4A                                     ; 8E2D 85 4A
+    sta L4A_TEMP                                ; 8E2D 85 4A
     lda L85_PILL_COLUMN                         ; 8E2F A5 85
-    sta $4B                                     ; 8E31 85 4B
+    sta L4B_TEMP                                ; 8E31 85 4B
     lda L5B_INPUT_NEW                           ; 8E33 A5 5B
     and #$80 ; "A"                              ; 8E35 29 80
     if_ne                                       ; 8E37 F0 10
@@ -2402,7 +2397,7 @@ R8E2B_PILL_ROTATE:
 
 ; ----------------------------------------------------------------------------
 ; Adjust or undo pill rotation if there are collisions.
-; Previous DIR and COLUMN values are passed in $4A/$4B.
+; Previous DIR and COLUMN values are passed in L4A_TEMP/L4B_TEMP.
 R8E60_CHECK_ROTATE:
     begin
         lda LA5_PILL_DIR                        ; 8E60 A5 A5
@@ -2424,9 +2419,9 @@ R8E60_CHECK_ROTATE:
         jsr R90D3_COLLISION                     ; 8E7F 20 D3 90
         beq break                               ; 8E82 F0 08
 
-        lda $4A                                 ; 8E84 A5 4A
+        lda L4A_TEMP                            ; 8E84 A5 4A
         sta LA5_PILL_DIR                        ; 8E86 85 A5
-        lda $4B                                 ; 8E88 A5 4B
+        lda L4B_TEMP                            ; 8E88 A5 4B
         sta L85_PILL_COLUMN                     ; 8E8A 85 85
     end
     rts                                         ; 8E8C 60
@@ -2580,28 +2575,28 @@ R8F52_PLACE_PILL:
     ldx L86_PILL_ROW                            ; 8F52 A6 86
     lda LA474,x                                 ; 8F54 BD 74 A4
     add L85_PILL_COLUMN                         ; 8F57 18 65 85
-    sta $47                                     ; 8F5A 85 47
-    ; $47 is playfield offset for pill
+    sta L47_TEMP                                ; 8F5A 85 47
+    ; L47_TEMP is playfield offset for pill
     lda LA6_PILL_SIZE                           ; 8F5C A5 A6
     sub #$02                                    ; 8F5E 38 E9 02
     asl a                                       ; 8F61 0A
     asl a                                       ; 8F62 0A
     asl a                                       ; 8F63 0A
     asl a                                       ; 8F64 0A
-    sta $48                                     ; 8F65 85 48
-    ; shape is always 2, so $48 = 0.
+    sta L48_TEMP                                ; 8F65 85 48
+    ; shape is always 2, so L48_TEMP = 0.
     lda LA5_PILL_DIR                            ; 8F67 A5 A5
     asl a                                       ; 8F69 0A
     asl a                                       ; 8F6A 0A
-    add $48                                     ; 8F6B 18 65 48
+    add L48_TEMP                                ; 8F6B 18 65 48
     tax                                         ; 8F6E AA
     lda #$00                                    ; 8F6F A9 00
-    sta $49                                     ; 8F71 85 49
+    sta L49_TEMP                                ; 8F71 85 49
     loop
         lda LA4DC,x                             ; 8F73 BD DC A4
         cmp #$63                                ; 8F76 C9 63
         beq break                               ; 8F78 F0 24
-        add $47                                 ; 8F7A 18 65 47
+        add L47_TEMP                            ; 8F7A 18 65 47
         sta $57                                 ; 8F7D 85 57
         ; check that we are within playfield
         cmp #$80                                ; 8F7F C9 80
@@ -2609,16 +2604,16 @@ R8F52_PLACE_PILL:
             ; get tile number
             lda LA50C,x                         ; 8F83 BD 0C A5
             clc                                 ; 8F86 18
-            sta $4A                             ; 8F87 85 4A
-            ldy $49                             ; 8F89 A4 49
+            sta L4A_TEMP                        ; 8F87 85 4A
+            ldy L49_TEMP                        ; 8F89 A4 49
             lda L81_PILL_COLOR_0,y              ; 8F8B B9 81 00
-            add $4A                             ; 8F8E 18 65 4A
+            add L4A_TEMP                        ; 8F8E 18 65 4A
             ldy #$00                            ; 8F91 A0 00
             sta ($57),y                         ; 8F93 91 57
         end_if
         inx                                     ; 8F95 E8
-        inc $49                                 ; 8F96 E6 49
-        lda $49                                 ; 8F98 A5 49
+        inc L49_TEMP                            ; 8F96 E6 49
+        lda L49_TEMP                            ; 8F98 A5 49
         cmp #$04                                ; 8F9A C9 04
     while_ne                                    ; 8F9C D0 D5
     ; L80_UPDATE_ROW counts from 0 at the top,
@@ -2833,8 +2828,6 @@ R90C9_INIT_4_5:
 
 ; ----------------------------------------------------------------------------
 ; Pill collision detection.
-; READS L85_PILL_COLUMN L86_PILL_ROW LA5_PILL_DIR LA6_PILL_SIZE ($57),Y La455,X La458,X La45b,X La474,X La4c4,X
-; WRITES $47 $48 $49 $57
 ; Returns A = 0, Z set for no collision.
 ; Returns A = FF, Z clear for collision.
 R90D3_COLLISION:
@@ -2861,30 +2854,30 @@ R90D3_COLLISION:
     ldx L86_PILL_ROW                            ; 90FC A6 86
     lda LA474,x                                 ; 90FE BD 74 A4
     add L85_PILL_COLUMN                         ; 9101 18 65 85
-    sta $47                                     ; 9104 85 47
+    sta L47_TEMP                                ; 9104 85 47
     lda LA6_PILL_SIZE                           ; 9106 A5 A6
     sub #$02                                    ; 9108 38 E9 02
     asl a                                       ; 910B 0A
-    sta $49                                     ; 910C 85 49
-    ; $49 = LA6_PILL_SIZE - 2
+    sta L49_TEMP                                ; 910C 85 49
+    ; L49_TEMP = LA6_PILL_SIZE - 2
     lda LA5_PILL_DIR                            ; 910E A5 A5
     and #$01 ; 1 = U/D, 0 = L/R                 ; 9110 29 01
-    add $49                                     ; 9112 18 65 49
+    add L49_TEMP                                ; 9112 18 65 49
     asl a                                       ; 9115 0A
     asl a                                       ; 9116 0A
     tax                                         ; 9117 AA
-    ; x = ((LA5_PILL_DIR & #1) + $49) << 2
+    ; x = ((LA5_PILL_DIR & #1) + L49_TEMP) << 2
     lda #$04                                    ; 9118 A9 04
-    sta $48                                     ; 911A 85 48
+    sta L48_TEMP                                ; 911A 85 48
     loop
         lda LA4C4,x                             ; 911C BD C4 A4
-        add $47                                 ; 911F 18 65 47
+        add L47_TEMP                            ; 911F 18 65 47
         tay                                     ; 9122 A8
         lda ($57),y                             ; 9123 B1 57
         cmp #$FF                                ; 9125 C9 FF
         bne collision                           ; 9127 D0 08
         inx                                     ; 9129 E8
-        dec $48                                 ; 912A C6 48
+        dec L48_TEMP                            ; 912A C6 48
     while_ne                                    ; 912C D0 EE
     lda #$00                                    ; 912E A9 00
     rts                                         ; 9130 60
@@ -3005,20 +2998,20 @@ R91C2_INCREMENT_L36:
 ; Called once in L981C_TOP_0.
 R91D0_CHECKSUM:
     lda #$B9                                    ; 91D0 A9 B9
-    sta $48                                     ; 91D2 85 48
+    sta L48_TEMP                                ; 91D2 85 48
     ldy #$00                                    ; 91D4 A0 00
-    sty $47                                     ; 91D6 84 47
+    sty L47_TEMP                                ; 91D6 84 47
     sty L49_TEMP                                ; 91D8 84 49
     sty L0740_CHECKSUM_FAIL                     ; 91DA 8C 40 07
     loop
         loop
-            lda ($47),y                         ; 91DD B1 47
+            lda (L47_TEMP),y                    ; 91DD B1 47
             add L49_TEMP                        ; 91DF 18 65 49
             sta L49_TEMP                        ; 91E2 85 49
             iny                                 ; 91E4 C8
         while_ne                                ; 91E5 D0 F6
-        inc $48                                 ; 91E7 E6 48
-        lda $48                                 ; 91E9 A5 48
+        inc L48_TEMP                            ; 91E7 E6 48
+        lda L48_TEMP                            ; 91E9 A5 48
         cmp #$BE                                ; 91EB C9 BE
     while_ne                                    ; 91ED D0 EE
     lda L49_TEMP                                ; 91EF A5 49
@@ -3418,11 +3411,11 @@ R941A_KILL_VIRUS:
 
 ; ----------------------------------------------------------------------------
 ; Record colors of up to 4 clears.
-; Inputs: $48, L8F_CLEAR_COMBO.
-; If L8F_CLEAR_COMBO == #$01, $A9 = $48.
-; If L8F_CLEAR_COMBO == #$02, $AA = $48.
-; If L8F_CLEAR_COMBO == #$03, $AB = $48.
-; If L8F_CLEAR_COMBO == #$04, $AC = $48.
+; Inputs: L48_TEMP, L8F_CLEAR_COMBO.
+; If L8F_CLEAR_COMBO == #$01, $A9 = L48_TEMP.
+; If L8F_CLEAR_COMBO == #$02, $AA = L48_TEMP.
+; If L8F_CLEAR_COMBO == #$03, $AB = L48_TEMP.
+; If L8F_CLEAR_COMBO == #$04, $AC = L48_TEMP.
 R944B_CLEARED_COLOR:
     lda L8F_CLEAR_COMBO                         ; 944B A5 8F
     if_ne                                       ; 944D F0 0A
@@ -3430,7 +3423,7 @@ R944B_CLEARED_COLOR:
         if_cc                                   ; 9451 B0 06
             tax                                 ; 9453 AA
             dex                                 ; 9454 CA
-            lda $48                             ; 9455 A5 48
+            lda L48_TEMP                        ; 9455 A5 48
             sta $A9,x                           ; 9457 95 A9
         end_if
     end_if
@@ -4763,7 +4756,7 @@ R9CFF_ADD_VIRUS:
     if_eq                                       ; 9D01 D0 03
         jmp L9E4B ; rts                         ; 9D03 4C 4B 9E
     end_if
-    ; $47 = random number less than LA3DE,L96_LEVEL
+    ; L47_TEMP = random number less than LA3DE,L96_LEVEL
     loop
         ldx #$17                                ; 9D06 A2 17
         ldy #$02                                ; 9D08 A0 02
@@ -4784,13 +4777,13 @@ R9CFF_ADD_VIRUS:
     lda $18                                     ; 9D24 A5 18
     and #$07                                    ; 9D26 29 07
     add L47_TEMP                                ; 9D28 18 65 47
-    ; Store cell offset in $57 and $49
+    ; Store cell offset in $57 and L49_TEMP
     sta $57                                     ; 9D2B 85 57
-    sta $49                                     ; 9D2D 85 49
-    ; $48 = color of new virus (0,1,2)
+    sta L49_TEMP                                ; 9D2D 85 49
+    ; L48_TEMP = color of new virus (0,1,2)
     lda LA8_VIRUS_TO_ADD                        ; 9D2F A5 A8
     and #$03                                    ; 9D31 29 03
-    sta $48                                     ; 9D33 85 48
+    sta L48_TEMP                                ; 9D33 85 48
     ; if 3, then choose random value 0-2
     cmp #$03                                    ; 9D35 C9 03
     if_eq                                       ; 9D37 D0 13
@@ -4802,9 +4795,9 @@ R9CFF_ADD_VIRUS:
         tax                                     ; 9D44 AA
         lda LA7ED,x                             ; 9D45 BD ED A7
         and #$03                                ; 9D48 29 03
-        sta $48                                 ; 9D4A 85 48
+        sta L48_TEMP                            ; 9D4A 85 48
     end_if
-    ; $48 is now 0, 1 or 2
+    ; L48_TEMP is now 0, 1 or 2
     ; if cell is empty, then L9D61
     ; otherwise try next cell until
     ; we get to the top.
@@ -4814,97 +4807,97 @@ L9D4C:
     cmp #$FF                                    ; 9D50 C9 FF
     beq L9D61                                   ; 9D52 F0 0D
 L9D54: ; try next cell
-    inc $49                                     ; 9D54 E6 49
-    lda $49                                     ; 9D56 A5 49
+    inc L49_TEMP                                ; 9D54 E6 49
+    lda L49_TEMP                                ; 9D56 A5 49
     sta $57                                     ; 9D58 85 57
     cmp #$80                                    ; 9D5A C9 80
     bcc L9D4C                                   ; 9D5C 90 EE
     jmp L9E4B ; rts                             ; 9D5E 4C 4B 9E
 
 L9D61:
-    ; copy virus color to $47.
-    lda $48                                     ; 9D61 A5 48
+    ; copy virus color to L47_TEMP.
+    lda L48_TEMP                                ; 9D61 A5 48
     sta L47_TEMP                                ; 9D63 85 47
     ldx L8B_SPEED                               ; 9D65 A6 8B
     lda LA390,x ; $10,$10,$10                   ; 9D67 BD 90 A3
-    sta $4A                                     ; 9D6A 85 4A
+    sta L4A_TEMP                                ; 9D6A 85 4A
     ldx L8B_SPEED                               ; 9D6C A6 8B
     lda LA393,x ; $02,$02,$02                   ; 9D6E BD 93 A3
-    sta $4B                                     ; 9D71 85 4B
+    sta L4B_TEMP                                ; 9D71 85 4B
     lda #$00                                    ; 9D73 A9 00
-    sta $4C                                     ; 9D75 85 4C
+    sta L4C_TEMP                                ; 9D75 85 4C
 
     ; Next we check the colors of the viruses
     ; of the four points two blocks away in
     ; all four directions, and OR the bitmasks
-    ; together (storing the result in $4C).
+    ; together (storing the result in L4C_TEMP).
     lda #$00                                    ; 9D77 A9 00
     sta $57                                     ; 9D79 85 57
     ; y = cell offset - 16 (2 rows below)
-    lda $49                                     ; 9D7B A5 49
-    sub $4A                                     ; 9D7D 38 E5 4A
+    lda L49_TEMP                                ; 9D7B A5 49
+    sub L4A_TEMP                                ; 9D7D 38 E5 4A
     tay                                         ; 9D80 A8
     lda ($57),y                                 ; 9D81 B1 57
     and #$03                                    ; 9D83 29 03
     tax                                         ; 9D85 AA
     lda LA22D,x ; $01,$02,$04,$00               ; 9D86 BD 2D A2
     ; a = 1 << color of cell 2 rows below
-    ora $4C                                     ; 9D89 05 4C
-    sta $4C                                     ; 9D8B 85 4C
+    ora L4C_TEMP                                ; 9D89 05 4C
+    sta L4C_TEMP                                ; 9D8B 85 4C
     lda #$00                                    ; 9D8D A9 00
     sta $57                                     ; 9D8F 85 57
     ; y = cell offset + 16 (2 rows above)
-    lda $49                                     ; 9D91 A5 49
-    add $4A                                     ; 9D93 18 65 4A
+    lda L49_TEMP                                ; 9D91 A5 49
+    add L4A_TEMP                                ; 9D93 18 65 4A
     tay                                         ; 9D96 A8
     lda ($57),y                                 ; 9D97 B1 57
     and #$03                                    ; 9D99 29 03
     tax                                         ; 9D9B AA
     lda LA22D,x ; $01,$02,$04,$00               ; 9D9C BD 2D A2
-    ora $4C                                     ; 9D9F 05 4C
-    sta $4C                                     ; 9DA1 85 4C
+    ora L4C_TEMP                                ; 9D9F 05 4C
+    sta L4C_TEMP                                ; 9DA1 85 4C
     lda #$00                                    ; 9DA3 A9 00
     sta $57                                     ; 9DA5 85 57
     ; test whether column >= 2
-    lda $49                                     ; 9DA7 A5 49
+    lda L49_TEMP                                ; 9DA7 A5 49
     and #$07                                    ; 9DA9 29 07
     cmp #$02                                    ; 9DAB C9 02
     if_cs                                       ; 9DAD 90 12
         ; y = cell offset - 2 (2 cols left)
-        lda $49                                 ; 9DAF A5 49
-        sub $4B                                 ; 9DB1 38 E5 4B
+        lda L49_TEMP                            ; 9DAF A5 49
+        sub L4B_TEMP                            ; 9DB1 38 E5 4B
         tay                                     ; 9DB4 A8
         lda ($57),y                             ; 9DB5 B1 57
         and #$03                                ; 9DB7 29 03
         tax                                     ; 9DB9 AA
         lda LA22D,x ; $01,$02,$04,$00           ; 9DBA BD 2D A2
-        ora $4C                                 ; 9DBD 05 4C
-        sta $4C                                 ; 9DBF 85 4C
+        ora L4C_TEMP                            ; 9DBD 05 4C
+        sta L4C_TEMP                            ; 9DBF 85 4C
     end_if
     lda #$00                                    ; 9DC1 A9 00
     sta $57                                     ; 9DC3 85 57
     ; test whether column < 6
-    lda $49                                     ; 9DC5 A5 49
+    lda L49_TEMP                                ; 9DC5 A5 49
     and #$07                                    ; 9DC7 29 07
     cmp #$06                                    ; 9DC9 C9 06
     if_cc                                       ; 9DCB B0 12
         ; y = cell offset + 2 (2 cols right)
-        lda $49                                 ; 9DCD A5 49
-        add $4B                                 ; 9DCF 18 65 4B
+        lda L49_TEMP                            ; 9DCD A5 49
+        add L4B_TEMP                            ; 9DCF 18 65 4B
         tay                                     ; 9DD2 A8
         lda ($57),y                             ; 9DD3 B1 57
         and #$03                                ; 9DD5 29 03
         tax                                     ; 9DD7 AA
         lda LA22D,x ; $01,$02,$04,$00           ; 9DD8 BD 2D A2
-        ora $4C                                 ; 9DDB 05 4C
-        sta $4C                                 ; 9DDD 85 4C
+        ora L4C_TEMP                            ; 9DDB 05 4C
+        sta L4C_TEMP                            ; 9DDD 85 4C
     end_if
 
     loop
         ; If all 3 colors are present in the
         ; four neighboring cells, then start
         ; over with the next available cell.
-        lda $4C                                 ; 9DDF A5 4C
+        lda L4C_TEMP                            ; 9DDF A5 4C
         cmp #$07                                ; 9DE1 C9 07
         if_eq                                   ; 9DE3 D0 03
             jmp L9D54                           ; 9DE5 4C 54 9D
@@ -4913,21 +4906,21 @@ L9D61:
         ; the four neighboring cells
         lda #$00                                ; 9DE8 A9 00
         sta $51                                 ; 9DEA 85 51
-        ldx $48                                 ; 9DEC A6 48
+        ldx L48_TEMP                            ; 9DEC A6 48
         lda LA22D,x ; $01,$02,$04,$00           ; 9DEE BD 2D A2
-        and $4C                                 ; 9DF1 25 4C
+        and L4C_TEMP                            ; 9DF1 25 4C
         beq break                               ; 9DF3 F0 0D
-        dec $48                                 ; 9DF5 C6 48
-        lda $48                                 ; 9DF7 A5 48
+        dec L48_TEMP                            ; 9DF5 C6 48
+        lda L48_TEMP                            ; 9DF7 A5 48
         bpl continue                            ; 9DF9 10 E4
         lda #$02                                ; 9DFB A9 02
-        sta $48                                 ; 9DFD 85 48
+        sta L48_TEMP                            ; 9DFD 85 48
     forever                                     ; 9DFF 4C DF 9D
     ; fill cell with #$D0+color
-    lda $49                                     ; 9E02 A5 49
+    lda L49_TEMP                                ; 9E02 A5 49
     sta $57                                     ; 9E04 85 57
     ldy #$00                                    ; 9E06 A0 00
-    lda $48                                     ; 9E08 A5 48
+    lda L48_TEMP                                ; 9E08 A5 48
     ora #$D0 ; virus                            ; 9E0A 09 D0
     sta ($57),y                                 ; 9E0C 91 57
     ; increment virus color counts
@@ -4939,9 +4932,9 @@ L9D61:
     lda L0316_P1_LEVEL                          ; 9E18 AD 16 03
     cmp L0396_P2_LEVEL                          ; 9E1B CD 96 03
     if_eq                                       ; 9E1E D0 09
-        lda $48                                 ; 9E20 A5 48
+        lda L48_TEMP                            ; 9E20 A5 48
         ora #$D0                                ; 9E22 09 D0
-        ldy $49                                 ; 9E24 A4 49
+        ldy L49_TEMP                            ; 9E24 A4 49
         sta $0500,y                             ; 9E26 99 00 05
     end_if
     ; increment virus count
@@ -5094,39 +5087,39 @@ R9F18:
 ; Draw cloud sprites for cutscenes.
 R9F28_CLOUD_SPRITES:
     lda #$00                                    ; 9F28 A9 00
-    sta $49                                     ; 9F2A 85 49
+    sta L49_TEMP                                ; 9F2A 85 49
     loop
-        lda $49                                 ; 9F2C A5 49
+        lda L49_TEMP                            ; 9F2C A5 49
         tax                                     ; 9F2E AA
         lda L0760_CLOUD_DATA,x                  ; 9F2F BD 60 07
         beq break                               ; 9F32 F0 3B
-        sta $4A                                 ; 9F34 85 4A
+        sta L4A_TEMP                            ; 9F34 85 4A
         tax                                     ; 9F36 AA
         lda LA0EF,x                             ; 9F37 BD EF A0
-        sta $4B                                 ; 9F3A 85 4B
+        sta L4B_TEMP                            ; 9F3A 85 4B
         lda L43_CLOCK                           ; 9F3C A5 43
-        and $4B                                 ; 9F3E 25 4B
+        and L4B_TEMP                            ; 9F3E 25 4B
         if_eq                                   ; 9F40 D0 0C
-            lda $49                             ; 9F42 A5 49
+            lda L49_TEMP                        ; 9F42 A5 49
             tax                                 ; 9F44 AA
             lda L0760_CLOUD_DATA+1,x            ; 9F45 BD 61 07
             sub #$01                            ; 9F48 38 E9 01
             sta L0760_CLOUD_DATA+1,x            ; 9F4B 9D 61 07
         end_if
-        lda $4A                                 ; 9F4E A5 4A
+        lda L4A_TEMP                            ; 9F4E A5 4A
         tax                                     ; 9F50 AA
         lda LA0E1,x ; cloud sprites             ; 9F51 BD E1 A0
         sta L53_SPRITE_NUM                      ; 9F54 85 53
-        lda $49                                 ; 9F56 A5 49
+        lda L49_TEMP                            ; 9F56 A5 49
         tax                                     ; 9F58 AA
         lda L0760_CLOUD_DATA+1,x                ; 9F59 BD 61 07
         sta L44_SPRITE_X                        ; 9F5C 85 44
         lda L0760_CLOUD_DATA+2,x                ; 9F5E BD 62 07
         sta L45_SPRITE_Y                        ; 9F61 85 45
         jsr R88F6_SPRITE                        ; 9F63 20 F6 88
-        inc $49                                 ; 9F66 E6 49
-        inc $49                                 ; 9F68 E6 49
-        inc $49                                 ; 9F6A E6 49
+        inc L49_TEMP                            ; 9F66 E6 49
+        inc L49_TEMP                            ; 9F68 E6 49
+        inc L49_TEMP                            ; 9F6A E6 49
     forever                                     ; 9F6C 4C 2C 9F
 L9F6F:
     rts                                         ; 9F6F 60
@@ -7378,16 +7371,16 @@ RB7C7_GET_INPUT:
     ; read controller state into $F5,$F6
     jsr RB7B5_COMBINE_CONTROLLERS               ; B7CA 20 B5 B7
     lda LF5_P1_INPUT_NEW                        ; B7CD A5 F5
-    sta $48                                     ; B7CF 85 48
+    sta L48_TEMP                                ; B7CF 85 48
     lda LF6_P2_INPUT_NEW                        ; B7D1 A5 F6
-    sta $49                                     ; B7D3 85 49
+    sta L49_TEMP                                ; B7D3 85 49
     jsr RB793_READ_CONTROLLERS                  ; B7D5 20 93 B7  ; read controller state again
     jsr RB7B5_COMBINE_CONTROLLERS               ; B7D8 20 B5 B7
     lda LF5_P1_INPUT_NEW                        ; B7DB A5 F5
-    and $48                                     ; B7DD 25 48
+    and L48_TEMP                                ; B7DD 25 48
     sta LF5_P1_INPUT_NEW                        ; B7DF 85 F5
     lda LF6_P2_INPUT_NEW                        ; B7E1 A5 F6
-    and $49                                     ; B7E3 25 49
+    and L49_TEMP                                ; B7E3 25 49
     sta LF6_P2_INPUT_NEW                        ; B7E5 85 F6
 LB7E7:
     ldx #$01                                    ; B7E7 A2 01
