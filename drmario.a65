@@ -47,6 +47,7 @@
 .define L4C_TEMP         $4C
 .define L52_REDRAW_FLAGS $52
 .define L53_SPRITE_NUM   $53
+.define L54_ENABLE_PAUSE $54 ; non-zero means START pauses the game
 .define L55_ROUND_WINNER $55
 .define L59_TEMP         $59
 .define L5A_TEMP         $5A
@@ -109,6 +110,7 @@
 .define LF6_P2_INPUT_NEW $F6
 .define LF7_P1_INPUT_OLD $F7
 .define LF8_P2_INPUT_OLD $F8
+.define LFE_PPUMASK      $FE
 
 L0101 := $0101
 L0120 := $0120
@@ -225,7 +227,7 @@ L8005_NMI_HANDLER:
             tya                                 ; 8008 98
             pha                                 ; 8009 48
                 .ifdef REV_A
-                lda $FE
+                lda LFE_PPUMASK
                 sta L2001_PPUMASK
                 .endif
                 jsr RB788_OAM_DMA               ; 800A 20 88 B7
@@ -362,7 +364,7 @@ warm_boot:
     lda #$06                                    ; 80F8 A9 06
     sta L2001_PPUMASK                           ; 80FA 8D 01 20
     .ifdef REV_A
-    sta $FE
+    sta LFE_PPUMASK
     .endif
     jsr RFFD6                                   ; 80FD 20 D6 FF
     jsr RFFD3                                   ; 8100 20 D3 FF
@@ -526,7 +528,7 @@ L8206_TOP_3:
     lda #$04                                    ; 8245 A9 04
     sta $58                                     ; 8247 85 58
     lda #$FF                                    ; 8249 A9 FF
-    sta $54                                     ; 824B 85 54
+    sta L54_ENABLE_PAUSE                        ; 824B 85 54
     lda L0728_INITIAL_EXTRA_SPEED               ; 824D AD 28 07
     sta L8A_EXTRA_SPEED                         ; 8250 85 8A
     sta LA0_TEMP ; redundant                    ; 8252 85 A0
@@ -1466,7 +1468,7 @@ R886C:
         lda $61                                 ; 888C A5 61
         if_ne                                   ; 888E F0 20
             tax                                 ; 8890 AA
-            lda LA108,x                         ; 8891 BD 08 A1
+            lda LA108,x ; $00,$34,$B4           ; 8891 BD 08 A1
             sta L44_SPRITE_X                    ; 8894 85 44
             lda #$B7                            ; 8896 A9 B7
             sta L45_SPRITE_Y                    ; 8898 85 45
@@ -3558,7 +3560,7 @@ L9469_6_CHECK_VERTICAL_CLEAR:
 L9532_TOP_5:
 .scope
     lda #$00                                    ; 9532 A9 00
-    sta $54                                     ; 9534 85 54
+    sta L54_ENABLE_PAUSE                        ; 9534 85 54
     sta L0732_BACKUP_0                          ; 9536 8D 32 07
     lda #$04                                    ; 9539 A9 04
     sta $58                                     ; 953B 85 58
@@ -3695,7 +3697,7 @@ L958A_TOP_7:
     lda #$00                                    ; 963D A9 00
     sta LF5_P1_INPUT_NEW                        ; 963F 85 F5
     lda #$FF                                    ; 9641 A9 FF
-    sta $54                                     ; 9643 85 54
+    sta L54_ENABLE_PAUSE                        ; 9643 85 54
     rts                                         ; 9645 60
 
 L9646:
@@ -3729,7 +3731,7 @@ L9646:
     lda #$00                                    ; 9679 A9 00
     sta LF5_P1_INPUT_NEW                        ; 967B 85 F5
     lda #$FF                                    ; 967D A9 FF
-    sta $54                                     ; 967F 85 54
+    sta L54_ENABLE_PAUSE                        ; 967F 85 54
     rts                                         ; 9681 60
 .endscope
 
@@ -3940,7 +3942,8 @@ R978E_PAUSE:
         lda LF7_P1_INPUT_OLD                    ; 9793 A5 F7
         cmp #$F0 ; "A+B+SELECT+START"           ; 9795 C9 F0
         bne L97A3                               ; 9797 D0 0A
-    L9799:
+
+    user_reset:
         ; enter top-level state 0.
         lda #$00                                ; 9799 A9 00
         sta L46_TOP_STATE                       ; 979B 85 46
@@ -3948,7 +3951,7 @@ R978E_PAUSE:
         jmp break ; rts                         ; 97A0 4C F6 97
 
     L97A3:
-        lda $54                                 ; 97A3 A5 54
+        lda L54_ENABLE_PAUSE                    ; 97A3 A5 54
         beq break ; rts                         ; 97A5 F0 4F
         lda LF5_P1_INPUT_NEW                    ; 97A7 A5 F5
         and #$10 ; "start"                      ; 97A9 29 10
@@ -3961,13 +3964,13 @@ R978E_PAUSE:
         ; Turn off background
         lda #$16                                ; 97B9 A9 16
         .ifdef REV_A
-        sta $FE
+        sta LFE_PPUMASK
         .else
         sta L2001_PPUMASK                       ; 97BB 8D 01 20
         .endif
         lda #$FF                                ; 97BE A9 FF
-        ldx #$02                                ; 97C0 A2 02
-        ldy #$02                                ; 97C2 A0 02
+        ldx #>L0200_OAM                         ; 97C0 A2 02
+        ldy #>L0200_OAM                         ; 97C2 A0 02
         jsr RB894_FILL_PAGES ; fill page 2 (FF) ; 97C4 20 94 B8
         loop
             lda #$70                            ; 97C7 A9 70
@@ -3983,7 +3986,7 @@ R978E_PAUSE:
             beq break                           ; 97DA F0 0C
             lda LF7_P1_INPUT_OLD                ; 97DC A5 F7
             cmp #$F0 ; "A+B+SELECT+START"       ; 97DE C9 F0
-            beq L9799                           ; 97E0 F0 B7
+            beq user_reset                      ; 97E0 F0 B7
             jsr RB654_NEXT_FRAME                ; 97E2 20 54 B6
         forever                                 ; 97E5 4C C7 97
         lda #$FF                                ; 97E8 A9 FF
@@ -3991,7 +3994,7 @@ R978E_PAUSE:
         ; Turn on background
         lda #$1E                                ; 97EC A9 1E
         .ifdef REV_A
-        sta $FE
+        sta LFE_PPUMASK
         .else
         sta L2001_PPUMASK                       ; 97EE 8D 01 20
         .endif
@@ -4069,7 +4072,7 @@ L981C_TOP_0:
     jsr RB695_ENABLE_NMI                        ; 987A 20 95 B6
     jsr RB689_ENABLE_VIDEO                      ; 987D 20 89 B6
     lda #$00                                    ; 9880 A9 00
-    sta $54                                     ; 9882 85 54
+    sta L54_ENABLE_PAUSE                        ; 9882 85 54
     lda #$FF                                    ; 9884 A9 FF
     sta L80_UPDATE_ROW                          ; 9886 85 80
     loop
@@ -4245,7 +4248,7 @@ L9953_TOP_1:
     jsr RB695_ENABLE_NMI                        ; 99C4 20 95 B6
     jsr RB689_ENABLE_VIDEO                      ; 99C7 20 89 B6
     lda #$00                                    ; 99CA A9 00
-    sta $54                                     ; 99CC 85 54
+    sta L54_ENABLE_PAUSE                        ; 99CC 85 54
     lda #$FF                                    ; 99CE A9 FF
     sta L0300_P1_UPDATE_ROW                     ; 99D0 8D 00 03
     lda #$07                                    ; 99D3 A9 07
@@ -7079,18 +7082,18 @@ RB670_NEXT_FRAME:
 ; Next frame, and turn off background and sprites.
 RB67C_DISABLE_VIDEO:
     jsr RB670_NEXT_FRAME                        ; B67C 20 70 B6
-    lda $FE                                     ; B67F A5 FE
+    lda LFE_PPUMASK                             ; B67F A5 FE
     and #$E1                                    ; B681 29 E1
 LB683:
     sta L2001_PPUMASK                           ; B683 8D 01 20
-    sta $FE                                     ; B686 85 FE
+    sta LFE_PPUMASK                             ; B686 85 FE
     rts                                         ; B688 60
 
 ; Next frame, and turn on background and sprites.
 RB689_ENABLE_VIDEO:
     jsr RB670_NEXT_FRAME                        ; B689 20 70 B6
     jsr RB6B4                                   ; B68C 20 B4 B6
-    lda $FE                                     ; B68F A5 FE
+    lda LFE_PPUMASK                             ; B68F A5 FE
     ora #$1E                                    ; B691 09 1E
     bne LB683 ; always branch                   ; B693 D0 EE
 
@@ -8292,7 +8295,7 @@ LFF00_RESET_HANDLER:
     stx $2000                                   ; FF04 8E 00 20
     stx L2001_PPUMASK                           ; FF07 8E 01 20
     .ifdef REV_A
-    stx $FE
+    stx LFE_PPUMASK
     .endif
     ; wait for vblank
     loop
