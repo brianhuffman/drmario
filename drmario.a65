@@ -26,7 +26,10 @@
 
 .segment "ZEROPAGE"
 
+.define L17_LFSR_0       $17
+.define L18_LFSR_1       $18
 .define L33_NMI_SIGNAL   $33 ; 1 means NMI has run
+.define L34_UNUSED       $34 ; set to #$0E when main loop starts
 .define L38_V1_X         $38
 .define L39_V1_Y         $39
 .define L3A_V2_X         $3A
@@ -45,6 +48,9 @@
 .define L4A_TEMP         $4A
 .define L4B_TEMP         $4B
 .define L4C_TEMP         $4C
+.define L4F_UFO_X        $4F ; sprite coordinate for final cutscene
+.define L50_UFO_Y        $50 ; sprite coordinate for final cutscene
+.define L51_TEMP         $51
 .define L52_REDRAW_FLAGS $52
 .define L53_SPRITE_NUM   $53
 .define L54_ENABLE_PAUSE $54 ; non-zero means START pauses the game
@@ -53,6 +59,8 @@
 .define L5A_TEMP         $5A
 .define L5B_INPUT_NEW    $5B
 .define L5C_INPUT_OLD    $5C
+.define L5D_SHOW_LEVEL   $5D ; non-zero enables display of level sprites
+.define L5E_ENDING_STATE $5E ; used for sequencing of final cutscene
 ; $61
 .define L66_PALETTE      $66
 .define L69_DEMO_DELAY   $69
@@ -347,11 +355,11 @@ cold_boot:
     while_ne                                    ; 80DA D0 F7
 
 warm_boot:
-    ; Seed LFSR in $17/$18.
+    ; Seed LFSR in L17_LFSR_0/L18_LFSR_1.
     ldx #$89                                    ; 80DC A2 89
-    stx $17                                     ; 80DE 86 17
+    stx L17_LFSR_0                              ; 80DE 86 17
     dex                                         ; 80E0 CA
-    stx $18                                     ; 80E1 86 18
+    stx L18_LFSR_1                              ; 80E1 86 18
     ldy #$00                                    ; 80E3 A0 00
     sty $FD                                     ; 80E5 84 FD
     sty L2005_PPUSCROLL                         ; 80E7 8C 05 20
@@ -387,14 +395,14 @@ warm_boot:
     lda #$2C                                    ; 812C A9 2C
     jsr RB6AC_INIT_NAMETABLE                    ; 812E 20 AC B6
     lda #$00                                    ; 8131 A9 00
-    sta $5D                                     ; 8133 85 5D
+    sta L5D_SHOW_LEVEL                          ; 8133 85 5D
     jsr R90C9_INIT_4_5                          ; 8135 20 C9 90
     jsr RB695_ENABLE_NMI                        ; 8138 20 95 B6
     jsr RB654_NEXT_FRAME                        ; 813B 20 54 B6
     jsr RB689_ENABLE_VIDEO                      ; 813E 20 89 B6
     jsr RB654_NEXT_FRAME                        ; 8141 20 54 B6
     lda #$0E                                    ; 8144 A9 0E
-    sta $34                                     ; 8146 85 34
+    sta L34_UNUSED                              ; 8146 85 34
     loop
         jsr R8157_TOP_STATE_MACHINE             ; 8148 20 57 81
         jsr R978E_PAUSE                         ; 814B 20 8E 97
@@ -472,7 +480,7 @@ L816E_TOP_2:
         sta L66_PALETTE                         ; 81D6 85 66
     end_if
     lda #$FF                                    ; 81D8 A9 FF
-    sta $5D                                     ; 81DA 85 5D
+    sta L5D_SHOW_LEVEL                          ; 81DA 85 5D
     jsr RB695_ENABLE_NMI                        ; 81DC 20 95 B6
     jsr RB689_ENABLE_VIDEO                      ; 81DF 20 89 B6
     lda #$0F                                    ; 81E2 A9 0F
@@ -575,12 +583,12 @@ R82A0_INIT_780:
     lda #$00                                    ; 82A4 A9 00
     sta L48_TEMP                                ; 82A6 85 48
     loop
-        ldx #$17                                ; 82A8 A2 17
+        ldx #L17_LFSR_0                         ; 82A8 A2 17
         ldy #$02                                ; 82AA A0 02
         jsr RB771_STEP_LFSR                     ; 82AC 20 71 B7
         ldx L47_TEMP                            ; 82AF A6 47
         dex                                     ; 82B1 CA
-        lda $17                                 ; 82B2 A5 17
+        lda L17_LFSR_0                          ; 82B2 A5 17
         and #$0F                                ; 82B4 29 0F
         add L48_TEMP                            ; 82B6 18 65 48
         ; reduce modulo 9
@@ -1348,7 +1356,7 @@ R8772_PILL_SPRITE:
     rts                                         ; 87A1 60
 
 ; ----------------------------------------------------------------------------
-; Display sprites on level screen
+; Display sprites on level screen (Mario, pills, viruses, level and virus counters)
 ; Called once in RB654_NEXT_FRAME.
 R87A2_LEVEL_SPRITES:
     begin
@@ -1372,77 +1380,76 @@ R87A2_LEVEL_SPRITES:
             jsr R9075_LOAD_P1                   ; 87C6 20 75 90
             jsr R89B6_MARIO_SPRITE              ; 87C9 20 B6 89
             jsr R88B1_TOSSED_PILL_SPRITE        ; 87CC 20 B1 88
-            jmp break                           ; 87CF 4C 6B 88
-        end_if
+        else                                    ; 87CF 4C 6B 88
+            lda $61                             ; 87D2 A5 61
+            if_eq                               ; 87D4 D0 4C
+                lda L55_ROUND_WINNER            ; 87D6 A5 55
+                if_eq                           ; 87D8 D0 48
+                    lda L031A_P1_NEXT_COLOR_0   ; 87DA AD 1A 03
+                    sta L9A_NEXT_COLOR_0        ; 87DD 85 9A
+                    lda L031B_P1_NEXT_COLOR_1   ; 87DF AD 1B 03
+                    sta L9B_NEXT_COLOR_1        ; 87E2 85 9B
+                    lda L031C_P1_NEXT_COLOR_2   ; 87E4 AD 1C 03
+                    sta L9C_NEXT_COLOR_2        ; 87E7 85 9C
+                    lda L031D_P1_NEXT_COLOR_3   ; 87E9 AD 1D 03
+                    sta L9D_NEXT_COLOR_3        ; 87EC 85 9D
+                    lda L0325_P1_PILL_DIR       ; 87EE AD 25 03
+                    sta LA5_PILL_DIR            ; 87F1 85 A5
+                    lda #$38                    ; 87F3 A9 38
+                    sta L44_SPRITE_X            ; 87F5 85 44
+                    lda #$33                    ; 87F7 A9 33
+                    sta L45_SPRITE_Y            ; 87F9 85 45
+                    jsr R88CB_NEXT_PILL_SPRITE  ; 87FB 20 CB 88
 
-        lda $61                                 ; 87D2 A5 61
-        if_eq                                   ; 87D4 D0 4C
-            lda L55_ROUND_WINNER                ; 87D6 A5 55
-            if_eq                               ; 87D8 D0 48
-                lda L031A_P1_NEXT_COLOR_0       ; 87DA AD 1A 03
-                sta L9A_NEXT_COLOR_0            ; 87DD 85 9A
-                lda L031B_P1_NEXT_COLOR_1       ; 87DF AD 1B 03
-                sta L9B_NEXT_COLOR_1            ; 87E2 85 9B
-                lda L031C_P1_NEXT_COLOR_2       ; 87E4 AD 1C 03
-                sta L9C_NEXT_COLOR_2            ; 87E7 85 9C
-                lda L031D_P1_NEXT_COLOR_3       ; 87E9 AD 1D 03
-                sta L9D_NEXT_COLOR_3            ; 87EC 85 9D
-                lda L0325_P1_PILL_DIR           ; 87EE AD 25 03
-                sta LA5_PILL_DIR                ; 87F1 85 A5
-                lda #$38                        ; 87F3 A9 38
-                sta L44_SPRITE_X                ; 87F5 85 44
-                lda #$33                        ; 87F7 A9 33
-                sta L45_SPRITE_Y                ; 87F9 85 45
-                jsr R88CB_NEXT_PILL_SPRITE      ; 87FB 20 CB 88
-
-                lda L039A_P2_NEXT_COLOR_0       ; 87FE AD 9A 03
-                sta L9A_NEXT_COLOR_0            ; 8801 85 9A
-                lda L039B_P2_NEXT_COLOR_1       ; 8803 AD 9B 03
-                sta L9B_NEXT_COLOR_1            ; 8806 85 9B
-                lda L039C_P2_NEXT_COLOR_2       ; 8808 AD 9C 03
-                sta L9C_NEXT_COLOR_2            ; 880B 85 9C
-                lda L039D_P2_NEXT_COLOR_3       ; 880D AD 9D 03
-                sta L9D_NEXT_COLOR_3            ; 8810 85 9D
-                lda L03A5_P2_PILL_DIR           ; 8812 AD A5 03
-                sta LA5_PILL_DIR                ; 8815 85 A5
-                lda #$B8                        ; 8817 A9 B8
-                sta L44_SPRITE_X                ; 8819 85 44
-                lda #$33                        ; 881B A9 33
-                sta L45_SPRITE_Y                ; 881D 85 45
-                jsr R88CB_NEXT_PILL_SPRITE      ; 881F 20 CB 88
+                    lda L039A_P2_NEXT_COLOR_0   ; 87FE AD 9A 03
+                    sta L9A_NEXT_COLOR_0        ; 8801 85 9A
+                    lda L039B_P2_NEXT_COLOR_1   ; 8803 AD 9B 03
+                    sta L9B_NEXT_COLOR_1        ; 8806 85 9B
+                    lda L039C_P2_NEXT_COLOR_2   ; 8808 AD 9C 03
+                    sta L9C_NEXT_COLOR_2        ; 880B 85 9C
+                    lda L039D_P2_NEXT_COLOR_3   ; 880D AD 9D 03
+                    sta L9D_NEXT_COLOR_3        ; 8810 85 9D
+                    lda L03A5_P2_PILL_DIR       ; 8812 AD A5 03
+                    sta LA5_PILL_DIR            ; 8815 85 A5
+                    lda #$B8                    ; 8817 A9 B8
+                    sta L44_SPRITE_X            ; 8819 85 44
+                    lda #$33                    ; 881B A9 33
+                    sta L45_SPRITE_Y            ; 881D 85 45
+                    jsr R88CB_NEXT_PILL_SPRITE  ; 881F 20 CB 88
+                end_if
             end_if
+            lda #$2B                            ; 8822 A9 2B
+            sta L45_SPRITE_Y                    ; 8824 85 45
+            lda #$01                            ; 8826 A9 01
+            sta $60                             ; 8828 85 60
+            lda #$6D                            ; 882A A9 6D
+            sta L44_SPRITE_X                    ; 882C 85 44
+            ldx L0316_P1_LEVEL                  ; 882E AE 16 03
+            lda LA777,x ; BCD table 00-29       ; 8831 BD 77 A7
+            sta L53_SPRITE_NUM                  ; 8834 85 53
+            jsr R893B_BCD_SPRITE                ; 8836 20 3B 89
+            lda #$84                            ; 8839 A9 84
+            sta L44_SPRITE_X                    ; 883B 85 44
+            ldx L0396_P2_LEVEL                  ; 883D AE 96 03
+            lda LA777,x ; BCD table 00-29       ; 8840 BD 77 A7
+            sta L53_SPRITE_NUM                  ; 8843 85 53
+            jsr R893B_BCD_SPRITE                ; 8845 20 3B 89
+            lda #$BF                            ; 8848 A9 BF
+            sta L45_SPRITE_Y                    ; 884A 85 45
+            lda #$6E                            ; 884C A9 6E
+            sta L44_SPRITE_X                    ; 884E 85 44
+            lda L0324_P1_VIRUS                  ; 8850 AD 24 03
+            sta L53_SPRITE_NUM                  ; 8853 85 53
+            jsr R893B_BCD_SPRITE                ; 8855 20 3B 89
+            lda #$83                            ; 8858 A9 83
+            sta L44_SPRITE_X                    ; 885A 85 44
+            lda L03A4_P2_VIRUS                  ; 885C AD A4 03
+            sta L53_SPRITE_NUM                  ; 885F 85 53
+            jsr R893B_BCD_SPRITE                ; 8861 20 3B 89
+            lda #$00                            ; 8864 A9 00
+            sta $60                             ; 8866 85 60
+            jsr R886C                           ; 8868 20 6C 88
         end_if
-        lda #$2B                                ; 8822 A9 2B
-        sta L45_SPRITE_Y                        ; 8824 85 45
-        lda #$01                                ; 8826 A9 01
-        sta $60                                 ; 8828 85 60
-        lda #$6D                                ; 882A A9 6D
-        sta L44_SPRITE_X                        ; 882C 85 44
-        ldx L0316_P1_LEVEL                      ; 882E AE 16 03
-        lda LA777,x ; BCD table 00-29           ; 8831 BD 77 A7
-        sta L53_SPRITE_NUM                      ; 8834 85 53
-        jsr R893B_BCD_SPRITE                    ; 8836 20 3B 89
-        lda #$84                                ; 8839 A9 84
-        sta L44_SPRITE_X                        ; 883B 85 44
-        ldx L0396_P2_LEVEL                      ; 883D AE 96 03
-        lda LA777,x ; BCD table 00-29           ; 8840 BD 77 A7
-        sta L53_SPRITE_NUM                      ; 8843 85 53
-        jsr R893B_BCD_SPRITE                    ; 8845 20 3B 89
-        lda #$BF                                ; 8848 A9 BF
-        sta L45_SPRITE_Y                        ; 884A 85 45
-        lda #$6E                                ; 884C A9 6E
-        sta L44_SPRITE_X                        ; 884E 85 44
-        lda L0324_P1_VIRUS                      ; 8850 AD 24 03
-        sta L53_SPRITE_NUM                      ; 8853 85 53
-        jsr R893B_BCD_SPRITE                    ; 8855 20 3B 89
-        lda #$83                                ; 8858 A9 83
-        sta L44_SPRITE_X                        ; 885A 85 44
-        lda L03A4_P2_VIRUS                      ; 885C AD A4 03
-        sta L53_SPRITE_NUM                      ; 885F 85 53
-        jsr R893B_BCD_SPRITE                    ; 8861 20 3B 89
-        lda #$00                                ; 8864 A9 00
-        sta $60                                 ; 8866 85 60
-        jsr R886C                               ; 8868 20 6C 88
     end
     rts                                         ; 886B 60
 
@@ -3848,25 +3855,25 @@ L9700_GAME_STATE_4:
 ; Input: A
 ; Sleep for A frames.
 R9701_SLEEP:
-    sta $51                                     ; 9701 85 51
+    sta L51_TEMP                                ; 9701 85 51
     lda #$01                                    ; 9703 A9 01
-    sta $5D                                     ; 9705 85 5D
+    sta L5D_SHOW_LEVEL                          ; 9705 85 5D
     loop
         jsr RB654_NEXT_FRAME                    ; 9707 20 54 B6
-        dec $51                                 ; 970A C6 51
-        lda $51                                 ; 970C A5 51
+        dec L51_TEMP                            ; 970A C6 51
+        lda L51_TEMP                            ; 970C A5 51
     while_ne                                    ; 970E D0 F7
     rts                                         ; 9710 60
 
 ; ----------------------------------------------------------------------------
 ; unused?
-    sta $51                                     ; 9711 85 51
+    sta L51_TEMP                                ; 9711 85 51
     lda #$00                                    ; 9713 A9 00
-    sta $5D                                     ; 9715 85 5D
+    sta L5D_SHOW_LEVEL                          ; 9715 85 5D
     loop
         jsr RB654_NEXT_FRAME                    ; 9717 20 54 B6
-        dec $51                                 ; 971A C6 51
-        lda $51                                 ; 971C A5 51
+        dec L51_TEMP                            ; 971A C6 51
+        lda L51_TEMP                            ; 971C A5 51
     while_ne                                    ; 971E D0 F7
     rts                                         ; 9720 60
 
@@ -3959,7 +3966,7 @@ R978E_PAUSE:
         lda #$05                                ; 97AD A9 05
         sta L068D                               ; 97AF 8D 8D 06
         lda #$00                                ; 97B2 A9 00
-        sta $5D                                 ; 97B4 85 5D
+        sta L5D_SHOW_LEVEL                      ; 97B4 85 5D
         jsr RB654_NEXT_FRAME                    ; 97B6 20 54 B6
         ; Turn off background
         lda #$16                                ; 97B9 A9 16
@@ -3990,7 +3997,7 @@ R978E_PAUSE:
             jsr RB654_NEXT_FRAME                ; 97E2 20 54 B6
         forever                                 ; 97E5 4C C7 97
         lda #$FF                                ; 97E8 A9 FF
-        sta $5D                                 ; 97EA 85 5D
+        sta L5D_SHOW_LEVEL                      ; 97EA 85 5D
         ; Turn on background
         lda #$1E                                ; 97EC A9 1E
         .ifdef REV_A
@@ -4049,10 +4056,10 @@ L981C_TOP_0:
     lda #$02                                    ; 9846 A9 02
     jsr RB8E0 ; Set mapper CHR bank 0.          ; 9848 20 E0 B8
     lda #$00                                    ; 984B A9 00
-    sta $5D                                     ; 984D 85 5D
+    sta L5D_SHOW_LEVEL                          ; 984D 85 5D
     sta L52_REDRAW_FLAGS                        ; 984F 85 52
     sta L0741_DEMO_MODE                         ; 9851 8D 41 07
-    sta $51                                     ; 9854 85 51
+    sta L51_TEMP                                ; 9854 85 51
     lda #$FF                                    ; 9856 A9 FF
     sta L80_UPDATE_ROW                          ; 9858 85 80
     sta L0300_P1_UPDATE_ROW                     ; 985A 8D 00 03
@@ -4097,7 +4104,7 @@ L981C_TOP_0:
                 lda #$01                        ; 98A8 A9 01
                 sta L0727_NUM_PLAYERS           ; 98AA 8D 27 07
                 lda #$00                        ; 98AD A9 00
-                sta $51                         ; 98AF 85 51
+                sta L51_TEMP                    ; 98AF 85 51
             end_if
         end_if
         lda LF5_P1_INPUT_NEW                    ; 98B1 A5 F5
@@ -4111,7 +4118,7 @@ L981C_TOP_0:
                 lda #$02                        ; 98C3 A9 02
                 sta L0727_NUM_PLAYERS           ; 98C5 8D 27 07
                 lda #$00                        ; 98C8 A9 00
-                sta $51                         ; 98CA 85 51
+                sta L51_TEMP                    ; 98CA 85 51
             end_if
         end_if
         cmp #$20 ; "select"                     ; 98CC C9 20
@@ -4122,7 +4129,7 @@ L981C_TOP_0:
             eor #$03                            ; 98D8 49 03
             sta L0727_NUM_PLAYERS               ; 98DA 8D 27 07
             lda #$00                            ; 98DD A9 00
-            sta $51                             ; 98DF 85 51
+            sta L51_TEMP                        ; 98DF 85 51
         end_if
 
         lda #$45                                ; 98E1 A9 45
@@ -4138,8 +4145,8 @@ L981C_TOP_0:
         jsr RB654_NEXT_FRAME                    ; 98F7 20 54 B6
         lda L43_CLOCK                           ; 98FA A5 43
         if_eq                                   ; 98FC D0 08
-            inc $51                             ; 98FE E6 51
-            lda $51                             ; 9900 A5 51
+            inc L51_TEMP                        ; 98FE E6 51
+            lda L51_TEMP                        ; 9900 A5 51
             cmp #$08                            ; 9902 C9 08
             beq L9912                           ; 9904 F0 0C
         end_if
@@ -4196,7 +4203,7 @@ L9953_TOP_1:
     lda #$05                                    ; 9963 A9 05
     jsr RB8F4 ; Set mapper CHR bank 1.          ; 9965 20 F4 B8
     lda #$00                                    ; 9968 A9 00
-    sta $5D                                     ; 996A 85 5D
+    sta L5D_SHOW_LEVEL                          ; 996A 85 5D
     sta L52_REDRAW_FLAGS                        ; 996C 85 52
     sta $65                                     ; 996E 85 65
     sta L0728_INITIAL_EXTRA_SPEED               ; 9970 8D 28 07
@@ -4254,7 +4261,7 @@ L9953_TOP_1:
     lda #$07                                    ; 99D3 A9 07
     sta $06F5                                   ; 99D5 8D F5 06
     loop
-        ldx #$17                                ; 99D8 A2 17
+        ldx #L17_LFSR_0                         ; 99D8 A2 17
         ldy #$02                                ; 99DA A0 02
         jsr RB771_STEP_LFSR                     ; 99DC 20 71 B7
         lda LF5_P1_INPUT_NEW                    ; 99DF A5 F5
@@ -4761,10 +4768,10 @@ R9CFF_ADD_VIRUS:
     end_if
     ; L47_TEMP = random number less than LA3DE,L96_LEVEL
     loop
-        ldx #$17                                ; 9D06 A2 17
+        ldx #L17_LFSR_0                         ; 9D06 A2 17
         ldy #$02                                ; 9D08 A0 02
         jsr RB771_STEP_LFSR                     ; 9D0A 20 71 B7
-        lda $17                                 ; 9D0D A5 17
+        lda L17_LFSR_0                          ; 9D0D A5 17
         and #$0F                                ; 9D0F 29 0F
         sta L47_TEMP                            ; 9D11 85 47
         ldx L96_LEVEL                           ; 9D13 A6 96
@@ -4777,7 +4784,7 @@ R9CFF_ADD_VIRUS:
     lda LA474,x                                 ; 9D1F BD 74 A4
     sta L47_TEMP                                ; 9D22 85 47
     ; Choose random 3-bit column
-    lda $18                                     ; 9D24 A5 18
+    lda L18_LFSR_1                              ; 9D24 A5 18
     and #$07                                    ; 9D26 29 07
     add L47_TEMP                                ; 9D28 18 65 47
     ; Store cell offset in $57 and L49_TEMP
@@ -4790,10 +4797,10 @@ R9CFF_ADD_VIRUS:
     ; if 3, then choose random value 0-2
     cmp #$03                                    ; 9D35 C9 03
     if_eq                                       ; 9D37 D0 13
-        ldx #$17                                ; 9D39 A2 17
+        ldx #L17_LFSR_0                         ; 9D39 A2 17
         ldy #$02                                ; 9D3B A0 02
         jsr RB771_STEP_LFSR                     ; 9D3D 20 71 B7
-        lda $18                                 ; 9D40 A5 18
+        lda L18_LFSR_1                          ; 9D40 A5 18
         and #$0F                                ; 9D42 29 0F
         tax                                     ; 9D44 AA
         lda LA7ED,x                             ; 9D45 BD ED A7
@@ -4908,7 +4915,7 @@ L9D61:
         ; choose a new color not present in
         ; the four neighboring cells
         lda #$00                                ; 9DE8 A9 00
-        sta $51                                 ; 9DEA 85 51
+        sta L51_TEMP                            ; 9DEA 85 51
         ldx L48_TEMP                            ; 9DEC A6 48
         lda LA22D,x ; $01,$02,$04,$00           ; 9DEE BD 2D A2
         and L4C_TEMP                            ; 9DF1 25 4C
@@ -4967,7 +4974,8 @@ L9E4B:
 .endscope
 
 ; ----------------------------------------------------------------------------
-R9E4C:
+; Display cutscene if there is one, and start the next level.
+R9E4C_NEXT_LEVEL:
 .scope
     lda L96_LEVEL                               ; 9E4C A5 96
     cmp #$15                                    ; 9E4E C9 15
@@ -4998,8 +5006,8 @@ cutscene:
     jsr RB6C2_PRINT                             ; 9E7E 20 C2 B6
     .word LCA5A ; Congratulations screen        ; 9E81 5A CA
     lda #$00                                    ; 9E83 A9 00
-    sta $5D                                     ; 9E85 85 5D
-    sta $5E                                     ; 9E87 85 5E
+    sta L5D_SHOW_LEVEL                          ; 9E85 85 5D
+    sta L5E_ENDING_STATE                        ; 9E87 85 5E
     lda #$FF                                    ; 9E89 A9 FF
     sta L0300_P1_UPDATE_ROW                     ; 9E8B 8D 00 03
     sta L0380_P2_UPDATE_ROW                     ; 9E8E 8D 80 03
@@ -5011,7 +5019,7 @@ cutscene:
     lda #$01                                    ; 9E9F A9 01
     sta $7F                                     ; 9EA1 85 7F
     lda #$FF                                    ; 9EA3 A9 FF
-    sta $51                                     ; 9EA5 85 51
+    sta L51_TEMP                                ; 9EA5 85 51
     jsr R9F09 ; Initialize L0760_CLOUD_DATA     ; 9EA7 20 09 9F
     jsr RB352 ; Initialize $0580                ; 9EAA 20 52 B3
     lda #$70                                    ; 9EAD A9 70
@@ -5019,19 +5027,19 @@ cutscene:
     lda #$82                                    ; 9EB1 A9 82
     sta L39_V1_Y                                ; 9EB3 85 39
     lda #$5E                                    ; 9EB5 A9 5E
-    sta $4F                                     ; 9EB7 85 4F
+    sta L4F_UFO_X                               ; 9EB7 85 4F
     lda #$F8                                    ; 9EB9 A9 F8
-    sta $50                                     ; 9EBB 85 50
+    sta L50_UFO_Y                               ; 9EBB 85 50
     lda #$00                                    ; 9EBD A9 00
     sta L3A_V2_X                                ; 9EBF 85 3A
     sta L3D_V3_Y                                ; 9EC1 85 3D
     loop
         jsr R9F18                               ; 9EC3 20 18 9F
-        jsr RB42F ; maybe final cutscene        ; 9EC6 20 2F B4
+        jsr RB42F_MAYBE_ENDING                  ; 9EC6 20 2F B4
         jsr R9F70 ; tiny animals sprite         ; 9EC9 20 70 9F
         jsr RB5B8 ; cutscene sprites            ; 9ECC 20 B8 B5
         jsr RB654_NEXT_FRAME                    ; 9ECF 20 54 B6
-        dec $51                                 ; 9ED2 C6 51
+        dec L51_TEMP                            ; 9ED2 C6 51
         lda LF5_P1_INPUT_NEW                    ; 9ED4 A5 F5
         cmp #$10                                ; 9ED6 C9 10
     while_ne                                    ; 9ED8 D0 E9
@@ -5043,7 +5051,7 @@ next_level:
     ldy #$05                                    ; 9EE2 A0 05
     jsr RB894_FILL_PAGES ; fill pages 4-5 (FF)  ; 9EE4 20 94 B8
     lda #$01                                    ; 9EE7 A9 01
-    sta $5D                                     ; 9EE9 85 5D
+    sta L5D_SHOW_LEVEL                          ; 9EE9 85 5D
     lda #$02                                    ; 9EEB A9 02
     jsr RB8E0 ; Set mapper CHR bank 0.          ; 9EED 20 E0 B8
     lda #$03                                    ; 9EF0 A9 03
@@ -5129,7 +5137,7 @@ L9F6F:
 
 ; ----------------------------------------------------------------------------
 ; Load tiny alien sprite $20 or $22 depending on $43 bit 3.
-; Called once in R9E4C.
+; Called once in R9E4C_NEXT_LEVEL.
 R9F70:
     lda L38_V1_X                                ; 9F70 A5 38
     sta L44_SPRITE_X                            ; 9F72 85 44
@@ -5261,14 +5269,14 @@ LA07C:
     .byte $00,$FF,$01,$FF,$01,$FF,$FE,$01,$01
 
 ; ----------------------------------------------------------------------------
-; lookup table, used in RB43F, copied to L66_PALETTE.
+; lookup table, used in RB43F_ENDING, copied to L66_PALETTE.
 ; Lightning flashes for final cutscene.
 LA085:
     .byte $85,$85,$85,$85,$85,$85,$8A,$85
     .byte $85,$85,$8A,$85,$85,$85,$85,$85
 
 ; ----------------------------------------------------------------------------
-; lookup table, used in R9E4C
+; lookup table, used in R9E4C_NEXT_LEVEL
 LA095:
     .byte $08,$01,$01
 
@@ -5305,7 +5313,7 @@ LA0BB:
     .byte $00,$FF
 
 ; ----------------------------------------------------------------------------
-; lookup table, used in R9E4C, copied to L66_PALETTE.
+; lookup table, used in R9E4C_NEXT_LEVEL, copied to L66_PALETTE.
 LA0DE:
     .byte $86,$84,$84
 ; ----------------------------------------------------------------------------
@@ -6501,7 +6509,7 @@ LB2A2:
     lda L0727_NUM_PLAYERS                       ; B308 AD 27 07
     cmp #$02                                    ; B30B C9 02
     if_ne                                       ; B30D F0 0A
-        jsr R9E4C                               ; B30F 20 4C 9E
+        jsr R9E4C_NEXT_LEVEL                    ; B30F 20 4C 9E
         ; enter top-level state 3
         lda #$03                                ; B312 A9 03
         sta L46_TOP_STATE                       ; B314 85 46
@@ -6649,21 +6657,21 @@ LB40A:
     .byte $F2,$F1,$F2,$F0,$F1
 
 ; ----------------------------------------------------------------------------
-; If L8B_SPEED == #$02 and L96_LEVEL == #$15 then RB43F.
-RB42F:
+; If L8B_SPEED == #$02 and L96_LEVEL == #$15 then RB43F_ENDING.
+RB42F_MAYBE_ENDING:
     lda L8B_SPEED                               ; B42F A5 8B
     cmp #$02                                    ; B431 C9 02
     if_eq                                       ; B433 D0 09
         lda L96_LEVEL                           ; B435 A5 96
         cmp #$15                                ; B437 C9 15
         if_eq                                   ; B439 D0 03
-            jsr RB43F                           ; B43B 20 3F B4
+            jsr RB43F_ENDING                    ; B43B 20 3F B4
         end_if
     end_if
     rts                                         ; B43E 60
 
 ; ----------------------------------------------------------------------------
-; Jump to one of 31 subroutines based on $5E.
+; Jump to one of 31 subroutines based on L5E_ENDING_STATE.
 
 ; -------D--/AXY-CZ--VN
 ; RTS: 0->6->0
@@ -6672,9 +6680,9 @@ RB42F:
 ; MODIFIES L39_V1_Y $42 L44_SPRITE_X L45_SPRITE_Y $4f $50 $5e L0580,X L0761,X
 ; JSR $9f28 $b371 $b569 $b5a7 $b8ac
 
-RB43F:
+RB43F_ENDING:
 .scope
-    lda $5E                                     ; B43F A5 5E
+    lda L5E_ENDING_STATE                        ; B43F A5 5E
     jsr RB8AC_JUMP_TABLE                        ; B441 20 AC B8
     .word clouds_256 ; 0
     .word clouds_256 ; 1
@@ -6715,7 +6723,7 @@ RB43F:
 LB483:
     lda #$03                                    ; B483 A9 03
     sta $06F4                                   ; B485 8D F4 06
-    inc $5E                                     ; B488 E6 5E
+    inc L5E_ENDING_STATE                        ; B488 E6 5E
     rts                                         ; B48A 60
 
 ; routine 23.
@@ -6723,7 +6731,7 @@ LB48B:
     jsr ufo_sprite                              ; B48B 20 69 B5
     lda #$04                                    ; B48E A9 04
     sta $06F0                                   ; B490 8D F0 06
-    inc $5E                                     ; B493 E6 5E
+    inc L5E_ENDING_STATE                        ; B493 E6 5E
     rts                                         ; B495 60
 
 ; routine 17.
@@ -6733,7 +6741,7 @@ LB496:
     sta $06F3                                   ; B49B 8D F3 06
     lda #$06                                    ; B49E A9 06
     sta $06F0                                   ; B4A0 8D F0 06
-    inc $5E                                     ; B4A3 E6 5E
+    inc L5E_ENDING_STATE                        ; B4A3 E6 5E
     rts                                         ; B4A5 60
 
 ; routine 20.
@@ -6743,7 +6751,7 @@ LB4A6:
     sta $06F3                                   ; B4AB 8D F3 06
     lda #$07                                    ; B4AE A9 07
     sta $06F0                                   ; B4B0 8D F0 06
-    inc $5E                                     ; B4B3 E6 5E
+    inc L5E_ENDING_STATE                        ; B4B3 E6 5E
     rts                                         ; B4B5 60
 
 ; routine 29.
@@ -6751,20 +6759,20 @@ LB4B6:
     jsr ufo_sprite                              ; B4B6 20 69 B5
     lda #$0C                                    ; B4B9 A9 0C
     sta $06F5                                   ; B4BB 8D F5 06
-    inc $5E                                     ; B4BE E6 5E
+    inc L5E_ENDING_STATE                        ; B4BE E6 5E
     rts                                         ; B4C0 60
 
 ; routine 10.
 LB4C1:
     lda #$81                                    ; B4C1 A9 81
     sta $7F                                     ; B4C3 85 7F
-    inc $5E                                     ; B4C5 E6 5E
+    inc L5E_ENDING_STATE                        ; B4C5 E6 5E
     rts                                         ; B4C7 60
 
 ; unreachable
     lda #$41                                    ; B4C8 A9 41
     sta $7F                                     ; B4CA 85 7F
-    inc $5E                                     ; B4CC E6 5E
+    inc L5E_ENDING_STATE                        ; B4CC E6 5E
     rts                                         ; B4CE 60
 
 ; routine 13.
@@ -6796,7 +6804,7 @@ ufo_256:
 wait_256:
     lda L43_CLOCK                               ; B4EF A5 43
     if_eq                                       ; B4F1 D0 02
-        inc $5E                                 ; B4F3 E6 5E
+        inc L5E_ENDING_STATE                    ; B4F3 E6 5E
     end_if
     rts                                         ; B4F5 60
 
@@ -6804,28 +6812,28 @@ wait_256:
 palette_88:
     lda #$88                                    ; B4F6 A9 88
     sta L66_PALETTE                             ; B4F8 85 66
-    inc $5E                                     ; B4FA E6 5E
+    inc L5E_ENDING_STATE                        ; B4FA E6 5E
     rts                                         ; B4FC 60
 
 ; routine 6.
 palette_89:
     lda #$89                                    ; B4FD A9 89
     sta L66_PALETTE                             ; B4FF 85 66
-    inc $5E                                     ; B501 E6 5E
+    inc L5E_ENDING_STATE                        ; B501 E6 5E
     rts                                         ; B503 60
 
 ; routine 9.
 palette_85:
     lda #$85                                    ; B504 A9 85
     sta L66_PALETTE                             ; B506 85 66
-    inc $5E                                     ; B508 E6 5E
+    inc L5E_ENDING_STATE                        ; B508 E6 5E
     rts                                         ; B50A 60
 
 ; routine 27.
 palette_8B:
     lda #$8B                                    ; B50B A9 8B
     sta L66_PALETTE                             ; B50D 85 66
-    inc $5E                                     ; B50F E6 5E
+    inc L5E_ENDING_STATE                        ; B50F E6 5E
     rts                                         ; B511 60
 
 ; routine 16 and 28.
@@ -6833,20 +6841,20 @@ LB512:
     jsr ufo_sprite                              ; B512 20 69 B5
     lda #$87                                    ; B515 A9 87
     sta L66_PALETTE                             ; B517 85 66
-    inc $5E                                     ; B519 E6 5E
+    inc L5E_ENDING_STATE                        ; B519 E6 5E
     rts                                         ; B51B 60
 
 ; routine 14.
 ufo_descend:
-    lda $50                                     ; B51C A5 50
+    lda L50_UFO_Y                               ; B51C A5 50
     cmp #$44                                    ; B51E C9 44
     if_eq                                       ; B520 D0 05
-        inc $5E                                 ; B522 E6 5E
+        inc L5E_ENDING_STATE                    ; B522 E6 5E
     else                                        ; B524 4C 2F B5
         lda L43_CLOCK                           ; B527 A5 43
         and #$03                                ; B529 29 03
         if_eq                                   ; B52B D0 02
-            inc $50                             ; B52D E6 50
+            inc L50_UFO_Y                       ; B52D E6 50
         end_if
     end_if
     jsr ufo_sprite                              ; B52F 20 69 B5
@@ -6854,15 +6862,15 @@ ufo_descend:
 
 ; routine 22.
 ufo_ascend_1:
-    lda $50                                     ; B533 A5 50
+    lda L50_UFO_Y                               ; B533 A5 50
     cmp #$30                                    ; B535 C9 30
     if_eq                                       ; B537 D0 05
-        inc $5E                                 ; B539 E6 5E
+        inc L5E_ENDING_STATE                    ; B539 E6 5E
     else                                        ; B53B 4C 46 B5
         lda L43_CLOCK                           ; B53E A5 43
         and #$03                                ; B540 29 03
         if_eq                                   ; B542 D0 02
-            dec $50                             ; B544 C6 50
+            dec L50_UFO_Y                       ; B544 C6 50
         end_if
     end_if
     jsr ufo_sprite                              ; B546 20 69 B5
@@ -6870,17 +6878,17 @@ ufo_ascend_1:
 
 ; routine 24.
 ufo_ascend_2:
-    lda $4F                                     ; B54A A5 4F
+    lda L4F_UFO_X                               ; B54A A5 4F
     cmp #$E0                                    ; B54C C9 E0
     if_eq                                       ; B54E D0 05
-        inc $5E                                 ; B550 E6 5E
+        inc L5E_ENDING_STATE                    ; B550 E6 5E
     else                                        ; B552 4C 61 B5
-        dec $4F                                 ; B555 C6 4F
-        dec $4F                                 ; B557 C6 4F
+        dec L4F_UFO_X                           ; B555 C6 4F
+        dec L4F_UFO_X                           ; B557 C6 4F
         lda L43_CLOCK                           ; B559 A5 43
         and #$01                                ; B55B 29 01
         if_eq                                   ; B55D D0 02
-            dec $50                             ; B55F C6 50
+            dec L50_UFO_Y                       ; B55F C6 50
         end_if
     end_if
     jsr ufo_sprite                              ; B561 20 69 B5
@@ -6891,13 +6899,13 @@ LB565:
     jsr RB371                                   ; B565 20 71 B3
     rts                                         ; B568 60
 
-; Draw UFO sprite at coordinates ($4F, $50)
+; Draw UFO sprite at coordinates (L4F_UFO_X, L50_UFO_Y)
 ; Toggle bottom part every 4 frames.
 ufo_sprite:
-    lda $4F                                     ; B569 A5 4F
+    lda L4F_UFO_X                               ; B569 A5 4F
     if_ne                                       ; B56B F0 1B
         sta L44_SPRITE_X                        ; B56D 85 44
-        lda $50                                 ; B56F A5 50
+        lda L50_UFO_Y                           ; B56F A5 50
         sta L45_SPRITE_Y                        ; B571 85 45
         lda #$34 ; UFO top                      ; B573 A9 34
         sta L53_SPRITE_NUM                      ; B575 85 53
@@ -6917,11 +6925,11 @@ LB589:
     jsr ufo_with_beam                           ; B589 20 A7 B5
     lda L39_V1_Y                                ; B58C A5 39
     sub #$24                                    ; B58E 38 E9 24
-    cmp $50                                     ; B591 C5 50
+    cmp L50_UFO_Y                               ; B591 C5 50
     if_cc                                       ; B593 B0 09
         lda #$F8                                ; B595 A9 F8
         sta L39_V1_Y                            ; B597 85 39
-        inc $5E                                 ; B599 E6 5E
+        inc L5E_ENDING_STATE                    ; B599 E6 5E
     else                                        ; B59B 4C A6 B5
         lda L43_CLOCK                           ; B59E A5 43
         and #$03                                ; B5A0 29 03
@@ -7046,7 +7054,7 @@ RB5B8:
 ; Finish frame
 ; Draw sprites (if needed), call audio routine, wait for NMI.
 RB654_NEXT_FRAME:
-    lda $5D                                     ; B654 A5 5D
+    lda L5D_SHOW_LEVEL                          ; B654 A5 5D
     if_ne                                       ; B656 F0 03
         jsr R87A2_LEVEL_SPRITES                 ; B658 20 A2 87
     end_if
@@ -7287,7 +7295,7 @@ RB74B:
 ; Reads bytes X and X+1 in zero page.
 ; If they differ in bit 1 (#$02) then set carry.
 ; Call ROR on Y bytes starting at X.
-; (Always called with X = #$17 and Y = #2.)
+; (Always called with X = #L17_LFSR_0 and Y = #2.)
 ; This is the same LFSR as RD295.
 RB771_STEP_LFSR:
     lda $00,x                                   ; B771 B5 00
