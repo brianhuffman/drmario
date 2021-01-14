@@ -674,6 +674,7 @@ R82D1_PRINT_LEVEL:
 ; Row L0300_P1_UPDATE_ROW for player 1, and L0380_P2_UPDATE_ROW for player 2.
 ; Called from NMI handler.
 R82F7_PRINT_PLAYFIELD_ROWS:
+.scope
     lda #$04                                    ; 82F7 A9 04
     sta L58_                                    ; 82F9 85 58
     lda L0300_P1_UPDATE_ROW                     ; 82FB AD 00 03
@@ -694,7 +695,7 @@ R82F7_PRINT_PLAYFIELD_ROWS:
     end_if
     rts                                         ; 8320 60
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; Copy one row of playfield to display, and decrement row number.
 ; Input/output: L80_UPDATE_ROW is row number of playfield.
 ; Called from R82F7.
@@ -762,6 +763,7 @@ R8321_PRINT_PLAYFIELD_ROW:
         dec L80_UPDATE_ROW                      ; 8390 C6 80
     end_if
     rts                                         ; 8392 60
+.endscope
 
 ; ----------------------------------------------------------------------------
 ; Depending on update flags, copy various data into PPU nametables:
@@ -2124,10 +2126,11 @@ L8C28:
 ; ----------------------------------------------------------------------------
 ; R9BB9_GAME_STATE_MACHINE routine 1.
 L8C6F_GAME_STATE_1:
+.scope
     jsr R8C73                                   ; 8C6F 20 73 8C
     rts                                         ; 8C72 60
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; Jump to one of 9 subroutines based on L87_STATE.
 ; This is the sequence of stuff that needs to get done once a pill is placed.
 R8C73:
@@ -2143,7 +2146,7 @@ R8C73:
     .word L92DB_7_FIX_SPLIT_PILLS ; to state 8 if L94_ = 0, else state 1.
     .word L8D4F_8
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; R8C73 routine 0.
 ; Reset combo count. Go to state 1.
 L8C8A_0:
@@ -2152,7 +2155,7 @@ L8C8A_0:
     inc L87_STATE                               ; 8C8E E6 87
     rts                                         ; 8C90 60
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; R8C73 routine 1 and 2.
 ; Go to state 2 and 3 (respectively).
 L8C91_1:
@@ -2160,7 +2163,7 @@ L8C91_2:
     inc L87_STATE                               ; 8C91 E6 87
     rts                                         ; 8C93 60
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; R8C73 routine 3.
 ; Make tiles fall down.
 ; TODO: What is L06F1_ used for? (Probably music/sound effects.)
@@ -2273,7 +2276,7 @@ L8C94_3_TILES_FALL:
     end_if
     rts                                         ; 8D4E 60
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; R8C73 routine 8.
 ; Go to state 0, L97_GAME_STATE to 2.
 L8D4F_8:
@@ -2281,6 +2284,8 @@ L8D4F_8:
     sta L87_STATE                               ; 8D51 85 87
     inc L97_GAME_STATE                          ; 8D53 E6 97
     rts                                         ; 8D55 60
+
+.endscope
 
 ; ----------------------------------------------------------------------------
 ; R9BB9_GAME_STATE_MACHINE routine 0.
@@ -2299,7 +2304,7 @@ L8D56_GAME_STATE_0:
     end_if
     rts                                         ; 8D6F 60
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; Called once, in L8D56.
 R8D70_DROP_PILL:
     begin
@@ -2348,7 +2353,7 @@ R8D70_DROP_PILL:
     end
     rts                                         ; 8DBE 60
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; Increment or decrement pill column based on controller input.
 ; Repeat every 6 frames after holding for 16.
 R8DBF_PILL_MOVE:
@@ -2412,7 +2417,7 @@ R8DBF_PILL_MOVE:
     end
     rts                                         ; 8E2A 60
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; Increment or decrement LA5_PILL_DIR (mod 4) depending on controller input.
 R8E2B_PILL_ROTATE:
     lda LA5_PILL_DIR                            ; 8E2B A5 A5
@@ -2443,7 +2448,7 @@ R8E2B_PILL_ROTATE:
     end_if
     rts                                         ; 8E5F 60
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; Adjust or undo pill rotation if there are collisions.
 ; Previous DIR and COLUMN values are passed in L4A_TEMP/L4B_TEMP.
 R8E60_CHECK_ROTATE:
@@ -2473,6 +2478,7 @@ R8E60_CHECK_ROTATE:
         sta L85_PILL_COLUMN                     ; 8E8A 85 85
     end
     rts                                         ; 8E8C 60
+
 .endscope ;L8D56
 
 ; ----------------------------------------------------------------------------
@@ -2723,6 +2729,7 @@ L8FEF_TOP_6:
 ; Input: L8B_SPEED+1 is amount to add to score (10s place)
 ; Input: LAD_VIRUS_COMBO is streak length (index for score multiplier)
 R8FF4_INCREMENT_SCORE:
+.scope
     lda L0727_NUM_PLAYERS                       ; 8FF4 AD 27 07
     cmp #$01                                    ; 8FF7 C9 01
     if_eq                                       ; 8FF9 D0 20
@@ -2745,7 +2752,7 @@ R8FF4_INCREMENT_SCORE:
     end_if
     rts                                         ; 901B 60
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; Normalize score.
 R901C_NORMALIZE_SCORE:
     lda L0729_SCORE_0                           ; 901C AD 29 07
@@ -2789,6 +2796,8 @@ R901C_NORMALIZE_SCORE:
         dec L072E_SCORE_5                       ; 9071 CE 2E 07
     end_if
     rts                                         ; 9074 60
+
+.endscope
 
 ; ----------------------------------------------------------------------------
 ; Load P1 state into zero page
@@ -3023,7 +3032,6 @@ L91BB:
     rts                                         ; 91C1 60
 .endscope
 
-; ----------------------------------------------------------------------------
 ; Called by NMI handler.
 ; Increment 16-bit value in L36_/L37_.
 R91C2_INCREMENT_L36:
@@ -3782,6 +3790,7 @@ L9646:
 ; Also set L80_UPDATE_ROW to #$0F.
 ; Called from RB24F_CHECK_WIN and L9532_TOP_5.
 R9682_DRAW_GAME:
+.scope
     lda #$04                                    ; 9682 A9 04
     sta L58_                                    ; 9684 85 58
     jsr R9691_DRAW_MESSAGE                      ; 9686 20 91 96
@@ -3790,7 +3799,7 @@ R9682_DRAW_GAME:
     jsr R9691_DRAW_MESSAGE                      ; 968D 20 91 96
     rts                                         ; 9690 60
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; In page pointed to by L58_ (#$04 or #$05),
 ; Copy 40-byte "DRAW" message from LA80F to offsets $28-$4F
 ; Also set L80_UPDATE_ROW to #$0F.
@@ -3811,9 +3820,10 @@ R9691_DRAW_MESSAGE:
     sta L80_UPDATE_ROW                          ; 96A9 85 80
     rts                                         ; 96AB 60
 
+.endscope
+
 ; ----------------------------------------------------------------------------
 ; unreachable?
-.scope
     lda #$00                                    ; 96AC A9 00
     sta L57_                                    ; 96AE 85 57
     ldy #$7F                                    ; 96B0 A0 7F
@@ -3826,7 +3836,6 @@ R9691_DRAW_MESSAGE:
     lda #$0F                                    ; 96BB A9 0F
     sta L80_UPDATE_ROW                          ; 96BD 85 80
     rts                                         ; 96BF 60
-.endscope
 
 ; ----------------------------------------------------------------------------
 ; Clear bottom half of playfield.
@@ -4417,9 +4426,8 @@ L9AC2:
     inc L46_TOP_STATE                           ; 9AC2 E6 46
 L9AC4:
     rts                                         ; 9AC4 60
-.endscope ;L9953_TOP_1
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; Move left or right on level select slider.
 ; Called by L9953_TOP_1, if L65_OPTION_SEL == 0.
 R9AC5_SELECT_LEVEL:
@@ -4477,7 +4485,7 @@ R9AC5_SELECT_LEVEL:
     end
     rts                                         ; 9B1C 60
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; Move left or right on speed selector.
 ; Called by L9953_TOP_1, if L65_OPTION_SEL == 1.
 R9B1D_SELECT_SPEED:
@@ -4504,7 +4512,7 @@ R9B1D_SELECT_SPEED:
     end_if
     rts                                         ; 9B41 60
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; Load sprites for settings screen pointers.
 R9B42:
     ldx L96_LEVEL                               ; 9B42 A6 96
@@ -4532,6 +4540,8 @@ R9B42:
     ; Sprite $02 or $03
     ; Slider pointer (possibly flipped)
     rts                                         ; 9B72 60
+
+.endscope ;L9953_TOP_1
 
 ; ----------------------------------------------------------------------------
 ; jump table vector 4
@@ -4582,6 +4592,7 @@ L9BB4:
 ; Jump to one of 7 subroutines based on L97_GAME_STATE.
 
 R9BB9_GAME_STATE_MACHINE:
+.scope
     lda L97_GAME_STATE                          ; 9BB9 A5 97
     jsr RB8AC_JUMP_TABLE                        ; 9BBB 20 AC B8
     .word L8D56_GAME_STATE_0 ; 0 -> 0 or 1
@@ -4593,20 +4604,20 @@ R9BB9_GAME_STATE_MACHINE:
     .word L9BCC_GAME_STATE_5 ; 5: to state 6
     .word L9F87_GAME_STATE_6 ; 6: lots  ; can go to state 3
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; R9BB9_GAME_STATE_MACHINE routine 5.
 L9BCC_GAME_STATE_5:
     inc L97_GAME_STATE                          ; 9BCC E6 97
     rts                                         ; 9BCE 60
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; R9BB9_GAME_STATE_MACHINE routine 3.
 L9BCF_GAME_STATE_3:
     lda #$00                                    ; 9BCF A9 00
     sta L97_GAME_STATE                          ; 9BD1 85 97
     rts                                         ; 9BD3 60
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; R9BB9_GAME_STATE_MACHINE routine 2.
 ; Goes to state 1 (if garbage is made) or 5 (otherwise).
 L9BD4_GAME_STATE_2:
@@ -4622,7 +4633,6 @@ L9BD4_GAME_STATE_2:
     end_if
     rts                                         ; 9BE8 60
 
-; ----------------------------------------------------------------------------
 ; If L8F_CLEAR_COMBO >= #$02 then L98_GARBAGE += L8F_CLEAR_COMBO, $06F4 = $58 - #3.
 ; Then zero L8F_CLEAR_COMBO.
 R9BE9:
@@ -4639,7 +4649,6 @@ R9BE9:
     sta L8F_CLEAR_COMBO                         ; 9BFE 85 8F
     rts                                         ; 9C00 60
 
-; ----------------------------------------------------------------------------
 ; Make garbage pieces in 2-player mode?
 ; Go to state 1 if garbage was made; else state 5.
 R9C01_DROP_GARBAGE:
@@ -4723,10 +4732,12 @@ R9C01_DROP_GARBAGE:
     end_if
     rts                                         ; 9C90 60
 .endscope
+.endscope
 
 ; ----------------------------------------------------------------------------
 ; R8157 jump table vector 8
 L9C91_TOP_8:
+.scope
 .scope
     lda L0741_DEMO_MODE                         ; 9C91 AD 41 07
     bne L9CEA                                   ; 9C94 D0 54
@@ -4784,7 +4795,7 @@ L9CEA:
     jmp L9CD2                                   ; 9CFC 4C D2 9C
 .endscope
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; Create a new virus and put it on the playfield.
 ; If both players have the same level, then put
 ; the virus on both playfields.
@@ -5000,6 +5011,7 @@ L9D61:
     dec LA8_VIRUS_TO_ADD                        ; 9E49 C6 A8
 L9E4B:
     rts                                         ; 9E4B 60
+.endscope
 .endscope
 
 ; ----------------------------------------------------------------------------
@@ -6452,6 +6464,7 @@ LB246:
 ; and finally set L46_TOP_STATE to 3.
 RB24F_CHECK_WIN:
 .scope
+.scope
     lda L0324_P1_VIRUS                          ; B24F AD 24 03
     if_ne                                       ; B252 F0 08
         lda L03A4_P2_VIRUS                      ; B254 AD A4 03
@@ -6565,7 +6578,7 @@ LB336:
     rts                                         ; B336 60
 .endscope
 
-; ----------------------------------------------------------------------------
+; --------------------------------------
 ; Print "STAGE CLEAR" message in playfield at $0400 or $0500.
 ; Fill the page with $FF, and copy 80 bytes from LA871.
 ; Called by RB24F_CHECK_WIN.
@@ -6585,6 +6598,7 @@ RB337_STAGE_CLEAR:
         iny                                     ; B34D C8
     forever                                     ; B34E 4C 46 B3
     rts                                         ; B351 60
+.endscope
 
 ; ----------------------------------------------------------------------------
 ; Initialize L0580_
@@ -6692,6 +6706,7 @@ LB40A:
 ; ----------------------------------------------------------------------------
 ; If L8B_SPEED == #$02 and L96_LEVEL == #$15 then RB43F_ENDING.
 RB42F_MAYBE_ENDING:
+.scope
     lda L8B_SPEED                               ; B42F A5 8B
     cmp #$02                                    ; B431 C9 02
     if_eq                                       ; B433 D0 09
@@ -6714,7 +6729,6 @@ RB42F_MAYBE_ENDING:
 ; JSR $9f28 $b371 $b569 $b5a7 $b8ac
 
 RB43F_ENDING:
-.scope
     lda L5E_ENDING_STATE                        ; B43F A5 5E
     jsr RB8AC_JUMP_TABLE                        ; B441 20 AC B8
     .word clouds_256 ; 0
