@@ -34,7 +34,6 @@
 .define L17_LFSR_0       $17
 .define L18_LFSR_1       $18
 .define L33_NMI_SIGNAL   $33 ; 1 means NMI has run
-.define L34_UNUSED       $34 ; set to #$0E when main loop starts
 .define L36_             $36
 .define L37_             $37
 .define L38_V1_X         $38
@@ -98,18 +97,15 @@
 .define L85_PILL_COLUMN  $85
 .define L86_PILL_ROW     $86
 .define L87_STATE        $87
-.define L88_UNUSED       $88 ; set to 0
 .define L89_LOST         $89
 .define L8A_EXTRA_SPEED  $8A
 .define L8B_SPEED        $8B
-.define L8E_UNUSED       $8E ; length of cleared row/col is written but never read
 .define L8F_CLEAR_COMBO  $8F
 .define L90_PILL_COUNT_0 $90
 .define L91_PILL_COUNT_1 $91
 .define L92_DROP_TIMER   $92
 .define L93_REPEAT_TIMER $93
 .define L94_             $94
-.define L95_UNUSED       $95 ; written but never read
 .define L96_LEVEL        $96
 .define L97_GAME_STATE   $97
 .define L98_GARBAGE      $98
@@ -132,8 +128,6 @@
 .define LF7_P1_INPUT_OLD $F7
 .define LF8_P2_INPUT_OLD $F8
 .define LFB_             $FB ; used in controller reading routine, but is never initialized
-.define LFC_UNUSED       $FC ; set to 0
-.define LFD_UNUSED       $FD ; set to 0
 .define LFE_PPUMASK      $FE ; copied to $2001 (PPUMASK)
 .define LFF_PPUCTRL      $FF ; copied to $2000 (PPUCTRL)
 
@@ -201,8 +195,6 @@ L0705_TOP_SCORE_5           := $0705
 
 L0710_RESET_STRING          := $0710
 
-L0720_UNUSED                := $0720
-L0722_UNUSED                := $0722
 L0723_DEBUG_DISABLE_SPEEDUP := $0723
 L0724_DEBUG_DISABLE_FALLING := $0724
 L0725_MAX_WINS              := $0725
@@ -363,12 +355,9 @@ cold_boot:
     sta L0396_P2_LEVEL                          ; 80B3 8D 96 03
     sta L0731_MUSIC_CHOICE                      ; 80B6 8D 31 07
     lda #$01                                    ; 80B9 A9 01
-    sta L0720_UNUSED                            ; 80BB 8D 20 07
     sta L0727_NUM_PLAYERS                       ; 80BE 8D 27 07
     sta L030B_P1_SPEED                          ; 80C1 8D 0B 03
     sta L038B_P2_SPEED                          ; 80C4 8D 8B 03
-    lda #$02                                    ; 80C7 A9 02
-    sta L0722_UNUSED                            ; 80C9 8D 22 07
     lda #$03                                    ; 80CC A9 03
     sta L0725_MAX_WINS                          ; 80CE 8D 25 07
     ; Copy string from $9FEE-$9FF7 to $0710-$0719.
@@ -386,10 +375,8 @@ warm_boot:
     dex                                         ; 80E0 CA
     stx L18_LFSR_1                              ; 80E1 86 18
     ldy #$00                                    ; 80E3 A0 00
-    sty LFD_UNUSED                              ; 80E5 84 FD
     sty L2005_PPUSCROLL                         ; 80E7 8C 05 20
     ldy #$00                                    ; 80EA A0 00
-    sty LFC_UNUSED                              ; 80EC 84 FC
     sty L2005_PPUSCROLL                         ; 80EE 8C 05 20
     lda #$90                                    ; 80F1 A9 90
     sta LFF_PPUCTRL                             ; 80F3 85 FF
@@ -427,7 +414,6 @@ warm_boot:
     jsr RB689_ENABLE_VIDEO                      ; 813E 20 89 B6
     jsr RB654_NEXT_FRAME                        ; 8141 20 54 B6
     lda #$0E                                    ; 8144 A9 0E
-    sta L34_UNUSED                              ; 8146 85 34
     loop
         jsr R8157_TOP_STATE_MACHINE             ; 8148 20 57 81
         jsr R978E_PAUSE                         ; 814B 20 8E 97
@@ -534,7 +520,6 @@ L8206_TOP_3:
     sta L98_GARBAGE                             ; 8210 85 98
     sta L97_GAME_STATE                          ; 8212 85 97
     sta L87_STATE                               ; 8214 85 87
-    sta L88_UNUSED ; redundant                  ; 8216 85 88
     sta L89_LOST                                ; 8218 85 89
     sta L80_UPDATE_ROW                          ; 821A 85 80
     sta L7D_TOSS_TIMER                          ; 8220 85 7D
@@ -2943,14 +2928,7 @@ L91FB_5_CHECK_HORIZONTAL_CLEAR:
                 if_pl ; at least 4-in-a-row     ; 9242 30 62
                     ; record cleared color
                     inc L8F_CLEAR_COMBO         ; 9244 E6 8F
-                    sta L8E_UNUSED              ; 9246 85 8E
                     jsr R944B_CLEARED_COLOR     ; 9248 20 4B 94
-                    lda L59_TEMP                ; 9254 A5 59
-                    and #$78                    ; 9256 29 78
-                    lsr a                       ; 9258 4A
-                    lsr a                       ; 9259 4A
-                    lsr a                       ; 925A 4A
-                    sta L95_UNUSED              ; 925B 85 95
                     lda L5A_TEMP                ; 925D A5 5A
                     sta L49_TEMP                ; 925F 85 49
                     lda L59_TEMP                ; 9261 A5 59
@@ -3237,14 +3215,7 @@ L9469_6_CHECK_VERTICAL_CLEAR:
             cmp #$03                            ; 94A6 C9 03
             if_pl                               ; 94A8 30 5F
                 inc L8F_CLEAR_COMBO             ; 94AA E6 8F
-                sta L8E_UNUSED                  ; 94AC 85 8E
                 jsr R944B_CLEARED_COLOR         ; 94AE 20 4B 94
-                lda L59_TEMP                    ; 94BA A5 59
-                and #$78                        ; 94BC 29 78
-                lsr a                           ; 94BE 4A
-                lsr a                           ; 94BF 4A
-                lsr a                           ; 94C0 4A
-                sta L95_UNUSED                  ; 94C1 85 95
                 lda L5A_TEMP                    ; 94C3 A5 5A
                 sta L49_TEMP                    ; 94C5 85 49
                 lda L59_TEMP                    ; 94C7 A5 59
