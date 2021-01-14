@@ -322,7 +322,7 @@ LD470:
     lda #$C0                                    ; D470 A9 C0
     sta $4017                                   ; D472 8D 17 40
     jsr RD295 ; advance LFSR                    ; D475 20 95 D2
-    lda L068D                                   ; D478 AD 8D 06
+    lda L068D_                                  ; D478 AD 8D 06
     cmp #$05                                    ; D47B C9 05
     beq LD449                                   ; D47D F0 CA
     ; case L068D = 0
