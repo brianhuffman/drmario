@@ -2341,6 +2341,7 @@ R8D70_DROP_PILL:
         sta L06F1_                              ; 8DA9 8D F1 06
         jsr R8F52_PLACE_PILL                    ; 8DAC 20 52 8F
         ; make the program crash if L0740_CHECKSUM_FAIL is nonzero
+.if 0
         lda L0740_CHECKSUM_FAIL                 ; 8DAF AD 40 07
         if_ne                                   ; 8DB2 F0 05
             lda L53_SPRITE_NUM                  ; 8DB4 A5 53
@@ -2348,6 +2349,7 @@ R8D70_DROP_PILL:
             pha                                 ; 8DB7 48
             pha                                 ; 8DB8 48
         end_if
+.endif
         inc L97_GAME_STATE                      ; 8DB9 E6 97
         jmp break                               ; 8DBB 4C BE 8D
     end
@@ -2549,7 +2551,7 @@ R8E8D_NEW_PILL:
     lda #$00                                    ; 8ECB A9 00
     sta L7D_TOSS_TIMER                          ; 8ECD 85 7D
     sta LA2_NEXT_DIR                            ; 8ECF 85 A2
-    lda #$02                                    ; 8ED1 A9 02
+    lda #$03                                    ; 8ED1 A9 02
     sta LA3_NEXT_SIZE                           ; 8ED3 85 A3
     lda #$03                                    ; 8ED5 A9 03
     sta L85_PILL_COLUMN                         ; 8ED7 85 85
@@ -5623,11 +5625,11 @@ LA39C:
     .dbyt $2190 ; row 12, col 16
 ; ----------------------------------------------------------------------------
 ; unused
-    .byte $00,$04,$08,$12,$16,$20,$24,$28,$32,$36
-    .byte $40,$44,$48,$52,$56,$60,$64,$68,$72,$76,$80,$84,$88,$92,$96,$30
-    .byte $30,$30,$30,$30,$30,$30,$30,$30,$30,$30,$30,$30,$30,$30,$28,$28
-    .byte $20,$20,$18,$18,$18,$18,$18,$18,$18,$18,$18,$18,$18,$18,$18,$18
-    .byte $18,$18
+;    .byte $00,$04,$08,$12,$16,$20,$24,$28,$32,$36
+;    .byte $40,$44,$48,$52,$56,$60,$64,$68,$72,$76,$80,$84,$88,$92,$96,$30
+;    .byte $30,$30,$30,$30,$30,$30,$30,$30,$30,$30,$30,$30,$30,$30,$28,$28
+;    .byte $20,$20,$18,$18,$18,$18,$18,$18,$18,$18,$18,$18,$18,$18,$18,$18
+;    .byte $18,$18
 
 ; ----------------------------------------------------------------------------
 ; 35-byte lookup table used in R9CFF_ADD_VIRUS, indexed by L96_LEVEL.
@@ -5668,8 +5670,12 @@ LA458:
 ; ----------------------------------------------------------------------------
 ; Used in R90D3_COLLISION, indexed by LA6_PILL_SIZE-2.
 LA45B:
-    .byte $00,$FF,$FF,$60,$68,$70,$78,$80,$88,$90,$98,$C0,$C1,$C2,$B0,$B1
-    .byte $B2,$08,$F8,$01,$FF,$50,$40,$70,$60
+    .byte $00,$FF,$FF
+; ----------------------------------------------------------------------------
+; unused
+    .byte $60,$68,$70,$78,$80,$88,$90,$98
+    .byte $C0,$C1,$C2,$B0,$B1,$B2
+    .byte $08,$F8,$01,$FF,$50,$40,$70,$60
 ; ----------------------------------------------------------------------------
 ; lookup table, 16 bytes, indexed by L86_PILL_ROW or ...
 ; playfield offsets for rows
@@ -5690,14 +5696,19 @@ LA494:
     .byte $00,$00,$00,$00
     .byte $00,$00,$00,$00
     .byte $00,$09,$12,$1B
+    .byte $24,$31,$3E,$4B
 ; ----------------------------------------------------------------------------
 ; lookup table, used in R8772_PILL_SPRITE, indexed by values from LA494.
 ; Sprite data: Y-coord, tile index, flags, X-coord
 LA4A0:
     .byte $00,$60,$02,$00,$00,$70,$02,$08,$FF ; Pill L-R, (0,0) and (+8,0)
     .byte $00,$50,$02,$00,$F8,$40,$02,$00,$FF ; Pill D-U, (0,0) and (0,-8)
-    .byte $00,$70,$02,$08,$00,$60,$02,$00,$FF ; Pill R-L, (+8,0) and (0,0)
+    .byte $00,$70,$02,$08,$00,$60,$02,$00,$FF ; Pill R-L, (0,+8) and (0,0)
     .byte $F8,$40,$02,$00,$00,$50,$02,$00,$FF ; Pill U-D, (-8,0) and (0,0)
+    .byte $00,$60,$02,$F8,$00,$A0,$02,$00,$00,$70,$02,$08,$FF ; Pill L-R, (-8,0) (0,0) (+8,0)
+    .byte $08,$50,$02,$00,$00,$90,$02,$00,$F8,$40,$02,$00,$FF ; Pill D-U, (0,+8) (0,0) (0,-8)
+    .byte $00,$70,$02,$08,$00,$A0,$02,$00,$00,$60,$02,$F8,$FF ; Pill R-L, (+8,0) (0,0) (-8,0)
+    .byte $F8,$40,$02,$00,$00,$90,$02,$00,$08,$50,$02,$00,$FF ; Pill U-D, (0,-8) (0,0) (0,+8)
 ; ----------------------------------------------------------------------------
 ; 20-byte lookup table, used in R90D3_COLLISION.
 LA4C4:
@@ -6300,12 +6311,12 @@ LAEFB:
     .byte $18,$7D,$00,$08,$18,$7E,$00,$10,$18,$7F,$00,$18,$20,$73,$00,$00
     .byte $20,$74,$00,$08,$20,$75,$00,$10,$80
 ; Sprite $33: 8-way lines
-; 90 91 90'
-; 92    92'
-; 90`91`90"
+; C0 C1 C0'
+; C2    C2'
+; C0`C1`C0"
 LAF44:
-    .byte $00,$90,$00,$00,$00,$91,$00,$08,$00,$90,$40,$10,$08,$92,$00,$00
-    .byte $08,$92,$40,$10,$10,$90,$80,$00,$10,$91,$80,$08,$10,$90,$C0,$10
+    .byte $00,$C0,$00,$00,$00,$C1,$00,$08,$00,$C0,$40,$10,$08,$C2,$00,$00
+    .byte $08,$C2,$40,$10,$10,$C0,$80,$00,$10,$C1,$80,$08,$10,$C0,$C0,$10
     .byte $80
 ; Sprite $34: UFO top
 ;       0A 0B 0C 0D
@@ -8004,6 +8015,7 @@ LBD7D:
 ; Argument to RB6C2_PRINT
 ; Level screen
 ; 1024 bytes of data for PPU addresses $2000 to $23FF
+; unused: 9c
 LC198:
     .byte $20,$00,$20
     .byte $FC,$FF,$FC,$FF,$FC,$FF,$FC,$FF
@@ -8023,8 +8035,8 @@ LC198:
     .byte $20,$60,$20
     .byte $FF,$FC,$FF,$FC,$FF,$FC,$FF,$FC
     .byte $FF,$FC,$FF,$FC,$FF,$FC,$FF,$FC
-    .byte $FF,$FC,$FF,$FC,$FF,$FC,$9B,$FC
-    .byte $9D,$FC,$9F,$FC,$FF,$99,$9A,$FC
+    .byte $FF,$FC,$FF,$FC,$FF,$FC,$FF,$FC
+    .byte $FF,$FC,$FF,$FC,$FF,$99,$9A,$FC
     .byte $20,$80,$20
     .byte $FC,$FF,$FC,$D5,$D6,$EC,$D6,$76
     .byte $FC,$FF,$FC,$FF,$FC,$FF,$FC,$FF
@@ -8086,12 +8098,12 @@ LC198:
     .byte $FF,$FF,$FF,$FF,$34,$FC,$FF,$FC
     .byte $D5,$D6,$EC,$D7,$FF,$FC,$FF,$FC
     .byte $22,$00,$20
-    .byte $FC,$FF,$FC,$90,$91,$65,$A0,$A1
+    .byte $FC,$FF,$FC,$89,$8A,$65,$9B,$9C
     .byte $FC,$FF,$FC,$33,$FF,$FF,$FF,$FF
     .byte $FF,$FF,$FF,$FF,$34,$FF,$E3,$E4
     .byte $E5,$E6,$E6,$E7,$E4,$E8,$FC,$FF
     .byte $22,$20,$20
-    .byte $FF,$FC,$92,$93,$FD,$FD,$FD,$A2
+    .byte $FF,$FC,$9D,$93,$FD,$FD,$FD,$9E
     .byte $A3,$FC,$FF,$33,$FF,$FF,$FF,$FF
     .byte $FF,$FF,$FF,$FF,$34,$FC,$D3,$FE
     .byte $FE,$FE,$FE,$FE,$FE,$D4,$FF,$FC
