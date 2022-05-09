@@ -5,8 +5,8 @@ default: drmario.nes
 all: drmario.nes drmario_a.nes
 
 test: drmario.nes drmario_a.nes
-	diff drmario.nes drmario.nes.gold
-	diff drmario_a.nes drmario_a.nes.gold
+	md5sum -c drmario.nes.md5
+	md5sum -c drmario_a.nes.md5
 
 clean:
 	rm -f drmario.o drmario_a.o drmario.nes drmario_a.nes
