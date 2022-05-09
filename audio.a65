@@ -1,53 +1,52 @@
-.define LE0_             $E0
+.define LE0_             $E0 ; pointer
 .define LE1_             $E1
-.define LE2_             $E2
+.define LE2_             $E2 ; pointer
 .define LE3_             $E3
-.define LE4_             $E4
-.define LE6_             $E6
+.define LE4_TEMP         $E4 ; used in RD6BA and RDD15
+.define LE6_             $E6 ; pointer
 .define LE7_             $E7
-.define LEA_             $EA
-.define LEB_             $EB
-.define LEC_             $EC
+.define LEA_UNUSED       $EA ; unused
+.define LEB_LFSR_0       $EB
+.define LEC_LFSR_1       $EC
 .define LED_VOICE_NUMBER $ED ; ranges from 0 to 4
-.define LEE_             $EE
-.define LEF_             $EF
+.define LEE_VOICE_OFFSET $EE ; 0=pulse1, 4=pulse2, 8=triangle
+.define LEF_             $EF ; index to L06F8
 
 L067E := $067E ; written, never read
-L067F := $067F ;
-L0680 := $0680 ; indexed by $EE
-L0681 := $0681 ;
+L067F := $067F ; incremented, never inspected
+L0680_PULSE1_FREQ := $0680 ; value for L4002_APU_PULSE1_FREQ, indexed by $EE
+L0681_PULSE1_LEN  := $0681 ; value for L4003_APU_PULSE1_LEN
 L0682 := $0682 ;
 L0683 := $0683 ;
-L0684 := $0684 ;
-L0685 := $0685 ;
-L068A := $068A ;
+L0684_PULSE2_FREQ := $0684 ; value for L4006_APU_PULSE2_FREQ
+L0685_PULSE2_LEN  := $0685 ; value for L4007_APU_PULSE2_LEN
+L068A := $068A ; tested in RDCE4
 L068B := $068B ;
 L068C := $068C ;
 L0690 := $0690 ; 10-byte struct, copied from LE26E
-L0691 := $0691 ;
-L0692 := $0692 ;
-L0693 := $0693 ;
-L069A := $069A ; 3-byte array
+L0691_SONG_TEMPO := $0691 ; index into LE204
+L0692 := $0692 ; array of 4 pointers
+L069A := $069A ; 2-byte array
 L069C := $069C ;
-L069D := $069D ; 3-byte array
+L069D := $069D ; 2-byte array
 L069F := $069F ;
-L06A0 := $06A0 ; array
+L06A0 := $06A0 ; array of 4 pointers (pointer to music program)
 L06A1 := $06A1 ;
-L06A7 := $06A7 ; array
+L06A7 := $06A7 ; array (offsets 1 to 8)
 L06A8 := $06A8 ;
-L06AC := $06AC ; 4-byte array
-L06B0 := $06B0 ; array
-L06B4 := $06B4 ; 4-byte array
-L06B8 := $06B8 ; array
-L06BC := $06BC ; array
-L06C0 := $06C0 ;
+L06AC_INSTR_PTR   := $06AC ; 4-byte array, current instruction pointer
+L06B0_LOOP_START  := $06B0 ; 4-byte array, loop-start instruction pointer
+L06B4_NOTE_TIMER  := $06B4 ; 4-byte array
+L06B8_NOTE_LENGTH := $06B8 ; 4-byte array
+L06BC_LOOP_COUNT  := $06BC ; 4-byte array, loop iterations remaining
+L06C0_PULSE1_SWEEP := $06C0 ; byte array, value for L4001_PULSE1_SWEEP
 L06C1 := $06C1 ;
 L06C3 := $06C3 ; array
 L06C7 := $06C7 ; array indexed by LED_VOICE_NUMBER
 L06C8 := $06C8 ;
 L06C9 := $06C9 ;
 L06CA := $06CA ;
-L06CC := $06CC ; ranges from 0 to 11, index into LE261
+L06CC_SONG_NUMBER := $06CC ; ranges from 0 to 12, index into LE261
 L06CD := $06CD ; array
 L06D1 := $06D1 ;
 L06D5 := $06D5 ; length-5 array indexed by LED_VOICE_NUMBER
@@ -76,7 +75,28 @@ L06FA := $06FA ;
 L06FB := $06FB ;
 L06FC := $06FC ;
 L06FD := $06FD ;
-L06FF := $06FF ; used only by RD295 routine
+L06FF_TEMP := $06FF ; temp used only by RD295_STEP_LFSR routine
+
+L4000_APU_PULSE1       := $4000
+L4001_APU_PULSE1_SWEEP := $4001
+L4002_APU_PULSE1_FREQ  := $4002
+L4003_APU_PULSE1_LEN   := $4003
+L4004_APU_PULSE2       := $4004
+L4005_APU_PULSE2_SWEEP := $4005
+L4006_APU_PULSE2_FREQ  := $4006
+L4007_APU_PULSE2_LEN   := $4007
+L4008_APU_TRIANGLE     := $4008
+L400A_APU              := $400A
+L400B_APU              := $400B
+L400C_APU_NOISE        := $400C
+L400E_APU              := $400E
+L400F_APU              := $400F
+L4010_APU              := $4010
+L4011_APU              := $4011
+L4012_APU              := $4012
+L4013_APU              := $4013
+L4015_APU              := $4015
+L4017_APU              := $4017
 
 ; ----------------------------------------------------------------------------
 ; Jump table used by LD3FB.
@@ -150,21 +170,21 @@ VD294:
 ; ----------------------------------------------------------------------------
 ; Linear Feedback Shift Register
 ; called from one place (RFFD0)
-; input: LEB_ LEC_
-; If LEB_ and LEC_ differ in bit 1, then new bit = 1
-RD295:
-    lda LEB_                                    ; D295 A5 EB
+; input: LEB_LFSR_0 LEC_LFSR_1
+; If LEB_LFSR_0 and LEC_LFSR_1 differ in bit 1, then new bit = 1
+RD295_STEP_LFSR:
+    lda LEB_LFSR_0                              ; D295 A5 EB
     and #$02                                    ; D297 29 02
-    sta L06FF                                   ; D299 8D FF 06
-    lda LEC_                                    ; D29C A5 EC
+    sta L06FF_TEMP                              ; D299 8D FF 06
+    lda LEC_LFSR_1                              ; D29C A5 EC
     and #$02                                    ; D29E 29 02
-    eor L06FF                                   ; D2A0 4D FF 06
+    eor L06FF_TEMP                              ; D2A0 4D FF 06
     clc                                         ; D2A3 18
     if_ne                                       ; D2A4 F0 01
         sec                                     ; D2A6 38
     end_if
-    ror LEB_                                    ; D2A7 66 EB
-    ror LEC_                                    ; D2A9 66 EC
+    ror LEB_LFSR_0                              ; D2A7 66 EB
+    ror LEC_LFSR_1                              ; D2A9 66 EC
     rts                                         ; D2AB 60
 
 ; ----------------------------------------------------------------------------
@@ -183,10 +203,10 @@ RD2AC:
 ; RFFD6 jumps directly here
 LD2BF:
     lda #$0F                                    ; D2BF A9 0F
-    sta $4015                                   ; D2C1 8D 15 40
+    sta L4015_APU                               ; D2C1 8D 15 40
     ; seed the LFSR
     lda #$55                                    ; D2C4 A9 55
-    sta LEB_                                    ; D2C6 85 EB
+    sta LEB_LFSR_0                              ; D2C6 85 EB
     jsr RD4E5 ;RFFD3                            ; D2C8 20 E5 D4
     rts                                         ; D2CB 60
 
@@ -317,6 +337,7 @@ LD3FB:
 ; if J > 0 then jump to (J-1)th vector at LD200+A
 ; if J = 0 and K > 0 then jump to (K-1)th vector at LD200+Y
 ; if J = 0 and K = 0 then rts
+.scope
     sta LE0_                                    ; D3FB 85 E0
     stx LED_VOICE_NUMBER                        ; D3FD 86 ED
     lda L06F0,x                                 ; D3FF BD F0 06
@@ -342,10 +363,10 @@ LD404:
     tay                                         ; D420 A8
     ; now Y = (A-1)<<1
     lda (LE0_),y                                ; D421 B1 E0
-    sta $E2                                     ; D423 85 E2
+    sta LE2_                                    ; D423 85 E2
     iny                                         ; D425 C8
     lda (LE0_),y                                ; D426 B1 E0
-    sta $E3                                     ; D428 85 E3
+    sta LE3_                                    ; D428 85 E3
     jmp (LE2_)                                  ; D42A 6C E2 00
 
 LD42D:
@@ -358,6 +379,7 @@ LD435:
     beq LD43E                                   ; D438 F0 04
     sty LE0_                                    ; D43A 84 E0
     bne LD404                                   ; D43C D0 C6
+.endscope
 LD43E:
     rts                                         ; D43E 60
 
@@ -365,7 +387,7 @@ LD43E:
 ; case L0682 = 0
 LD43F:
     inc L0682                                   ; D43F EE 82 06
-    jsr RD515                                   ; D442 20 15 D5
+    jsr RD515_SILENCE_APU                       ; D442 20 15 D5
     ; RD515 sets A = 0
     sta L0683                                   ; D445 8D 83 06
     rts                                         ; D448 60
@@ -396,12 +418,13 @@ LD449:
     rts                                         ; D46F 60
 
 ; RFFD0 jumps directly here
+; top-level audio routine
 LD470:
 .scope
     ; APU frame counter 5-step mode, IRQ inhibited
     lda #$C0                                    ; D470 A9 C0
-    sta $4017                                   ; D472 8D 17 40
-    jsr RD295 ; advance LFSR                    ; D475 20 95 D2
+    sta L4017_APU                               ; D472 8D 17 40
+    jsr RD295_STEP_LFSR                         ; D475 20 95 D2
     lda L068D_                                  ; D478 AD 8D 06
     cmp #$05                                    ; D47B C9 05
     beq LD449                                   ; D47D F0 CA
@@ -421,25 +444,26 @@ LD470:
         lda #$04                                ; D49E A9 04
         sta L06F3                               ; D4A0 8D F3 06
     end_if
-    lda L06F5                                   ; D4A3 AD F5 06
-    cmp #$05                                    ; D4A6 C9 05
-    if_ne                                       ; D4A8 F0 17
-        cmp #$0C                                ; D4AA C9 0C
-        if_ne                                   ; D4AC F0 03
-            jmp LD4C8                           ; D4AE 4C C8 D4
+    begin
+        lda L06F5                               ; D4A3 AD F5 06
+        cmp #$05                                ; D4A6 C9 05
+        if_ne                                   ; D4A8 F0 17
+            cmp #$0C                            ; D4AA C9 0C
+            if_ne                               ; D4AC F0 03
+                jmp break                       ; D4AE 4C C8 D4
+            end_if
+            jsr RD4E5                           ; D4B1 20 E5 D4
+            lda #$0C                            ; D4B4 A9 0C
+            sta L06F5                           ; D4B6 8D F5 06
+            lda #$02                            ; D4B9 A9 02
+            sta L06F0                           ; D4BB 8D F0 06
+            jmp break                           ; D4BE 4C C8 D4
         end_if
-        jsr RD4E5                               ; D4B1 20 E5 D4
-        lda #$0C                                ; D4B4 A9 0C
-        sta L06F5                               ; D4B6 8D F5 06
-        lda #$02                                ; D4B9 A9 02
-        sta L06F0                               ; D4BB 8D F0 06
-        jmp LD4C8                               ; D4BE 4C C8 D4
-    end_if
-    lda #$02                                    ; D4C1 A9 02
-    if_eq                                       ; D4C3 D0 00
-    end_if
-    sta L06F0                                   ; D4C5 8D F0 06
-LD4C8:
+        lda #$02                                ; D4C1 A9 02
+        if_eq                                   ; D4C3 D0 00
+        end_if
+        sta L06F0                               ; D4C5 8D F0 06
+    end
     jsr RD3D0 ; call pulse 2 vector             ; D4C8 20 D0 D3
     jsr RD3F5 ; call noise vector               ; D4CB 20 F5 D3
     jsr RD3E0 ; call voice 4 vector             ; D4CE 20 E0 D3
@@ -462,9 +486,9 @@ LD4C8:
 RD4E5:
     jsr RD4F4                                   ; D4E5 20 F4 D4
 RD4E8:
-    jsr RD515 ; silence/reset APU               ; D4E8 20 15 D5 ; called once
+    jsr RD515_SILENCE_APU                       ; D4E8 20 15 D5 ; called once
     lda #$00                                    ; D4EB A9 00
-    sta $4011                                   ; D4ED 8D 11 40
+    sta L4011_APU                               ; D4ED 8D 11 40
     sta L069C                                   ; D4F0 8D 9C 06
     rts                                         ; D4F3 60
 
@@ -498,15 +522,15 @@ RD4F4:
 ; $400C = #$10 Noise channel, volume = 0
 ; $4011 = #$00 DMC direct load = 0
 
-RD515:
+RD515_SILENCE_APU:
     lda #$00                                    ; D515 A9 00
-    sta $4011                                   ; D517 8D 11 40
+    sta L4011_APU                               ; D517 8D 11 40
     lda #$10                                    ; D51A A9 10
-    sta $4000                                   ; D51C 8D 00 40
-    sta $4004                                   ; D51F 8D 04 40
-    sta $400C                                   ; D522 8D 0C 40
+    sta L4000_APU_PULSE1                        ; D51C 8D 00 40
+    sta L4004_APU_PULSE2                        ; D51F 8D 04 40
+    sta L400C_APU_NOISE                         ; D522 8D 0C 40
     lda #$00                                    ; D525 A9 00
-    sta $4008                                   ; D527 8D 08 40
+    sta L4008_APU_TRIANGLE                      ; D527 8D 08 40
     rts                                         ; D52A 60
 
 ; ----------------------------------------------------------------------------
@@ -591,9 +615,9 @@ VD577:
     tay                                         ; D581 A8
     inc L06DF                                   ; D582 EE DF 06
     lda LD592,y                                 ; D585 B9 92 D5
-    sta $400E                                   ; D588 8D 0E 40
+    sta L400E_APU                               ; D588 8D 0E 40
     lda LD5A2,y                                 ; D58B B9 A2 D5
-    sta $400C                                   ; D58E 8D 0C 40
+    sta L400C_APU_NOISE                         ; D58E 8D 0C 40
     rts                                         ; D591 60
 
 ; ----------------------------------------------------------------------------
@@ -653,10 +677,10 @@ VD5EE:
     inc L06DF                                   ; D5F3 EE DF 06
 LD5F6:
     lda L06DF                                   ; D5F6 AD DF 06
-    sta $400E                                   ; D5F9 8D 0E 40
+    sta L400E_APU                               ; D5F9 8D 0E 40
     dec L06E3                                   ; D5FC CE E3 06
     lda L06E3                                   ; D5FF AD E3 06
-    sta $400C                                   ; D602 8D 0C 40
+    sta L400C_APU_NOISE                         ; D602 8D 0C 40
     cmp #$36                                    ; D605 C9 36
     beq LD615                                   ; D607 F0 0C
     cmp #$2F                                    ; D609 C9 2F
@@ -678,14 +702,14 @@ VD619:
     ldy #<LD31C                                 ; D61B A0 1C
     jsr RD52B                                   ; D61D 20 2B D5
     ; set random noise frequency 0-7
-    lda LEB_                                    ; D620 A5 EB
+    lda LEB_LFSR_0                              ; D620 A5 EB
     and #$07                                    ; D622 29 07
-    sta $400E                                   ; D624 8D 0E 40
+    sta L400E_APU                               ; D624 8D 0E 40
     rts                                         ; D627 60
 
 ; ----------------------------------------------------------------------------
 LD628:
-    sta $400E                                   ; D628 8D 0E 40
+    sta L400E_APU                               ; D628 8D 0E 40
     rts                                         ; D62B 60
 
 ; ----------------------------------------------------------------------------
@@ -712,17 +736,17 @@ RD62C:
         end_if
         inc L06DF                               ; D648 EE DF 06
         ; set random noise frequency + loop mode
-        lda LEB_                                ; D64B A5 EB
+        lda LEB_LFSR_0                          ; D64B A5 EB
         and #$07                                ; D64D 29 07
         ora #$80                                ; D64F 09 80
-        sta $400E                               ; D651 8D 0E 40
+        sta L400E_APU                           ; D651 8D 0E 40
         lda L06DF                               ; D654 AD DF 06
         cmp #$0B                                ; D657 C9 0B
         beq LD666                               ; D659 F0 0B
         ora #$10                                ; D65B 09 10
-        sta $400C                               ; D65D 8D 0C 40
+        sta L400C_APU_NOISE                     ; D65D 8D 0C 40
         lda #$08                                ; D660 A9 08
-        sta $400F                               ; D662 8D 0F 40
+        sta L400F_APU                           ; D662 8D 0F 40
     end_if
     rts                                         ; D665 60
 
@@ -740,7 +764,7 @@ LD66F:
     lda #$00                                    ; D66F A9 00
     sta L06F8                                   ; D671 8D F8 06
     lda #$10                                    ; D674 A9 10
-    sta $400C                                   ; D676 8D 0C 40
+    sta L400C_APU_NOISE                         ; D676 8D 0C 40
 LD679:
     rts                                         ; D679 60
 
@@ -789,7 +813,7 @@ LD6A7:
     ldx #<LD3B0                                 ; D6AC A2 B0
     jsr RD6BA                                   ; D6AE 20 BA D6
     ora #$10                                    ; D6B1 09 10
-    sta $400C                                   ; D6B3 8D 0C 40
+    sta L400C_APU_NOISE                         ; D6B3 8D 0C 40
     inc L06DF                                   ; D6B6 EE DF 06
     rts                                         ; D6B9 60
 
@@ -806,15 +830,15 @@ RD6BA:
     lsr a                                       ; D6C4 4A
     tay                                         ; D6C5 A8
     lda (LE0_),y                                ; D6C6 B1 E0
-    sta LE4_                                    ; D6C8 85 E4
+    sta LE4_TEMP                                ; D6C8 85 E4
     txa                                         ; D6CA 8A
     and #$01                                    ; D6CB 29 01
     if_ne                                       ; D6CD F0 05
-        lda LE4_                                ; D6CF A5 E4
+        lda LE4_TEMP                            ; D6CF A5 E4
         and #$0F                                ; D6D1 29 0F
         rts                                     ; D6D3 60
     end_if
-    lda LE4_                                    ; D6D4 A5 E4
+    lda LE4_TEMP                                ; D6D4 A5 E4
     lsr a                                       ; D6D6 4A
     lsr a                                       ; D6D7 4A
     lsr a                                       ; D6D8 4A
@@ -843,12 +867,12 @@ VD6EA:
     inc L06E0                                   ; D6F2 EE E0 06
     lda LD70C,y                                 ; D6F5 B9 0C D7
     beq LD6E7                                   ; D6F8 F0 ED
-    sta $4002                                   ; D6FA 8D 02 40
+    sta L4002_APU_PULSE1_FREQ                   ; D6FA 8D 02 40
     lda LD71A,y                                 ; D6FD B9 1A D7
-    sta $4006                                   ; D700 8D 06 40
+    sta L4006_APU_PULSE2_FREQ                   ; D700 8D 06 40
     lda #$08                                    ; D703 A9 08
-    sta $4003                                   ; D705 8D 03 40
-    sta $4007                                   ; D708 8D 07 40
+    sta L4003_APU_PULSE1_LEN                    ; D705 8D 03 40
+    sta L4007_APU_PULSE2_LEN                    ; D708 8D 07 40
     rts                                         ; D70B 60
 ; ----------------------------------------------------------------------------
 ; lookup table, used in VD6EA.
@@ -880,13 +904,13 @@ VD734:
     inc L06E0                                   ; D73C EE E0 06
     lda LD759,y                                 ; D73F B9 59 D7
     beq LD78A                                   ; D742 F0 46
-    sta $4002                                   ; D744 8D 02 40
+    sta L4002_APU_PULSE1_FREQ                   ; D744 8D 02 40
     lda LD761,y                                 ; D747 B9 61 D7
 LD74A:
-    sta $4006                                   ; D74A 8D 06 40
+    sta L4006_APU_PULSE2_FREQ                   ; D74A 8D 06 40
     lda #$08                                    ; D74D A9 08
-    sta $4003                                   ; D74F 8D 03 40
-    sta $4007                                   ; D752 8D 07 40
+    sta L4003_APU_PULSE1_LEN                    ; D74F 8D 03 40
+    sta L4007_APU_PULSE2_LEN                    ; D752 8D 07 40
     rts                                         ; D755 60
 
 ; ----------------------------------------------------------------------------
@@ -925,8 +949,8 @@ LD78A:
     sta L06FC                                   ; D795 8D FC 06
     ldx #$01                                    ; D798 A2 01
     lda #$7F                                    ; D79A A9 7F
-    sta $4000,x                                 ; D79C 9D 00 40
-    sta $4004,x                                 ; D79F 9D 04 40
+    sta L4000_APU_PULSE1,x                      ; D79C 9D 00 40
+    sta L4004_APU_PULSE2,x                      ; D79F 9D 04 40
     rts                                         ; D7A2 60
 
 ; ----------------------------------------------------------------------------
@@ -960,8 +984,8 @@ LD7CC:
     bne LD7DA                                   ; D7D0 D0 08
     pla                                         ; D7D2 68
 LD7D3:
-    sta $4000,x                                 ; D7D3 9D 00 40
-    sta $4004,x                                 ; D7D6 9D 04 40
+    sta L4000_APU_PULSE1,x                      ; D7D3 9D 00 40
+    sta L4004_APU_PULSE2,x                      ; D7D6 9D 04 40
     rts                                         ; D7D9 60
 LD7DA:
     pla                                         ; D7DA 68
@@ -987,11 +1011,11 @@ RD7EB:
     lda LD809,y                                 ; D7F4 B9 09 D8
     clc                                         ; D7F7 18
     adc LD328+2                                 ; D7F8 6D 2A D3
-    sta $4002                                   ; D7FB 8D 02 40
+    sta L4002_APU_PULSE1_FREQ                   ; D7FB 8D 02 40
     lda LD809,y                                 ; D7FE B9 09 D8
     clc                                         ; D801 18
     adc LD32C+2                                 ; D802 6D 2E D3
-    sta $4006                                   ; D805 8D 06 40
+    sta L4006_APU_PULSE2_FREQ                   ; D805 8D 06 40
     rts                                         ; D808 60
 
 ; ----------------------------------------------------------------------------
@@ -1000,6 +1024,7 @@ LD809:
     .byte $00,$00,$01,$02,$01,$01,$00,$00
     .byte $00,$FF,$FE,$FF,$FF,$00,$00,$00
 ; ----------------------------------------------------------------------------
+; lda L06F9, cmp #10/#11.
 RD819:
     lda L06F9                                   ; D819 AD F9 06
     cmp #$0A                                    ; D81C C9 0A
@@ -1045,7 +1070,7 @@ LD84F:
     and #$03                                    ; D852 29 03
     tay                                         ; D854 A8
     lda LD38C,y                                 ; D855 B9 8C D3
-    sta $4000                                   ; D858 8D 00 40
+    sta L4000_APU_PULSE1                        ; D858 8D 00 40
     inc L06E0                                   ; D85B EE E0 06
     lda L06E0                                   ; D85E AD E0 06
     cmp #$08                                    ; D861 C9 08
@@ -1094,7 +1119,7 @@ VD8A3:
     bne LD8B8 ; rts                             ; D8A6 D0 10
 RD8A8:
     lda #$10                                    ; D8A8 A9 10
-    sta $4000                                   ; D8AA 8D 00 40
+    sta L4000_APU_PULSE1                        ; D8AA 8D 00 40
     lda #$00                                    ; D8AD A9 00
     sta L06C8                                   ; D8AF 8D C8 06
     sta L06F9                                   ; D8B2 8D F9 06
@@ -1236,10 +1261,10 @@ LD977:
     adc L06E0                                   ; D97E 6D E0 06
     tay                                         ; D981 A8
     lda LD9E4,y                                 ; D982 B9 E4 D9
-    sta $4002                                   ; D985 8D 02 40
+    sta L4002_APU_PULSE1_FREQ                   ; D985 8D 02 40
     ldy L06E0                                   ; D988 AC E0 06
     lda LD9D7,y                                 ; D98B B9 D7 D9
-    sta $4000                                   ; D98E 8D 00 40
+    sta L4000_APU_PULSE1                        ; D98E 8D 00 40
     bne LD996                                   ; D991 D0 03
     jmp RD8A8                                   ; D993 4C A8 D8
 
@@ -1319,9 +1344,9 @@ VDA08:
     inc L06E0                                   ; DA10 EE E0 06
     lda LDA35,y                                 ; DA13 B9 35 DA
     beq LDA21                                   ; DA16 F0 09
-    sta $4002                                   ; DA18 8D 02 40
+    sta L4002_APU_PULSE1_FREQ                   ; DA18 8D 02 40
     lda #$28                                    ; DA1B A9 28
-    sta $4003                                   ; DA1D 8D 03 40
+    sta L4003_APU_PULSE1_LEN                    ; DA1D 8D 03 40
     rts                                         ; DA20 60
 
 ; ----------------------------------------------------------------------------
@@ -1346,7 +1371,7 @@ LDA35:
 ; called from one place
 RDA3A:
     lda #$10                                    ; DA3A A9 10
-    sta $4004                                   ; DA3C 8D 04 40
+    sta L4004_APU_PULSE2                        ; DA3C 8D 04 40
     lda #$00                                    ; DA3F A9 00
     sta L06C9                                   ; DA41 8D C9 06
     sta L06FA                                   ; DA44 8D FA 06
@@ -1364,15 +1389,15 @@ VDA50:
     ldx #$0E                                    ; DA54 A2 0E
     bne LDA58                                   ; DA56 D0 00
 LDA58:
-    sta $4013                                   ; DA58 8D 13 40
-    sty $4012                                   ; DA5B 8C 12 40
-    stx $4010                                   ; DA5E 8E 10 40
+    sta L4013_APU                               ; DA58 8D 13 40
+    sty L4012_APU                               ; DA5B 8C 12 40
+    stx L4010_APU                               ; DA5E 8E 10 40
     lda #$0F                                    ; DA61 A9 0F
-    sta $4015                                   ; DA63 8D
+    sta L4015_APU                               ; DA63 8D
     lda #$00                                    ; DA66 A9 00
-    sta $4011                                   ; DA68 8D 11 40
+    sta L4011_APU                               ; DA68 8D 11 40
     lda #$1F                                    ; DA6B A9 1F
-    sta $4015                                   ; DA6D 8D 15 40
+    sta L4015_APU                               ; DA6D 8D 15 40
     rts                                         ; DA70 60
 
 ; ----------------------------------------------------------------------------
@@ -1389,11 +1414,11 @@ VDA78:
     bne LDA8D                                   ; DA7B D0 10
 RDA7D:
     lda #$00                                    ; DA7D A9 00
-    sta $4008                                   ; DA7F 8D 08 40
+    sta L4008_APU_TRIANGLE                      ; DA7F 8D 08 40
     sta L06CA                                   ; DA82 8D CA 06
     sta L06FB                                   ; DA85 8D FB 06
     lda #$18                                    ; DA88 A9 18
-    sta $400B                                   ; DA8A 8D 0B 40
+    sta L400B_APU                               ; DA8A 8D 0B 40
 LDA8D:
     rts                                         ; DA8D 60
 
@@ -1402,11 +1427,11 @@ LDA8D:
 VDA8E:
     jsr RD2AC                                   ; DA8E 20 AC D2
     beq LDAA3                                   ; DA91 F0 10
-    sta $400A                                   ; DA93 8D 0A 40
+    sta L400A_APU                               ; DA93 8D 0A 40
     lda L06E6                                   ; DA96 AD E6 06
     adc L06E1                                   ; DA99 6D E1 06
     sta L06E6                                   ; DA9C 8D E6 06
-    sta $400A                                   ; DA9F 8D 0A 40
+    sta L400A_APU                               ; DA9F 8D 0A 40
     rts                                         ; DAA2 60
 
 ; ----------------------------------------------------------------------------
@@ -1482,12 +1507,12 @@ RDAFB:
     beq LDAED                                   ; DB09 F0 E2
 LDB0B:
     sta LEF_                                    ; DB0B 85 EF
-    sta L06CC                                   ; DB0D 8D CC 06
-    dec L06CC                                   ; DB10 CE CC 06
+    sta L06CC_SONG_NUMBER                       ; DB0D 8D CC 06
+    dec L06CC_SONG_NUMBER                       ; DB10 CE CC 06
     lda LDB2D,y                                 ; DB13 B9 2D DB
     sta L067E                                   ; DB16 8D 7E 06
     lda #$7F                                    ; DB19 A9 7F
-    sta L06C0                                   ; DB1B 8D C0 06
+    sta L06C0_PULSE1_SWEEP                      ; DB1B 8D C0 06
     sta L06C1                                   ; DB1E 8D C1 06
     jsr RDC83 ; initialize variables            ; DB21 20 83 DC
 LDB24:
@@ -1542,8 +1567,8 @@ RDB5F:
             lda L06C3,x                         ; DB6D BD C3 06
             cmp #$02                            ; DB70 C9 02
             if_ne                               ; DB72 F0 0A
-                ldy LEE_                        ; DB74 A4 EE
-                lda L0680,y                     ; DB76 B9 80 06
+                ldy LEE_VOICE_OFFSET            ; DB74 A4 EE
+                lda L0680_PULSE1_FREQ,y         ; DB76 B9 80 06
                 sta LE1_                        ; DB79 85 E1
                 jsr RDBBF                       ; DB7B 20 BF DB
             end_if
@@ -1642,7 +1667,7 @@ LDBF9:
 
 ;input A X $e1 $ee L06C8,X
 ;if L06C8,X != 0 then return
-;else $4002+[LEE_] = A+[LE1_]
+;else $4002+[LEE_VOICE_OFFSET] = A+[LE1_]
 LDBFF:
     pha                                         ; DBFF 48
         lda L06C8,x                             ; DC00 BD C8 06
@@ -1650,8 +1675,8 @@ LDBFF:
     pla                                         ; DC05 68
     clc                                         ; DC06 18
     adc LE1_                                    ; DC07 65 E1
-    ldy LEE_                                    ; DC09 A4 EE
-    sta $4002,y                                 ; DC0B 99 02 40
+    ldy LEE_VOICE_OFFSET                        ; DC09 A4 EE
+    sta L4002_APU_PULSE1_FREQ,y                 ; DC0B 99 02 40
     rts                                         ; DC0E 60
 
 LDC0F:
@@ -1693,13 +1718,13 @@ LDC7C:
     sta L06A0,x                                 ; DC7E 9D A0 06
     bne LDCD9 ;always                           ; DC81 D0 56
 
-; input: L06CC=(0..11)
+; input: L06CC_SONG_NUMBER=(0..12)
 ; initialize local state
 RDC83:
     jsr RD4E8 ; initialize APU                  ; DC83 20 E8 D4  ; called from one place
     lda LEF_                                    ; DC86 A5 EF
     sta L06FD                                   ; DC88 8D FD 06
-    lda L06CC                                   ; DC8B AD CC 06
+    lda L06CC_SONG_NUMBER                       ; DC8B AD CC 06
     tay                                         ; DC8E A8
     lda LE261,y                                 ; DC8F B9 61 E2
     tay                                         ; DC92 A8
@@ -1715,14 +1740,14 @@ RDC83:
         cmp #$0A                                ; DC9E C9 0A
     while_ne                                    ; DCA0 D0 F3
     lda #$01                                    ; DCA2 A9 01
-    sta L06B4+0                                 ; DCA4 8D B4 06
-    sta L06B4+1                                 ; DCA7 8D B5 06
-    sta L06B4+2                                 ; DCAA 8D B6 06
-    sta L06B4+3                                 ; DCAD 8D B7 06
-    ; zero L067F, LEA_, L06A8-L06AF
+    sta L06B4_NOTE_TIMER+0                      ; DCA4 8D B4 06
+    sta L06B4_NOTE_TIMER+1                      ; DCA7 8D B5 06
+    sta L06B4_NOTE_TIMER+2                      ; DCAA 8D B6 06
+    sta L06B4_NOTE_TIMER+3                      ; DCAD 8D B7 06
+    ; zero L067F, LEA_UNUSED, L06A8-L06AF
     lda #$00                                    ; DCB0 A9 00
     sta L067F                                   ; DCB2 8D 7F 06
-    sta LEA_                                    ; DCB5 85 EA
+    sta LEA_UNUSED                              ; DCB5 85 EA
     ldy #$08                                    ; DCB7 A0 08
     loop
         sta L06A7,y                             ; DCB9 99 A7 06
@@ -1734,9 +1759,9 @@ RDC83:
     ; if pe6==FFFF then p6a0[x] = FFFF
     ; else p6a0[x] = pe6[0]:pe6[1]
     LDCC0:
-        lda L0692,x                             ; DCC0 BD 92 06
+        lda L0692+0,x                           ; DCC0 BD 92 06
         sta LE6_                                ; DCC3 85 E6
-        lda L0693,x                             ; DCC5 BD 93 06
+        lda L0692+1,x                           ; DCC5 BD 93 06
         ; if FF then output FFFF
         cmp #$FF                                ; DCC8 C9 FF
         beq LDC7C                               ; DCCA F0 B0
@@ -1764,19 +1789,21 @@ RDCE4:
     if_ne                                       ; DCE7 F0 2B
         cmp #$01                                ; DCE9 C9 01
         if_ne
+            ; disable pulse2 sweep
             lda #$7F                            ; DCED A9 7F
-            sta $4005                           ; DCEF 8D 05 40
-            lda L0684                           ; DCF2 AD 84 06
-            sta $4006                           ; DCF5 8D 06 40
-            lda L0685                           ; DCF8 AD 85 06
-            sta $4007                           ; DCFB 8D 07 40
+            sta L4005_APU_PULSE2_SWEEP          ; DCEF 8D 05 40
+            lda L0684_PULSE2_FREQ               ; DCF2 AD 84 06
+            sta L4006_APU_PULSE2_FREQ           ; DCF5 8D 06 40
+            lda L0685_PULSE2_LEN                ; DCF8 AD 85 06
+            sta L4007_APU_PULSE2_LEN            ; DCFB 8D 07 40
         end_if
+        ; disable pulse1 sweep
         lda #$7F                                ; DCFE A9 7F
-        sta $4001                               ; DD00 8D 01 40
-        lda L0680                               ; DD03 AD 80 06
-        sta $4002                               ; DD06 8D 02 40
-        lda L0681                               ; DD09 AD 81 06
-        sta $4003                               ; DD0C 8D 03 40
+        sta L4001_APU_PULSE1_SWEEP              ; DD00 8D 01 40
+        lda L0680_PULSE1_FREQ                   ; DD03 AD 80 06
+        sta L4002_APU_PULSE1_FREQ               ; DD06 8D 02 40
+        lda L0681_PULSE1_LEN                    ; DD09 AD 81 06
+        sta L4003_APU_PULSE1_LEN                ; DD0C 8D 03 40
         lda #$00                                ; DD0F A9 00
         sta L068A                               ; DD11 8D 8A 06
     end_if
@@ -1801,6 +1828,7 @@ RDD15:
     lda L06C3,x                                 ; DD23 BD C3 06
     cmp #$02                                    ; DD26 C9 02
     beq LDD84                                   ; DD28 F0 5A
+    ; set y = 2*LE1_
     ldy #$00                                    ; DD2A A0 00
     loop
         dec LE1_                                ; DD2C C6 E1
@@ -1816,7 +1844,7 @@ RDD15:
     lsr a                                       ; DD41 4A
     tay                                         ; DD42 A8
     lda (LE2_),y                                ; DD43 B1 E2
-    sta LE4_                                    ; DD45 85 E4
+    sta LE4_TEMP                                ; DD45 85 E4
     cmp #$FF                                    ; DD47 C9 FF
     beq LDD7B                                   ; DD49 F0 30
     cmp #$F0                                    ; DD4B C9 F0
@@ -1824,12 +1852,12 @@ RDD15:
     lda L06CD,x                                 ; DD4F BD CD 06
     and #$01                                    ; DD52 29 01
     if_eq                                       ; DD54 D0 08
-        lsr LE4_                                ; DD56 46 E4
-        lsr LE4_                                ; DD58 46 E4
-        lsr LE4_                                ; DD5A 46 E4
-        lsr LE4_                                ; DD5C 46 E4
+        lsr LE4_TEMP                            ; DD56 46 E4
+        lsr LE4_TEMP                            ; DD58 46 E4
+        lsr LE4_TEMP                            ; DD5A 46 E4
+        lsr LE4_TEMP                            ; DD5C 46 E4
     end_if
-    lda LE4_                                    ; DD5E A5 E4
+    lda LE4_TEMP                                ; DD5E A5 E4
     and #$0F                                    ; DD60 29 0F
     sta LE0_                                    ; DD62 85 E0
     lda L069D,x                                 ; DD64 BD 9D 06
@@ -1842,15 +1870,17 @@ LDD6F:
     lda L06C8,x                                 ; DD6F BD C8 06
     if_eq                                       ; DD72 D0 06
         tya                                     ; DD74 98
-        ldy LEE_                                ; DD75 A4 EE
-        sta $4000,y                             ; DD77 99 00 40
+        ldy LEE_VOICE_OFFSET                    ; DD75 A4 EE
+        sta L4000_APU_PULSE1,y                  ; DD77 99 00 40
     end_if
 LDD7A:
     rts                                         ; DD7A 60
 
+; case ff
 LDD7B:
     ldy L069D,x                                 ; DD7B BC 9D 06
     bne LDD6F                                   ; DD7E D0 EF
+; case f0
 LDD80:
     ldy #$10                                    ; DD80 A0 10
     bne LDD6F ;always                           ; DD82 D0 EB
@@ -1866,13 +1896,13 @@ LDD84:
 LDD88:
     iny                                         ; DD88 C8
     lda (LE6_),y                                ; DD89 B1 E6
-    sta L0692,x                                 ; DD8B 9D 92 06
+    sta L0692+0,x                               ; DD8B 9D 92 06
     iny                                         ; DD8E C8
     lda (LE6_),y                                ; DD8F B1 E6
-    sta L0693,x                                 ; DD91 9D 93 06
-    lda L0692,x                                 ; DD94 BD 92 06
+    sta L0692+1,x                               ; DD91 9D 93 06
+    lda L0692+0,x                               ; DD94 BD 92 06
     sta LE6_                                    ; DD97 85 E6
-    lda L0693,x                                 ; DD99 BD 93 06
+    lda L0692+1,x                               ; DD99 BD 93 06
     sta LE7_                                    ; DD9C 85 E7
     txa                                         ; DD9E 8A
     lsr a                                       ; DD9F 4A
@@ -1887,6 +1917,7 @@ LDDAA:
 LDDAD:
     rts                                         ; DDAD 60
 
+; opcode 00
 ; input X (0 to 3)
 ; pe6 = p692[x]
 ; y = i6a8[x] += 2;
@@ -1894,9 +1925,9 @@ LDDAE:
     txa                                         ; DDAE 8A
     asl a                                       ; DDAF 0A
     tax                                         ; DDB0 AA
-    lda L0692,x                                 ; DDB1 BD 92 06
+    lda L0692+0,x                               ; DDB1 BD 92 06
     sta LE6_                                    ; DDB4 85 E6
-    lda L0693,x                                 ; DDB6 BD 93 06
+    lda L0692+1,x                               ; DDB6 BD 93 06
     sta LE7_                                    ; DDB9 85 E7
     txa                                         ; DDBB 8A
     lsr a                                       ; DDBC 4A
@@ -1928,9 +1959,9 @@ LDDC7:
     lsr a                                       ; DDDE 4A
     tax                                         ; DDDF AA
     lda #$00                                    ; DDE0 A9 00
-    sta L06AC,x                                 ; DDE2 9D AC 06
+    sta L06AC_INSTR_PTR,x                       ; DDE2 9D AC 06
     lda #$01                                    ; DDE5 A9 01
-    sta L06B4,x                                 ; DDE7 9D B4 06
+    sta L06B4_NOTE_TIMER,x                      ; DDE7 9D B4 06
     bne LDE0C ;always                           ; DDEA D0 20
 
 ; case 00
@@ -1943,11 +1974,12 @@ LDDEF:
     jsr RDCE4                                   ; DDF2 20 E4 DC
     lda #$00                                    ; DDF5 A9 00
     tax                                         ; DDF7 AA
-    sta LEE_                                    ; DDF8 85 EE
+    sta LEE_VOICE_OFFSET                        ; DDF8 85 EE
     beq LDE0C ;always                           ; DDFA F0 10
 
 ; next X
 LDDFC:
+    ; x /= 2
     txa                                         ; DDFC 8A
     lsr a                                       ; DDFD 4A
     tax                                         ; DDFE AA
@@ -1956,14 +1988,15 @@ LDDFF:
     txa                                         ; DE00 8A
     cmp #$04                                    ; DE01 C9 04
     beq LDDAD ;rts                              ; DE03 F0 A8
-    lda LEE_                                    ; DE05 A5 EE
+    lda LEE_VOICE_OFFSET                        ; DE05 A5 EE
     clc                                         ; DE07 18
     adc #$04                                    ; DE08 69 04
-    sta LEE_                                    ; DE0A 85 EE
+    sta LEE_VOICE_OFFSET                        ; DE0A 85 EE
 ; input X=(0,1,2,3)
 ; pe6 = p6a0[x]
 ; if pe6 == $FFFF then LDDFC
 LDE0C:
+    ; x *= 2
     txa                                         ; DE0C 8A
     asl a                                       ; DE0D 0A
     tax                                         ; DE0E AA
@@ -1974,13 +2007,14 @@ LDE0C:
     lda L06A1,x                                 ; DE19 BD A1 06 ;redundant
     cmp #$FF                                    ; DE1C C9 FF
     beq LDDFC ; next X                          ; DE1E F0 DC
+    ; x /= 2
     txa                                         ; DE20 8A
     lsr a                                       ; DE21 4A
     tax                                         ; DE22 AA
 ; i6b4[x]--
 ; if i6b4[x] > 0 then LDE71
 .scope
-    dec L06B4,x                                 ; DE23 DE B4 06
+    dec L06B4_NOTE_TIMER,x                      ; DE23 DE B4 06
     bne LDE71                                   ; DE26 D0 49
 ; i6cd[x] = 0
 ; i6d1[x] = 0
@@ -1989,7 +2023,7 @@ LDE0C:
     sta L06D1,x                                 ; DE2D 9D D1 06
 ; loop start
 ; invariant: pe6 = p6a0[x]
-LDE30:
+LDE30_NEXT_INSTR:
     jsr RE00F ; A = pe6[i6ac[x]++]              ; DE30 20 0F E0
     beq LDDEC ; jmp LDDAE                       ; DE33 F0 B7
     cmp #$9F                                    ; DE35 C9 9F
@@ -2003,29 +2037,29 @@ LDE30:
     beq LDE4F                                   ; DE44 F0 09
     and #$C0                                    ; DE46 29 C0
     cmp #$C0                                    ; DE48 C9 C0
-    beq LDE5F                                   ; DE4A F0 13
+    beq LDE5F_LOOP_START                        ; DE4A F0 13
     jmp LDEAA                                   ; DE4C 4C AA DE
 
 ; case ff
 ; loop-end instruction
 LDE4F:
-    lda L06BC,x                                 ; DE4F BD BC 06
-    beq LDE6E                                   ; DE52 F0 1A
-    dec L06BC,x                                 ; DE54 DE BC 06
-    lda L06B0,x                                 ; DE57 BD B0 06
-    sta L06AC,x                                 ; DE5A 9D AC 06
-    bne LDE6E                                   ; DE5D D0 0F
+    lda L06BC_LOOP_COUNT,x                      ; DE4F BD BC 06
+    beq LDE6E_NEXT_INSTR                        ; DE52 F0 1A
+    dec L06BC_LOOP_COUNT,x                      ; DE54 DE BC 06
+    lda L06B0_LOOP_START,x                      ; DE57 BD B0 06
+    sta L06AC_INSTR_PTR,x                       ; DE5A 9D AC 06
+    bne LDE6E_NEXT_INSTR ; always               ; DE5D D0 0F
 ; case c0-fe (opcode in y)
 ; loop-start instruction
-LDE5F:
+LDE5F_LOOP_START:
     tya                                         ; DE5F 98
     and #$3F                                    ; DE60 29 3F
-    sta L06BC,x                                 ; DE62 9D BC 06
-    dec L06BC,x                                 ; DE65 DE BC 06
-    lda L06AC,x                                 ; DE68 BD AC 06
-    sta L06B0,x                                 ; DE6B 9D B0 06
-LDE6E:
-    jmp LDE30 ; loop                            ; DE6E 4C 30 DE
+    sta L06BC_LOOP_COUNT,x                      ; DE62 9D BC 06
+    dec L06BC_LOOP_COUNT,x                      ; DE65 DE BC 06
+    lda L06AC_INSTR_PTR,x                       ; DE68 BD AC 06
+    sta L06B0_LOOP_START,x                      ; DE6B 9D B0 06
+LDE6E_NEXT_INSTR:
+    jmp LDE30_NEXT_INSTR                        ; DE6E 4C 30 DE
 
 ; wait count remaining (i6b4[x] > 0)
 LDE71:
@@ -2045,25 +2079,26 @@ LDE80:
     sta L069A,x                                 ; DE83 9D 9A 06
     jsr RE00F ; A = pe6[i6ac[x]++]              ; DE86 20 0F E0
     sta L069D,x                                 ; DE89 9D 9D 06
-    jmp LDE30                                   ; DE8C 4C 30 DE
+    jmp LDE30_NEXT_INSTR                        ; DE8C 4C 30 DE
 
 ;unreachable
     jsr RE00F ; A = pe6[i6ac[x]++]              ; DE8F 20 0F E0
     jsr RE00F ; A = pe6[i6ac[x]++]              ; DE92 20 0F E0
-    jmp LDE30                                   ; DE95 4C 30 DE
+    jmp LDE30_NEXT_INSTR                        ; DE95 4C 30 DE
 
 ; case 9e
 ; set song tempo
 LDE98:
     jsr RE00F ; A = pe6[i6ac[x]++]              ; DE98 20 0F E0
-    sta L0691                                   ; DE9B 8D 91 06
-    jmp LDE30                                   ; DE9E 4C 30 DE
+    sta L0691_SONG_TEMPO                        ; DE9B 8D 91 06
+    jmp LDE30_NEXT_INSTR                        ; DE9E 4C 30 DE
 
 ; case 9c
+; set song key
 LDEA1:
     jsr RE00F ; A = pe6[i6ac[x]++]              ; DEA1 20 0F E0
     sta L0690                                   ; DEA4 8D 90 06
-    jmp LDE30                                   ; DEA7 4C 30 DE
+    jmp LDE30_NEXT_INSTR                        ; DEA7 4C 30 DE
 
 ; case 01-bf (opcode in y)
 LDEAA:
@@ -2076,10 +2111,10 @@ LDEAA:
     tya                                         ; DEB1 98
     and #$0F                                    ; DEB2 29 0F
     clc                                         ; DEB4 18
-    adc L0691                                   ; DEB5 6D 91 06
+    adc L0691_SONG_TEMPO                        ; DEB5 6D 91 06
     tay                                         ; DEB8 A8
     lda LE204,y                                 ; DEB9 B9 04 E2
-    sta L06B8,x                                 ; DEBC 9D B8 06
+    sta L06B8_NOTE_LENGTH,x                     ; DEBC 9D B8 06
     tay                                         ; DEBF A8
     txa                                         ; DEC0 8A
     cmp #$02                                    ; DEC1 C9 02
@@ -2097,9 +2132,11 @@ LDEC9:
     beq LDE7A ; jmp LDF8E                       ; DED0 F0 A8
     ; x=0,1,2
     pha                                         ; DED2 48
-        ldx LEE_                                ; DED3 A6 EE
+        ldx LEE_VOICE_OFFSET                    ; DED3 A6 EE
         lda LE16A+1,y                           ; DED5 B9 6B E1
         if_ne                                   ; DED8 F0 24
+            ; treat L0690 as sign/magnitude
+            ; add to or subtract from y
             lda L0690                           ; DEDA AD 90 06
             if_mi                               ; DEDD 10 0B
                 and #$7F                        ; DEDF 29 7F
@@ -2113,64 +2150,64 @@ LDEC9:
                 adc L0690                       ; DEEC 6D 90 06
             end_if
             tay                                 ; DEEF A8
-            lda LE16A+1,y                         ; DEF0 B9 6B E1
-            sta L0680,x                         ; DEF3 9D 80 06
+            lda LE16A+1,y                       ; DEF0 B9 6B E1
+            sta L0680_PULSE1_FREQ,x             ; DEF3 9D 80 06
             lda LE16A,y                         ; DEF6 B9 6A E1
             ora #$08                            ; DEF9 09 08
-            sta L0681,x                         ; DEFB 9D 81 06
+            sta L0681_PULSE1_LEN,x              ; DEFB 9D 81 06
         end_if
         tay                                     ; DEFE A8
     pla                                         ; DEFF 68
     tax                                         ; DF00 AA
     tya                                         ; DF01 98
     .scope
-    bne     LDF13                               ; DF02 D0 0F
-    lda     #$00                                ; DF04 A9 00
-    sta     LE0_                                ; DF06 85 E0
+    bne LDF13                                   ; DF02 D0 0F
+    lda #$00                                    ; DF04 A9 00
+    sta LE0_                                    ; DF06 85 E0
     txa                                         ; DF08 8A
-    cmp     #$02                                ; DF09 C9 02
-    beq     LDF18                               ; DF0B F0 0B
-    lda     #$10                                ; DF0D A9 10
-    sta     LE0_                                ; DF0F 85 E0
-    bne     LDF18                               ; DF11 D0 05  ;always branch
+    cmp #$02                                    ; DF09 C9 02
+    beq LDF18                                   ; DF0B F0 0B
+    lda #$10                                    ; DF0D A9 10
+    sta LE0_                                    ; DF0F 85 E0
+    bne LDF18                                   ; DF11 D0 05  ;always branch
     LDF13:
-    lda     L069D,x                             ; DF13 BD 9D 06
-    sta     LE0_                                ; DF16 85 E0
+    lda L069D,x                                 ; DF13 BD 9D 06
+    sta LE0_                                    ; DF16 85 E0
     LDF18:
     .endscope
     txa                                         ; DF18 8A
-    dec     L06C8,x                             ; DF19 DE C8 06
-    cmp     L06C8,x                             ; DF1C DD C8 06
-    beq     LDF5E                               ; DF1F F0 3D
-    inc     L06C8,x                             ; DF21 FE C8 06
-    ldy     LEE_                                ; DF24 A4 EE
-    txa                                         ; DF26 8A
-    cmp     #$02                                ; DF27 C9 02
+    dec L06C8,x                                 ; DF19 DE C8 06
+    cmp L06C8,x                                 ; DF1C DD C8 06
+    beq LDF5E                                   ; DF1F F0 3D
+    inc L06C8,x                                 ; DF21 FE C8 06
+    ldy LEE_VOICE_OFFSET                        ; DF24 A4 EE
     .scope
-    beq     LDF3E                               ; DF29 F0 13
-    lda     L069A,x                             ; DF2B BD 9A 06
-    and     #$1F                                ; DF2E 29 1F
-    beq     LDF3E                               ; DF30 F0 0C
-    lda     LE0_                                ; DF32 A5 E0
-    cmp     #$10                                ; DF34 C9 10
-    beq     LDF40                               ; DF36 F0 08
-    and     #$F0                                ; DF38 29 F0
-    ora     #$00                                ; DF3A 09 00
-    bne     LDF40                               ; DF3C D0 02
+    txa                                         ; DF26 8A
+    cmp #$02                                    ; DF27 C9 02
+    beq LDF3E                                   ; DF29 F0 13
+    lda L069A,x                                 ; DF2B BD 9A 06
+    and #$1F                                    ; DF2E 29 1F
+    beq LDF3E                                   ; DF30 F0 0C
+    lda LE0_                                    ; DF32 A5 E0
+    cmp #$10                                    ; DF34 C9 10
+    beq LDF40                                   ; DF36 F0 08
+    and #$F0                                    ; DF38 29 F0
+    ora #$00                                    ; DF3A 09 00
+    bne LDF40                                   ; DF3C D0 02
     LDF3E:
-    lda     LE0_                                ; DF3E A5 E0
+    lda LE0_                                    ; DF3E A5 E0
     LDF40:
     .endscope
-    sta $4000,y                                 ; DF40 99 00 40
-    lda L06C0,x                                 ; DF43 BD C0 06
-    sta $4001,y                                 ; DF46 99 01 40
-    lda L0680,y                                 ; DF49 B9 80 06
-    sta $4002,y                                 ; DF4C 99 02 40
-    lda L0681,y                                 ; DF4F B9 81 06
-    sta $4003,y                                 ; DF52 99 03 40
+    sta L4000_APU_PULSE1,y                      ; DF40 99 00 40
+    lda L06C0_PULSE1_SWEEP,x                    ; DF43 BD C0 06
+    sta L4001_APU_PULSE1_SWEEP,y                ; DF46 99 01 40
+    lda L0680_PULSE1_FREQ,y                     ; DF49 B9 80 06
+    sta L4002_APU_PULSE1_FREQ,y                 ; DF4C 99 02 40
+    lda L0681_PULSE1_LEN,y                      ; DF4F B9 81 06
+    sta L4003_APU_PULSE1_LEN,y                  ; DF52 99 03 40
 LDF55:
-    lda L06B8,x                                 ; DF55 BD B8 06
-    sta L06B4,x                                 ; DF58 9D B4 06
+    lda L06B8_NOTE_LENGTH,x                     ; DF55 BD B8 06
+    sta L06B4_NOTE_TIMER,x                      ; DF58 9D B4 06
     jmp LDDFF                                   ; DF5B 4C FF DD
 
 LDF5E:
@@ -2228,11 +2265,11 @@ RDF9D:
     lda L06F8                                   ; DF9D AD F8 06
     if_eq                                       ; DFA0 D0 12
         lda LDB3A,y                             ; DFA2 B9 3A DB
-        sta $400C                               ; DFA5 8D 0C 40
+        sta L400C_APU_NOISE                     ; DFA5 8D 0C 40
         lda LDB3A+1,y                           ; DFA8 B9 3B DB
-        sta $400E                               ; DFAB 8D 0E 40
+        sta L400E_APU                           ; DFAB 8D 0E 40
         lda LDB3A+2,y                           ; DFAE B9 3C DB
-        sta $400F                               ; DFB1 8D 0F 40
+        sta L400F_APU                           ; DFB1 8D 0F 40
     end_if
     rts                                         ; DFB4 60
 
@@ -2291,28 +2328,29 @@ case8:
     lda #$0F                                    ; DFEB A9 0F
     ldy #>(LFD80 << 2)                          ; DFED A0 F6
 final:
-    sta $4013                                   ; DFEF 8D 13 40
-    sty $4012                                   ; DFF2 8C 12 40
+    sta L4013_APU                               ; DFEF 8D 13 40
+    sty L4012_APU                               ; DFF2 8C 12 40
     lda L06F7                                   ; DFF5 AD F7 06
     if_eq                                       ; DFF8 D0 14
         lda LE1_                                ; DFFA A5 E1
-        sta $4010                               ; DFFC 8D 10 40
+        sta L4010_APU                           ; DFFC 8D 10 40
         lda #$0F                                ; DFFF A9 0F
-        sta $4015                               ; E001 8D 15 40
+        sta L4015_APU                           ; E001 8D 15 40
         lda #$00                                ; E004 A9 00
-        sta $4011                               ; E006 8D 11 40
+        sta L4011_APU                           ; E006 8D 11 40
         lda #$1F                                ; E009 A9 1F
-        sta $4015                               ; E00B 8D 15 40
+        sta L4015_APU                           ; E00B 8D 15 40
     end_if
     rts                                         ; E00E 60
 .endscope
 
 ; ----------------------------------------------------------------------------
+; read next byte from music program instruction stream
 ; input X=(0,1,2,3)
 ; A = pe6[i6ac[x]++]
 RE00F:
-    ldy L06AC,x                             ; E00F BC AC 06
-    inc L06AC,x                             ; E012 FE AC 06
+    ldy L06AC_INSTR_PTR,x                   ; E00F BC AC 06
+    inc L06AC_INSTR_PTR,x                   ; E012 FE AC 06
     lda (LE6_),y                            ; E015 B1 E6
     rts                                     ; E017 60
 
@@ -2380,7 +2418,7 @@ LE16A:
 ; ----------------------------------------------------------------------------
 ; lookup table: note durations
 ; used in RDAFB
-; values are copied to L06B8,x
+; values are copied to L06B8_NOTE_LENGTH,x
 ; L0691 ($00,$18,$28,$35,$4F) added to indices
 
 ; Various offsets include the subsequence [1,2,4,8,16,6,12,3,8/3,4/3,1/2]
@@ -2413,10 +2451,11 @@ LE204:
 
 ; ----------------------------------------------------------------------------
 ; lookup table
-; indexed by L06CC
+; indexed by L06CC_SONG_NUMBER
 ; values are indexes into LE26E.
 ; used in RDC83
 LE261:
+    ; $0A times 9,3,4,2,6,8,5,11,0,1,7,10,12
     .byte $5A,$1E,$28,$14,$3C,$50,$32,$6E,$00,$0A,$46,$64,$78
 
 
