@@ -9,4 +9,6 @@ The ROM images (`drmario.nes` for the original NTSC version, and
 the included makefile with `make all`.
 
 Running `make test` generates the ROM images and compares them with
-the expected output.
+the expected output. You will need a copy of the original ROM, either
+revision, in unzipped `.nes` form, to extract art assets from. Name it
+`drmario_original.nes`.
